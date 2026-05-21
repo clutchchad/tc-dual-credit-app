@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavOrder } from './hooks/useNavOrder';
-import { useLocation } from './hooks/useLocation';
 
 import SplashScreen     from './screens/SplashScreen';
 import OnboardRole      from './screens/OnboardRole';
@@ -24,9 +23,6 @@ function saveStored(role, school) {
 }
 
 export default function App() {
-  // GPS diagnostic logging — console-only, no UI impact
-  useLocation();
-
   const stored = getStored();
   const [screen,  setScreen]  = useState('splash');
   const [role,    setRole]    = useState(stored.role   || null);
