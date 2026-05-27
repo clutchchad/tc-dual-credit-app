@@ -17,6 +17,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import BottomNav from '../components/BottomNav';
 import { getAcdcForSchool } from '../data/acdc';
+import { schools as schoolList } from '../data/schools';
 import { C, FF } from '../tokens';
 
 const CARD_ORDER_KEY = 'tcdc_v1_cards';
@@ -207,8 +208,11 @@ function AcdcCard({ handleRef, listeners, attributes, acdc, shortName }) {
 }
 
 /* ── Main screen ── */
-export default function HomeScreen({ role, school, onNavigate, tabs }) {
-  const acdc = getAcdcForSchool(school.id);
+export default function HomeScreen({ role, school, grade, onNavigate, tabs }) {
+  const schoolInfo = schoolList.find(s => s.id === school.id) || {};
+  const barColor = schoolInfo.bar || '#065990';
+  const barTextColor = schoolInfo.textColor || '#fff';
+  const acdc = getAcdcForSchool(school.id, grade);
   const shortName = school.name.replace(' HS', '').replace(' High', '');
   const [cardOrder, setCardOrder] = useState(loadOrder);
 
@@ -239,15 +243,9 @@ export default function HomeScreen({ role, school, onNavigate, tabs }) {
 
       {/* ── HEADER ── */}
       <div style={{ background: '#065990', flexShrink: 0, paddingTop: 'env(safe-area-inset-top, 0px)' }}>
-        <div style={{ padding: '0 16px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ fontFamily: FF, fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: '-0.7px', lineHeight: 1.1 }}>
-              {role === 'student' ? 'Student' : 'Parent'}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#EAFF00', boxShadow: '0 0 5px #EAFF00' }} />
-              <span style={{ fontFamily: FF, fontSize: 12, color: 'rgba(255,255,255,.6)', fontWeight: 500 }}>{school.name}</span>
-            </div>
+        <div style={{ padding: '10px 16px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontFamily: FF, fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: '-0.7px', lineHeight: 1.1 }}>
+            {role === 'student' ? 'Student' : 'Parent'}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.15)', borderRadius: 20, padding: '5px 11px' }}>
@@ -263,6 +261,15 @@ export default function HomeScreen({ role, school, onNavigate, tabs }) {
               </svg>
             </button>
           </div>
+        </div>
+        {/* School color bar */}
+        <div style={{ background: barColor, padding: '6px 16px', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontFamily: FF, fontSize: 12.5, fontWeight: 700, color: barTextColor }}>{school.name}</span>
+          {school.id === 'txh' && grade && (
+            <span style={{ background: 'rgba(255,255,255,.25)', borderRadius: 20, padding: '2px 8px', fontFamily: FF, fontSize: 11, fontWeight: 700, color: '#fff' }}>
+              {grade}
+            </span>
+          )}
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { C, FF } from '../tokens';
 
-export default function OnboardConfirm({ role, school, onConfirm, onBack }) {
+export default function OnboardConfirm({ role, school, grade, onConfirm, onBack }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => { setTimeout(() => setVisible(true), 100); }, []);
 
@@ -18,6 +18,12 @@ export default function OnboardConfirm({ role, school, onConfirm, onBack }) {
       value: school.name,
       bg: 'rgba(6,89,144,.1)',
     },
+    ...(school.id === 'txh' && grade ? [{
+      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2" strokeLinecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>,
+      label: 'Your grade',
+      value: grade,
+      bg: 'rgba(6,89,144,.1)',
+    }] : []),
   ];
 
   return (

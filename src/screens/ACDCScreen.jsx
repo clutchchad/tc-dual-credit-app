@@ -11,8 +11,8 @@ function ContactIcon({ type }) {
   return <svg {...p}><path d="M3 9L12 2l9 7v11a1 1 0 01-1 1H4a1 1 0 01-1-1z"/><path d="M9 22V12h6v10"/></svg>;
 }
 
-export default function ACDCScreen({ school, onNavigate, tabs }) {
-  const acdc = getAcdcForSchool(school.id);
+export default function ACDCScreen({ school, grade, onNavigate, tabs }) {
+  const acdc = getAcdcForSchool(school.id, grade);
   const initials = acdc.name.split(' ').map(w => w[0]).join('').slice(0, 2);
 
   const contacts = [

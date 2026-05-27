@@ -5,7 +5,7 @@ import { C, FF } from '../tokens';
 
 const NOTIF_KEY = 'tcdc_v1_notifs';
 
-export default function SettingsScreen({ role, school, onChangeRole, onChangeSchool, onNavigate, tabs }) {
+export default function SettingsScreen({ role, school, grade, onChangeRole, onChangeSchool, onNavigate, tabs }) {
   const [notifs, setNotifs] = useState(() => {
     try { return JSON.parse(localStorage.getItem(NOTIF_KEY)) ?? true; } catch { return true; }
   });
@@ -30,7 +30,12 @@ export default function SettingsScreen({ role, school, onChangeRole, onChangeSch
           </div>
           <div>
             <div style={{ fontFamily: FF, fontSize: 16, fontWeight: 800, color: C.text }}>{role === 'student' ? 'Student' : 'Parent'}</div>
-            <div style={{ fontFamily: FF, fontSize: 13, color: C.text2, marginTop: 1 }}>{school.name}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 1 }}>
+              <span style={{ fontFamily: FF, fontSize: 13, color: C.text2 }}>{school.name}</span>
+              {school.id === 'txh' && grade && (
+                <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: C.blue, background: 'rgba(6,89,144,.1)', borderRadius: 20, padding: '1px 7px' }}>{grade}</span>
+              )}
+            </div>
           </div>
         </div>
 

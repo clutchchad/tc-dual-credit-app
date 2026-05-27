@@ -24,8 +24,7 @@ export const acdcContacts = [
     phone: '(903) 823-3200',
     office: 'Dual Credit Center, Room 115',
     photo: null,
-    schools: ['pg'],
-    // Pleasant Grove, Bloomburg, Avery
+    schools: ['pg', 'bl', 'av'],
   },
   {
     id: 'mharmon',
@@ -35,8 +34,7 @@ export const acdcContacts = [
     phone: '(903) 823-3314',
     office: 'Dual Credit Center, Room 115',
     photo: null,
-    schools: ['maud'],
-    // Texas High (11th grade), Dekalb, Maud, Premier
+    schools: ['maud', 'dk', 'prem'],
   },
   {
     id: 'kpage',
@@ -46,9 +44,7 @@ export const acdcContacts = [
     phone: '(903) 823-3312',
     office: 'Dual Credit Center, Room 115',
     photo: null,
-    schools: ['nb', 'gc'],
-    // Texas High (12th grade), New Boston, James Bowie (Simms)
-    // Genoa Central assigned here as closest geographic match
+    schools: ['nb', 'gc', 'jb'],
   },
   {
     id: 'lwebb',
@@ -58,23 +54,28 @@ export const acdcContacts = [
     phone: '(903) 823-3133',
     office: 'Dual Credit Center, Room 115',
     photo: null,
-    schools: [],
-    // Atlanta, Queen City, McLeod, Linden-Kildare
+    schools: ['atl', 'qc', 'mc', 'lk'],
   },
 ];
 
-/** Look up the ACDC coach for a given school id */
-export function getAcdcForSchool(schoolId) {
-  return (
-    acdcContacts.find(c => c.schools.includes(schoolId)) || {
-      id: 'dept',
-      name: 'Dual Credit Office',
-      title: 'Academic Coach for Dual Credit',
-      email: 'dualcredit@texarkanacollege.edu',
-      phone: '(903) 823-3000',
-      office: 'Dual Credit Center, Room 115',
-      photo: null,
-      schools: [],
-    }
-  );
+const FALLBACK = {
+  id: 'dept',
+  name: 'Dual Credit Office',
+  title: 'Academic Coach for Dual Credit',
+  email: 'dualcredit@texarkanacollege.edu',
+  phone: '(903) 823-3000',
+  office: 'Dual Credit Center, Room 115',
+  photo: null,
+  schools: [],
+};
+
+/** Look up the ACDC coach for a given school id and optional grade (Texas High only) */
+export function getAcdcForSchool(schoolId, grade = null) {
+  if (schoolId === 'txh') {
+    if (grade === 'Junior') return acdcContacts.find(c => c.id === 'mharmon') || FALLBACK;
+    if (grade === 'Senior') return acdcContacts.find(c => c.id === 'kpage') || FALLBACK;
+    // Freshman, Sophomore, or no grade
+    return acdcContacts.find(c => c.id === 'bbarrett') || FALLBACK;
+  }
+  return acdcContacts.find(c => c.schools.includes(schoolId)) || FALLBACK;
 }
