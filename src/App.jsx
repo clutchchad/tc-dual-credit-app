@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavOrder } from './hooks/useNavOrder';
 
 import SplashScreen     from './screens/SplashScreen';
 import OnboardRole      from './screens/OnboardRole';
@@ -16,6 +15,14 @@ import NotificationsScreen   from './screens/NotificationsScreen';
 
 const STORAGE_KEY = 'tcdc_v1';
 
+const NAV_TABS = [
+  { id: 'home',      label: 'Home',      screen: 'home'      },
+  { id: 'acdc',      label: 'My ACDC',   screen: 'acdc'      },
+  { id: 'resources', label: 'Resources', screen: 'resources' },
+  { id: 'events',    label: 'Events',    screen: 'events'    },
+  { id: 'settings',  label: 'Settings',  screen: 'settings'  },
+];
+
 function getStored() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
 }
@@ -29,7 +36,6 @@ export default function App() {
   const [role,    setRole]    = useState(stored.role   || null);
   const [school,  setSchool]  = useState(stored.school || null);
   const [animKey, setAnimKey] = useState(0);
-  const [tabs,    setTabs]    = useNavOrder();
 
   const go = (s) => { setAnimKey(k => k + 1); setScreen(s); };
 
@@ -38,7 +44,7 @@ export default function App() {
     setRole(null); setSchool(null); go('onboard_role');
   };
 
-  const navProps = { tabs, onNavigate: go };
+  const navProps = { tabs: NAV_TABS, onNavigate: go };
 
   const renderScreen = () => {
     switch (screen) {
@@ -96,8 +102,6 @@ export default function App() {
             school={school || { name:'Your School' }}
             onChangeRole={reset}
             onChangeSchool={() => go('onboard_school')}
-            tabs={tabs}
-            onTabsChange={setTabs}
             {...navProps}
           />
         );
