@@ -1,17 +1,19 @@
 import webpush from 'web-push';
 
 const PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
-const API_KEY = process.env.FIREBASE_API_KEY;
+const API_KEY    = process.env.FIREBASE_API_KEY;
 const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
+
+// ── Firestore REST helpers ──────────────────────────────────────────────────
 
 function fsToObj(doc) {
   const obj = {};
   for (const [key, val] of Object.entries(doc.fields || {})) {
-    if (val.stringValue !== undefined)  obj[key] = val.stringValue;
-    else if (val.integerValue !== undefined) obj[key] = Number(val.integerValue);
-    else if (val.booleanValue !== undefined) obj[key] = val.booleanValue;
+    if      (val.stringValue    !== undefined) obj[key] = val.stringValue;
+    else if (val.integerValue   !== undefined) obj[key] = Number(val.integerValue);
+    else if (val.booleanValue   !== undefined) obj[key] = val.booleanValue;
     else if (val.timestampValue !== undefined) obj[key] = val.timestampValue;
-    else if (val.mapValue) obj[key] = fsToObj(val.mapValue);
+    else if (val.mapValue)                     obj[key] = fsToObj(val.mapValue);
   }
   return obj;
 }
@@ -40,20 +42,24 @@ async function deleteSub(docId) {
   await fetch(`${BASE}/subscriptions/${docId}?key=${API_KEY}`, { method: 'DELETE' });
 }
 
-async function writeHistory(title, body, status) {
+async function writeHistory(title, body, targetSchool, targetRole, status) {
   await fetch(`${BASE}/notification-history?key=${API_KEY}`, {
-    method: 'POST',
+    method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+    body:    JSON.stringify({
       fields: {
-        title:  { stringValue: title },
-        body:   { stringValue: body },
-        status: { stringValue: status },
-        sentAt: { timestampValue: new Date().toISOString() },
+        title:        { stringValue: title },
+        body:         { stringValue: body },
+        targetSchool: { stringValue: targetSchool || 'all' },
+        targetRole:   { stringValue: targetRole   || 'all' },
+        status:       { stringValue: status },
+        sentAt:       { timestampValue: new Date().toISOString() },
       },
     }),
   });
 }
+
+// ── Handler ─────────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -80,13 +86,13 @@ export default async function handler(req, res) {
     try { parsed = JSON.parse(parsed); } catch { parsed = {}; }
   }
 
-  const { title, body } = parsed || {};
+  const { title, body, targetSchool, targetRole } = parsed || {};
   if (!title || !body) return res.status(400).json({ error: 'Missing title or body' });
 
   const subs = await getSubscriptions();
 
   // Deduplicate by endpoint, remove stale dupes
-  const seen = new Set();
+  const seen   = new Set();
   const unique = [];
   for (const sub of subs) {
     if (seen.has(sub.endpoint)) {
@@ -97,11 +103,26 @@ export default async function handler(req, res) {
     }
   }
 
+  // Filter by targetSchool and targetRole.
+  // Subscriptions that have no school/role field are legacy (pre-targeting) —
+  // treat them as matching everything so they continue to receive all-audience sends.
+  const targets = unique.filter(sub => {
+    const schoolMatch =
+      !targetSchool || targetSchool === 'all' ||
+      !sub.school   || sub.school   === 'all' ||
+      sub.school === targetSchool;
+    const roleMatch =
+      !targetRole || targetRole === 'all' ||
+      !sub.role   || sub.role   === 'all' ||
+      sub.role === targetRole;
+    return schoolMatch && roleMatch;
+  });
+
   const payload = JSON.stringify({ title, body });
-  let sent = 0;
+  let sent   = 0;
   let failed = 0;
 
-  for (const sub of unique) {
+  for (const sub of targets) {
     try {
       await webpush.sendNotification(
         { endpoint: sub.endpoint, keys: { p256dh: sub.keys?.p256dh, auth: sub.keys?.auth } },
@@ -116,6 +137,6 @@ export default async function handler(req, res) {
     }
   }
 
-  await writeHistory(title, body, 'success');
+  await writeHistory(title, body, targetSchool, targetRole, 'success');
   res.status(200).json({ ok: true, sent, failed });
 }

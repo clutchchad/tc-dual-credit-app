@@ -1,23 +1,23 @@
 /**
- * Firebase configuration placeholder.
- * Replace these values with your actual Firebase project credentials from
- * the Firebase Console → Project Settings → Your apps → Web app → Config.
- *
- * To swap mock data for live Firestore data, replace the arrays in
- * src/data/*.js with Firestore queries using these imports:
- *   import { collection, getDocs, query, orderBy } from 'firebase/firestore';
- *   import { db } from '../firebase';
+ * Firebase configuration — reads from Vite environment variables.
+ * Add the following to your Vercel project (and a local .env.local):
+ *   VITE_FIREBASE_API_KEY
+ *   VITE_FIREBASE_PROJECT_ID
+ *   VITE_FIREBASE_MESSAGING_SENDER_ID  (optional but recommended)
+ *   VITE_FIREBASE_APP_ID               (optional but recommended)
  */
 import { initializeApp } from 'firebase/app';
 import { getFirestore }  from 'firebase/firestore';
 
+const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || '';
+
 const firebaseConfig = {
-  apiKey:            'REPLACE_WITH_API_KEY',
-  authDomain:        'REPLACE_WITH_AUTH_DOMAIN',
-  projectId:         'REPLACE_WITH_PROJECT_ID',
-  storageBucket:     'REPLACE_WITH_STORAGE_BUCKET',
-  messagingSenderId: 'REPLACE_WITH_SENDER_ID',
-  appId:             'REPLACE_WITH_APP_ID',
+  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY            || '',
+  authDomain:        `${projectId}.firebaseapp.com`,
+  projectId,
+  storageBucket:     `${projectId}.firebasestorage.app`,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+  appId:             import.meta.env.VITE_FIREBASE_APP_ID              || '',
 };
 
 const app = initializeApp(firebaseConfig);

@@ -62,10 +62,22 @@ async function subscribe() {
       import.meta.env.VITE_VAPID_PUBLIC_KEY
     ),
   });
+
+  // Attach the user's school and role so targeted push delivery can filter
+  // subscriptions before sending.
+  let school = 'all';
+  let role   = 'all';
+  try {
+    const stored = JSON.parse(localStorage.getItem('tcdc_v1') || '{}');
+    if (stored.school?.id) school = stored.school.id;
+    if (stored.role)       role   = stored.role;
+  } catch { /* ignore */ }
+
+  const subJson = sub.toJSON();
   await fetch('/api/subscribe', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify(sub),
+    body:    JSON.stringify({ ...subJson, school, role }),
   });
   return true;
 }

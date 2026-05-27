@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 
 const PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
-const API_KEY = process.env.FIREBASE_API_KEY;
+const API_KEY    = process.env.FIREBASE_API_KEY;
 const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
 
 export default async function handler(req, res) {
@@ -13,9 +13,10 @@ export default async function handler(req, res) {
   const id = crypto.createHash('sha256').update(subscription.endpoint).digest('hex').slice(0, 40);
 
   const fields = {
-    endpoint: { stringValue: subscription.endpoint },
+    endpoint:  { stringValue: subscription.endpoint },
     updatedAt: { timestampValue: new Date().toISOString() },
   };
+
   if (subscription.keys) {
     fields.keys = {
       mapValue: {
@@ -26,16 +27,26 @@ export default async function handler(req, res) {
       },
     };
   }
+
   if (subscription.expirationTime) {
     fields.expirationTime = { stringValue: String(subscription.expirationTime) };
+  }
+
+  // Store school (the user's school ID from their profile) and role so that
+  // targeted push notifications can filter subscriptions before sending.
+  if (subscription.school) {
+    fields.school = { stringValue: subscription.school };
+  }
+  if (subscription.role) {
+    fields.role = { stringValue: subscription.role };
   }
 
   await fetch(
     `${BASE}/subscriptions/${id}?key=${API_KEY}`,
     {
-      method: 'PATCH',
+      method:  'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fields }),
+      body:    JSON.stringify({ fields }),
     }
   );
 

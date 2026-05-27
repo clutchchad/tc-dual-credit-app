@@ -104,7 +104,7 @@ export default function App() {
         return <ResourcesScreen {...navProps} />;
 
       case 'events':
-        return <EventsScreen {...navProps} />;
+        return <EventsScreen role={role} school={school} {...navProps} />;
 
       case 'settings':
         return (
