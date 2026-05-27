@@ -68,8 +68,8 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const { title, message } = req.body;
-  if (!title || !message) return res.status(400).json({ error: 'Missing title or message' });
+  const { title, body } = req.body;
+  if (!title || !body) return res.status(400).json({ error: 'Missing title or body' });
 
   const subs = await getSubscriptions();
 
@@ -85,7 +85,7 @@ export default async function handler(req, res) {
     }
   }
 
-  const payload = JSON.stringify({ title, body: message });
+  const payload = JSON.stringify({ title, body });
   let sent = 0;
   let failed = 0;
 
@@ -104,6 +104,6 @@ export default async function handler(req, res) {
     }
   }
 
-  await writeHistory(title, message, 'success');
+  await writeHistory(title, body, 'success');
   res.status(200).json({ ok: true, sent, failed });
 }

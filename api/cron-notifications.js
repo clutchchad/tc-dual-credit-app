@@ -82,7 +82,7 @@ export default async function handler(req, res) {
     const fakeReq = {
       method: 'POST',
       headers: { 'x-admin-secret': process.env.ADMIN_SECRET },
-      body: { title: notif.title, message: notif.message },
+      body: { title: notif.title, body: notif.message },
     };
     const fakeRes = {
       status() { return this; },

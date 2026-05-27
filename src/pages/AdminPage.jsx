@@ -55,7 +55,7 @@ export default function AdminPage() {
           'Content-Type': 'application/json',
           'x-admin-secret': import.meta.env.VITE_ADMIN_SECRET || '',
         },
-        body: JSON.stringify({ title: pushTitle, message: pushMessage }),
+        body: JSON.stringify({ title: pushTitle, body: pushMessage }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -116,11 +116,32 @@ export default function AdminPage() {
     });
   }
 
+  // Override the app's global overflow:hidden so the admin page can scroll
+  useEffect(() => {
+    const els = [
+      document.documentElement,
+      document.body,
+      document.getElementById('root'),
+    ];
+    els.forEach(el => {
+      if (!el) return;
+      el.style.overflow = 'auto';
+      el.style.height   = 'auto';
+    });
+    return () => {
+      els.forEach(el => {
+        if (!el) return;
+        el.style.overflow = '';
+        el.style.height   = '';
+      });
+    };
+  }, []);
+
   const inputCls =
     'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-tc-blue';
 
   return (
-    <>
+    <div className="min-h-screen overflow-y-auto">
       {/* Mobile block */}
       <div className="flex md:hidden items-center justify-center h-screen bg-tc-blue">
         <div className="text-center px-8">
@@ -330,6 +351,6 @@ export default function AdminPage() {
 
         </main>
       </div>
-    </>
+    </div>
   );
 }
