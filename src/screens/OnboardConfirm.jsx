@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import StatusBar from '../components/StatusBar';
 import { C, FF } from '../tokens';
 
 export default function OnboardConfirm({ role, school, onConfirm, onBack }) {
@@ -22,8 +21,7 @@ export default function OnboardConfirm({ role, school, onConfirm, onBack }) {
   ];
 
   return (
-    <div className="tc-screen" style={{ width:'100%', height:'100%', background:'#fff', display:'flex', flexDirection:'column' }}>
-      <StatusBar />
+    <div className="tc-screen" style={{ width:'100%', height:'100%', background:'#fff', display:'flex', flexDirection:'column', paddingTop:'env(safe-area-inset-top, 0px)' }}>
       <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'20px 26px', textAlign:'center' }}>
 
         {/* Animated check */}

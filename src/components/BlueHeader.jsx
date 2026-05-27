@@ -1,4 +1,3 @@
-import StatusBar from './StatusBar';
 import { FF } from '../tokens';
 
 export function BlueHeader({ children, style = {} }) {
@@ -6,9 +5,9 @@ export function BlueHeader({ children, style = {} }) {
     <div style={{
       background: 'linear-gradient(148deg,#011e3a 0%,#065990 65%,#1077be 100%)',
       flexShrink: 0,
+      paddingTop: 'env(safe-area-inset-top, 0px)',
       ...style,
     }}>
-      <StatusBar dark />
       <div style={{ padding: '2px 22px 20px' }}>{children}</div>
     </div>
   );

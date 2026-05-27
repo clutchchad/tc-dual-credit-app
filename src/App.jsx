@@ -10,8 +10,9 @@ import ACDCScreen       from './screens/ACDCScreen';
 import ResourcesScreen  from './screens/ResourcesScreen';
 import EventsScreen     from './screens/EventsScreen';
 import SettingsScreen   from './screens/SettingsScreen';
-import PathwaysScreen   from './screens/PathwaysScreen';
-import ApplyScreen      from './screens/ApplyScreen';
+import PathwaysScreen        from './screens/PathwaysScreen';
+import ApplyScreen           from './screens/ApplyScreen';
+import NotificationsScreen   from './screens/NotificationsScreen';
 
 const STORAGE_KEY = 'tcdc_v1';
 
@@ -100,6 +101,9 @@ export default function App() {
             {...navProps}
           />
         );
+
+      case 'notifications':
+        return <NotificationsScreen {...navProps} />;
 
       case 'pathways':
         return <PathwaysScreen onNavigate={go} />;

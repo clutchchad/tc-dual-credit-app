@@ -1,4 +1,3 @@
-import StatusBar from '../components/StatusBar';
 import BottomNav from '../components/BottomNav';
 import { getAcdcForSchool } from '../data/acdc';
 import { C, FF } from '../tokens';
@@ -11,8 +10,7 @@ export default function HomeScreen({ role, school, onNavigate, tabs }) {
     <div className="tc-screen" style={{ width:'100%', height:'100%', background:'#eef1f5', display:'flex', flexDirection:'column', position:'relative' }}>
 
       {/* ── HEADER ── */}
-      <div style={{ background:'#065990', flexShrink:0 }}>
-        <StatusBar dark />
+      <div style={{ background:'#065990', flexShrink:0, paddingTop:'env(safe-area-inset-top, 0px)' }}>
         <div style={{ padding:'0 16px 14px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           <div>
             <div style={{ fontFamily:FF, fontSize:24, fontWeight:900, color:'#fff', letterSpacing:'-0.7px', lineHeight:1.1 }}>
@@ -32,7 +30,7 @@ export default function HomeScreen({ role, school, onNavigate, tabs }) {
               </svg>
               <span style={{ fontFamily:FF, fontSize:13, fontWeight:700, color:'#fff' }}>84°F</span>
             </div>
-            <button style={{ width:36, height:36, borderRadius:11, background:'rgba(255,255,255,.1)', border:'1px solid rgba(255,255,255,.14)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+            <button onClick={() => onNavigate('notifications')} style={{ width:36, height:36, borderRadius:11, background:'rgba(255,255,255,.1)', border:'1px solid rgba(255,255,255,.14)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" strokeWidth="2" strokeLinecap="round">
                 <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
               </svg>
@@ -102,7 +100,7 @@ export default function HomeScreen({ role, school, onNavigate, tabs }) {
               <div style={{ width:6, height:6, borderRadius:'50%', background:'#EAFF00' }} />
               <span style={{ fontFamily:FF, fontSize:10.5, fontWeight:700, color:C.text, textTransform:'uppercase', letterSpacing:'1.1px' }}>Last Notification</span>
             </div>
-            <span onClick={() => onNavigate('events')} style={{ fontFamily:FF, fontSize:11.5, fontWeight:700, color:C.blue, cursor:'pointer' }}>See all</span>
+            <span onClick={() => onNavigate('notifications')} style={{ fontFamily:FF, fontSize:11.5, fontWeight:700, color:C.blue, cursor:'pointer' }}>See all</span>
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:11 }}>
             <div style={{ width:42, height:42, borderRadius:13, background:'#065990', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>

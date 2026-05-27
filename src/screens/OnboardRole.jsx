@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import StatusBar from '../components/StatusBar';
 import { C, FF } from '../tokens';
 
 export default function OnboardRole({ onSelect }) {
@@ -37,8 +36,7 @@ export default function OnboardRole({ onSelect }) {
   ];
 
   return (
-    <div className="tc-screen" style={{ width:'100%', height:'100%', background:'#fff', display:'flex', flexDirection:'column' }}>
-      <StatusBar />
+    <div className="tc-screen" style={{ width:'100%', height:'100%', background:'#fff', display:'flex', flexDirection:'column', paddingTop:'env(safe-area-inset-top, 0px)' }}>
       <div style={{ flex:1, overflow:'auto', padding:'20px 22px 40px' }}>
         <div style={{ fontFamily:FF, fontSize:12, fontWeight:700, color:C.blue, textTransform:'uppercase', letterSpacing:'1.8px', marginBottom:10 }}>Step 1 of 3</div>
         <h1 style={{ fontFamily:FF, fontSize:30, fontWeight:900, color:C.text, letterSpacing:'-1px', lineHeight:1.1, marginBottom:6 }}>Who are you?</h1>

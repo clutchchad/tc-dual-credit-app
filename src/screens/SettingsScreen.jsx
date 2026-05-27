@@ -111,8 +111,12 @@ function TabRowOverlay({ tab }) {
   );
 }
 
+const NOTIF_KEY = 'tcdc_v1_notifs';
+
 export default function SettingsScreen({ role, school, onChangeRole, onChangeSchool, onNavigate, tabs, onTabsChange }) {
-  const [notifs, setNotifs] = useState(true);
+  const [notifs, setNotifs] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(NOTIF_KEY)) ?? true; } catch { return true; }
+  });
   const [activeId, setActiveId] = useState(null);
 
   const sensors = useSensors(
@@ -186,7 +190,7 @@ export default function SettingsScreen({ role, school, onChangeRole, onChangeSch
             </div>
             <span style={{ fontFamily:FF, fontSize:14, fontWeight:600, color:C.text, flex:1 }}>Push Notifications</span>
             <div
-              onClick={() => setNotifs(n => !n)}
+              onClick={() => setNotifs(n => { const next = !n; localStorage.setItem(NOTIF_KEY, JSON.stringify(next)); return next; })}
               style={{ width:44, height:26, borderRadius:13, background:notifs?C.blue:'#d1d5db', cursor:'pointer', position:'relative', transition:'background .2s', flexShrink:0 }}
             >
               <div style={{ position:'absolute', width:20, height:20, borderRadius:'50%', background:'#fff', top:3, left:notifs?21:3, transition:'left .2s', boxShadow:'0 1px 4px rgba(0,0,0,.2)' }} />
