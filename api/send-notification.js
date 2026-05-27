@@ -4,12 +4,6 @@ const PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
 const API_KEY = process.env.FIREBASE_API_KEY;
 const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT,
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
-
 function fsToObj(doc) {
   const obj = {};
   for (const [key, val] of Object.entries(doc.fields || {})) {
@@ -68,7 +62,25 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const { title, body } = req.body;
+  // Init VAPID inside the handler so a misconfigured key gives an actionable
+  // error message rather than crashing the module on cold start.
+  try {
+    webpush.setVapidDetails(
+      process.env.VAPID_SUBJECT,
+      process.env.VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+  } catch (err) {
+    return res.status(500).json({ error: `VAPID config error: ${err.message}` });
+  }
+
+  // Parse body — Vercel auto-parses application/json, but guard against edge cases.
+  let parsed = req.body;
+  if (typeof parsed === 'string') {
+    try { parsed = JSON.parse(parsed); } catch { parsed = {}; }
+  }
+
+  const { title, body } = parsed || {};
   if (!title || !body) return res.status(400).json({ error: 'Missing title or body' });
 
   const subs = await getSubscriptions();

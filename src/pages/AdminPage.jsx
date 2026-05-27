@@ -116,32 +116,13 @@ export default function AdminPage() {
     });
   }
 
-  // Override the app's global overflow:hidden so the admin page can scroll
-  useEffect(() => {
-    const els = [
-      document.documentElement,
-      document.body,
-      document.getElementById('root'),
-    ];
-    els.forEach(el => {
-      if (!el) return;
-      el.style.overflow = 'auto';
-      el.style.height   = 'auto';
-    });
-    return () => {
-      els.forEach(el => {
-        if (!el) return;
-        el.style.overflow = '';
-        el.style.height   = '';
-      });
-    };
-  }, []);
-
   const inputCls =
     'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-tc-blue';
 
   return (
-    <div className="min-h-screen overflow-y-auto">
+    // position:fixed creates its own stacking/scroll context, escaping
+    // the app's global overflow:hidden on html/body/#root entirely.
+    <div style={{ position: 'fixed', inset: 0, overflowY: 'auto', zIndex: 9999 }}>
       {/* Mobile block */}
       <div className="flex md:hidden items-center justify-center h-screen bg-tc-blue">
         <div className="text-center px-8">
