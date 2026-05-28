@@ -1,10 +1,28 @@
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
+import { registerRoute, NavigationRoute }          from 'workbox-routing';
+import { NetworkOnly }                             from 'workbox-strategies';
 
-// Workbox precaching — vite-plugin-pwa injects the manifest here
+// ── Immediate activation ────────────────────────────────────────────────────
+// Skip the "waiting" phase so a newly deployed service worker takes control on
+// the very next page refresh instead of requiring all tabs to be closed first.
+self.addEventListener('install',  ()      => self.skipWaiting());
+self.addEventListener('activate', event  => event.waitUntil(clients.claim()));
+
+// ── Admin page: always fetch from network ────────────────────────────────────
+// Registered BEFORE precacheAndRoute so it takes priority over the precache
+// NavigationRoute. This ensures /admin always loads the latest deployed code
+// without cache interference. (WorkBox routes are matched in registration order.)
+registerRoute(
+  new NavigationRoute(new NetworkOnly(), {
+    allowlist: [/^\/admin/],
+  })
+);
+
+// ── Workbox precaching ───────────────────────────────────────────────────────
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
 
-// ── Push event ─────────────────────────────────────────────────────────────
+// ── Push event ───────────────────────────────────────────────────────────────
 self.addEventListener('push', event => {
   if (!event.data) return;
 
@@ -13,8 +31,8 @@ self.addEventListener('push', event => {
     data = { title: 'TC Dual Credit', body: event.data.text() };
   }
 
-  const title   = data.title || 'TC Dual Credit';
-  const body    = data.body  || '';
+  const title     = data.title || 'TC Dual Credit';
+  const body      = data.body  || '';
   const timestamp = Date.now();
 
   event.waitUntil(
@@ -30,7 +48,7 @@ self.addEventListener('push', event => {
   );
 });
 
-// ── Notification click ──────────────────────────────────────────────────────
+// ── Notification click ────────────────────────────────────────────────────────
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
@@ -44,7 +62,7 @@ self.addEventListener('notificationclick', event => {
   );
 });
 
-// ── IndexedDB helpers ───────────────────────────────────────────────────────
+// ── IndexedDB helpers ─────────────────────────────────────────────────────────
 const DB_NAME    = 'tcdc-notifs';
 const DB_VERSION = 1;
 const STORE_NAME = 'received';
