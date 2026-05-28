@@ -9,12 +9,15 @@ export default function OnboardRole({ onSelect }) {
     {
       role: 'student',
       label: "I'm a Student",
-      bg: 'linear-gradient(135deg,#022b52 0%,#065990 100%)',
+      bg: '#EAFF00',
+      iconBg: 'rgba(6,89,144,.1)',
+      iconBorder: 'rgba(6,89,144,.25)',
+      labelColor: '#065990',
       icon: (
         <svg width="42" height="42" viewBox="0 0 42 42" fill="none">
-          <path d="M21 9L37 17.5L21 26L5 17.5Z" fill="rgba(255,255,255,.9)"/>
-          <path d="M13 20.5v6c0 2.8 3.6 5.5 8 5.5s8-2.7 8-5.5v-6" fill="rgba(255,255,255,.75)"/>
-          <line x1="37" y1="17.5" x2="37" y2="27" stroke="rgba(255,255,255,.7)" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M21 9L37 17.5L21 26L5 17.5Z" fill="#065990"/>
+          <path d="M13 20.5v6c0 2.8 3.6 5.5 8 5.5s8-2.7 8-5.5v-6" fill="rgba(6,89,144,.75)"/>
+          <line x1="37" y1="17.5" x2="37" y2="27" stroke="rgba(6,89,144,.65)" strokeWidth="2" strokeLinecap="round"/>
         </svg>
       ),
     },
@@ -22,6 +25,9 @@ export default function OnboardRole({ onSelect }) {
       role: 'parent',
       label: "I'm a Parent/Guardian",
       bg: 'linear-gradient(135deg,#022b52 0%,#065990 100%)',
+      iconBg: 'rgba(234,255,0,.12)',
+      iconBorder: 'rgba(234,255,0,.35)',
+      labelColor: '#fff',
       icon: (
         <svg width="42" height="42" viewBox="0 0 42 42" fill="none">
           <circle cx="14" cy="13" r="6" fill="rgba(255,255,255,.9)"/>
@@ -57,10 +63,10 @@ export default function OnboardRole({ onSelect }) {
               }}
             >
               <div style={{ background: card.bg, padding: '28px 26px 26px', position: 'relative' }}>
-                <div style={{ width:76, height:76, borderRadius:20, background:'rgba(234,255,0,.12)', border:'1.5px solid rgba(234,255,0,.25)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:14 }}>
+                <div style={{ width:76, height:76, borderRadius:20, background:card.iconBg, border:`1.5px solid ${card.iconBorder}`, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:14 }}>
                   {card.icon}
                 </div>
-                <div style={{ fontFamily:FF, fontSize:22, fontWeight:800, color:'#fff' }}>{card.label}</div>
+                <div style={{ fontFamily:FF, fontSize:22, fontWeight:800, color:card.labelColor }}>{card.label}</div>
               </div>
             </button>
           ))}
