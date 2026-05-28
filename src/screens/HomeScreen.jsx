@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -19,6 +19,7 @@ import BottomNav from '../components/BottomNav';
 import { getAcdcForSchool } from '../data/acdc';
 import { schools as schoolList } from '../data/schools';
 import { C, FF } from '../tokens';
+import { loadNotifications, relTime } from '../data/notifications';
 
 const CARD_ORDER_KEY = 'tcdc_v1_cards';
 const DEFAULT_ORDER = ['deadline', 'event', 'notification', 'acdc'];
@@ -135,7 +136,7 @@ function EventCard({ handleRef, listeners, attributes, onNavigate }) {
   );
 }
 
-function NotificationCard({ handleRef, listeners, attributes, onNavigate }) {
+function NotificationCard({ handleRef, listeners, attributes, onNavigate, notif }) {
   return (
     <div style={{ background: '#fff', borderRadius: 18, padding: '11px 14px', boxShadow: '0 2px 8px rgba(0,0,0,.05)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 9 }}>
@@ -157,10 +158,16 @@ function NotificationCard({ handleRef, listeners, attributes, onNavigate }) {
           </svg>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 1 }}>Registration opens May 28</div>
-          <div style={{ fontFamily: FF, fontSize: 11.5, color: C.text2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Summer enrollment is now open for dual credit students.</div>
+          <div style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 1 }}>
+            {notif ? notif.title : 'No notifications yet'}
+          </div>
+          <div style={{ fontFamily: FF, fontSize: 11.5, color: C.text2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {notif ? notif.body : 'Enable push notifications to get started.'}
+          </div>
         </div>
-        <div style={{ fontFamily: FF, fontSize: 10.5, color: C.text3, flexShrink: 0, paddingLeft: 4 }}>2h ago</div>
+        <div style={{ fontFamily: FF, fontSize: 10.5, color: C.text3, flexShrink: 0, paddingLeft: 4 }}>
+          {notif ? relTime(notif.timestamp) : ''}
+        </div>
       </div>
     </div>
   );
@@ -215,6 +222,11 @@ export default function HomeScreen({ role, school, grade, onNavigate, tabs }) {
   const acdc = getAcdcForSchool(school.id, grade);
   const shortName = school.name.replace(' HS', '').replace(' High', '');
   const [cardOrder, setCardOrder] = useState(loadOrder);
+  const [latestNotif, setLatestNotif] = useState(null);
+
+  useEffect(() => {
+    loadNotifications().then(ns => setLatestNotif(ns[0] ?? null));
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -232,7 +244,7 @@ export default function HomeScreen({ role, school, grade, onNavigate, tabs }) {
     switch (id) {
       case 'deadline':    return <DeadlineCard    key={id} handleRef={handleRef} listeners={listeners} attributes={attributes} onNavigate={onNavigate} />;
       case 'event':       return <EventCard       key={id} handleRef={handleRef} listeners={listeners} attributes={attributes} onNavigate={onNavigate} />;
-      case 'notification':return <NotificationCard key={id} handleRef={handleRef} listeners={listeners} attributes={attributes} onNavigate={onNavigate} />;
+      case 'notification':return <NotificationCard key={id} handleRef={handleRef} listeners={listeners} attributes={attributes} onNavigate={onNavigate} notif={latestNotif} />;
       case 'acdc':        return <AcdcCard        key={id} handleRef={handleRef} listeners={listeners} attributes={attributes} acdc={acdc} shortName={shortName} />;
       default: return null;
     }

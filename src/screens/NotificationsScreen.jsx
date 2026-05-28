@@ -2,39 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
 import BottomNav from '../components/BottomNav';
 import { C, FF } from '../tokens';
-
-const DB_NAME    = 'tcdc-notifs';
-const DB_VERSION = 1;
-const STORE_NAME = 'received';
-
-// ── IndexedDB helpers ──────────────────────────────────────────────────────
-function openDb() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = e => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
-      }
-    };
-    req.onsuccess = e => resolve(e.target.result);
-    req.onerror   = ()  => reject(req.error);
-  });
-}
-
-async function loadNotifications() {
-  try {
-    const db = await openDb();
-    return new Promise((resolve, reject) => {
-      const tx  = db.transaction(STORE_NAME, 'readonly');
-      const all = tx.objectStore(STORE_NAME).getAll();
-      all.onsuccess = () => { db.close(); resolve([...all.result].reverse()); };
-      all.onerror   = () => { db.close(); reject(all.error); };
-    });
-  } catch {
-    return [];
-  }
-}
+import { loadNotifications, relTime } from '../data/notifications';
 
 // ── VAPID subscribe helpers ─────────────────────────────────────────────────
 function urlBase64ToUint8Array(b64) {
@@ -85,18 +53,6 @@ async function subscribe() {
 async function unsubscribe() {
   const sub = await getCurrentSub();
   if (sub) await sub.unsubscribe();
-}
-
-// ── Relative time ───────────────────────────────────────────────────────────
-function relTime(ts) {
-  if (!ts) return '';
-  const diff = Date.now() - ts;
-  const m = Math.floor(diff / 60000);
-  if (m < 1)  return 'Just now';
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
 }
 
 // ── Component ───────────────────────────────────────────────────────────────
