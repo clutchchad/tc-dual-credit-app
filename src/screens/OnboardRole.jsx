@@ -15,14 +15,13 @@ export default function OnboardRole({ onSelect }) {
           <path d="M21 9L37 17.5L21 26L5 17.5Z" fill="rgba(255,255,255,.9)"/>
           <path d="M13 20.5v6c0 2.8 3.6 5.5 8 5.5s8-2.7 8-5.5v-6" fill="rgba(255,255,255,.75)"/>
           <line x1="37" y1="17.5" x2="37" y2="27" stroke="rgba(255,255,255,.7)" strokeWidth="2" strokeLinecap="round"/>
-          <circle cx="37" cy="29" r="3" fill="#EAFF00"/>
         </svg>
       ),
     },
     {
       role: 'parent',
       label: "I'm a Parent/Guardian",
-      bg: 'linear-gradient(135deg,#0d3320 0%,#1a6634 100%)',
+      bg: 'linear-gradient(135deg,#022b52 0%,#065990 100%)',
       icon: (
         <svg width="42" height="42" viewBox="0 0 42 42" fill="none">
           <circle cx="14" cy="13" r="6" fill="rgba(255,255,255,.9)"/>
