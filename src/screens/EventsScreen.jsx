@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { db } from '../firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { useFirestore } from '../hooks/useFirestore';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
 import BottomNav from '../components/BottomNav';
 import { C, FF } from '../tokens';
@@ -55,14 +55,14 @@ function ItemCard({ item, type }) {
   const dateStr  = type === 'deadline' ? item.dueDate : item.date;
   const days     = daysUntil(dateStr);
   const urgColor =
-    days === null  ? C.text3 :
-    days <= 7      ? C.red   :
-    days <= 14     ? C.orange :
-                     C.green;
+    days === null ? C.text3 :
+    days <= 7     ? C.red   :
+    days <= 14    ? C.orange :
+                    C.green;
 
   return (
     <div style={{ display: 'flex', gap: 13, marginBottom: 12 }}>
-      {/* Timeline spine */}
+      {/* Timeline dot */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 22, flexShrink: 0 }}>
         <div style={{
           width: 13, height: 13, borderRadius: '50%',
@@ -72,7 +72,7 @@ function ItemCard({ item, type }) {
         }} />
       </div>
 
-      {/* Card body */}
+      {/* Card */}
       <div style={{
         flex: 1, background: '#fff', borderRadius: 14,
         border: `1px solid ${C.border}`, padding: '13px 15px',
@@ -95,10 +95,7 @@ function ItemCard({ item, type }) {
                 </>
               )}
               <div style={{ width: 3, height: 3, borderRadius: '50%', background: C.border }} />
-              <span style={{
-                fontFamily: FF, fontSize: 12, fontWeight: 600,
-                color: type === 'deadline' ? C.red : C.blue,
-              }}>
+              <span style={{ fontFamily: FF, fontSize: 12, fontWeight: 600, color: type === 'deadline' ? C.red : C.blue }}>
                 {type === 'deadline' ? 'Deadline' : 'Event'}
               </span>
             </div>
@@ -125,22 +122,21 @@ function ItemCard({ item, type }) {
 // ── Main screen ──────────────────────────────────────────────────────────────
 
 export default function EventsScreen({ role, school, onNavigate, tabs }) {
-  const userSchoolId = school?.id  || null;
-  const userRole     = role        || null;
+  const db           = useFirestore();
+  const userSchoolId = school?.id || null;
+  const userRole     = role       || null;
 
-  const [events,          setEvents]          = useState([]);
-  const [deadlines,       setDeadlines]       = useState([]);
-  const [eventsReady,     setEventsReady]     = useState(false);
-  const [deadlinesReady,  setDeadlinesReady]  = useState(false);
+  const [events,         setEvents]         = useState([]);
+  const [deadlines,      setDeadlines]      = useState([]);
+  const [eventsReady,    setEventsReady]    = useState(false);
+  const [deadlinesReady, setDeadlinesReady] = useState(false);
 
-  const loading = !eventsReady || !deadlinesReady;
-
+  // Both effects depend on db; they fire once db becomes non-null
   useEffect(() => {
-    const qE = query(collection(db, 'dcEvents'),    orderBy('date',    'asc'));
-    const qD = query(collection(db, 'dcDeadlines'), orderBy('dueDate', 'asc'));
-
-    const unsubE = onSnapshot(
-      qE,
+    if (!db) return;
+    const q = query(collection(db, 'dcEvents'), orderBy('date', 'asc'));
+    const unsub = onSnapshot(
+      q,
       snap => {
         setEvents(
           snap.docs
@@ -149,11 +145,16 @@ export default function EventsScreen({ role, school, onNavigate, tabs }) {
         );
         setEventsReady(true);
       },
-      () => setEventsReady(true)   // on error, stop loading — show empty state
+      () => setEventsReady(true)
     );
+    return unsub;
+  }, [db, userSchoolId, userRole]);
 
-    const unsubD = onSnapshot(
-      qD,
+  useEffect(() => {
+    if (!db) return;
+    const q = query(collection(db, 'dcDeadlines'), orderBy('dueDate', 'asc'));
+    const unsub = onSnapshot(
+      q,
       snap => {
         setDeadlines(
           snap.docs
@@ -164,9 +165,10 @@ export default function EventsScreen({ role, school, onNavigate, tabs }) {
       },
       () => setDeadlinesReady(true)
     );
+    return unsub;
+  }, [db, userSchoolId, userRole]);
 
-    return () => { unsubE(); unsubD(); };
-  }, [userSchoolId, userRole]);
+  const loading = !db || !eventsReady || !deadlinesReady;
 
   return (
     <div
@@ -184,7 +186,6 @@ export default function EventsScreen({ role, school, onNavigate, tabs }) {
           </div>
         ) : (
           <>
-            {/* ── Upcoming Events ── */}
             <SectionLabel label="Upcoming Events" />
             {events.length === 0 ? (
               <EmptyState message="No upcoming events for your school." />
@@ -192,7 +193,6 @@ export default function EventsScreen({ role, school, onNavigate, tabs }) {
               events.map(ev => <ItemCard key={ev.id} item={ev} type="event" />)
             )}
 
-            {/* ── Deadlines ── */}
             <SectionLabel label="Deadlines" top />
             {deadlines.length === 0 ? (
               <EmptyState message="No upcoming deadlines for your school." />

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { db } from '../firebase';
 import {
   collection, addDoc, query, orderBy,
   doc, updateDoc, deleteDoc, onSnapshot, Timestamp,
 } from 'firebase/firestore';
+import { useFirestore } from '../hooks/useFirestore';
 import { schools as schoolList } from '../data/schools';
 
 const SCHOOLS = [{ id: 'all', name: 'All Schools' }, ...schoolList];
@@ -35,12 +35,14 @@ function fmtTs(ts) {
 }
 
 export default function AdminPage() {
+  const db = useFirestore();
+
   // ── Send Now ──────────────────────────────────────────────────────────────
   const [pushTitle,   setPushTitle]   = useState('');
   const [pushMessage, setPushMessage] = useState('');
   const [pushSchool,  setPushSchool]  = useState('all');
   const [pushRole,    setPushRole]    = useState('all');
-  const [pushStatus,  setPushStatus]  = useState(null);   // null | 'sending' | 'success' | 'error'
+  const [pushStatus,  setPushStatus]  = useState(null);
   const [pushError,   setPushError]   = useState('');
 
   // ── Scheduled notifications ───────────────────────────────────────────────
@@ -74,36 +76,40 @@ export default function AdminPage() {
   // ── Notification history ──────────────────────────────────────────────────
   const [history, setHistory] = useState([]);
 
-  // ── Firestore listeners ───────────────────────────────────────────────────
+  // ── Firestore listeners — each re-runs once db becomes available ──────────
   useEffect(() => {
+    if (!db) return;
     const q = query(collection(db, 'scheduled-notifications'), orderBy('scheduledAt', 'asc'));
     return onSnapshot(q, snap => {
       setScheduledList(
         snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.active !== false && !d.fired)
       );
     }, () => {});
-  }, []);
+  }, [db]);
 
   useEffect(() => {
+    if (!db) return;
     const q = query(collection(db, 'notification-history'), orderBy('sentAt', 'desc'));
     return onSnapshot(q, snap => {
       setHistory(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     }, () => {});
-  }, []);
+  }, [db]);
 
   useEffect(() => {
+    if (!db) return;
     const q = query(collection(db, 'dcEvents'), orderBy('date', 'asc'));
     return onSnapshot(q, snap => {
       setEventsList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     }, () => {});
-  }, []);
+  }, [db]);
 
   useEffect(() => {
+    if (!db) return;
     const q = query(collection(db, 'dcDeadlines'), orderBy('dueDate', 'asc'));
     return onSnapshot(q, snap => {
       setDeadlinesList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     }, () => {});
-  }, []);
+  }, [db]);
 
   // ── Send Now ──────────────────────────────────────────────────────────────
   async function handleSendNow(e) {
@@ -141,6 +147,7 @@ export default function AdminPage() {
   // ── Schedule a notification ───────────────────────────────────────────────
   async function handleSchedule(e) {
     e.preventDefault();
+    if (!db) return;
     setSchedStatus('saving');
     try {
       const [year, month, day] = schedDate.split('-').map(Number);
@@ -153,21 +160,22 @@ export default function AdminPage() {
       setSchedStatus('success');
       setSchedTitle(''); setSchedMessage(''); setSchedDate(''); setSchedTime('');
       setTimeout(() => setSchedStatus(null), 3000);
-    } catch {
-      setSchedStatus('error');
-    }
+    } catch { setSchedStatus('error'); }
   }
 
   async function handleCancelSched(id) {
+    if (!db) return;
     await updateDoc(doc(db, 'scheduled-notifications', id), { active: false });
   }
   async function handleDeleteSched(id) {
+    if (!db) return;
     await deleteDoc(doc(db, 'scheduled-notifications', id));
   }
 
   // ── Calendar Events ───────────────────────────────────────────────────────
   async function handleCreateEvent(e) {
     e.preventDefault();
+    if (!db) return;
     setEvtStatus('saving');
     try {
       await addDoc(collection(db, 'dcEvents'), {
@@ -184,18 +192,18 @@ export default function AdminPage() {
       setEvtTitle(''); setEvtDesc(''); setEvtDate(''); setEvtTime(''); setEvtLocation('');
       setEvtSchool('all'); setEvtRole('all');
       setTimeout(() => setEvtStatus(null), 3000);
-    } catch {
-      setEvtStatus('error');
-    }
+    } catch { setEvtStatus('error'); }
   }
 
   async function handleDeleteEvent(id) {
+    if (!db) return;
     await deleteDoc(doc(db, 'dcEvents', id));
   }
 
   // ── Deadlines ─────────────────────────────────────────────────────────────
   async function handleCreateDeadline(e) {
     e.preventDefault();
+    if (!db) return;
     setDlStatus('saving');
     try {
       await addDoc(collection(db, 'dcDeadlines'), {
@@ -210,24 +218,20 @@ export default function AdminPage() {
       setDlTitle(''); setDlDesc(''); setDlDate('');
       setDlSchool('all'); setDlRole('all');
       setTimeout(() => setDlStatus(null), 3000);
-    } catch {
-      setDlStatus('error');
-    }
+    } catch { setDlStatus('error'); }
   }
 
   async function handleDeleteDeadline(id) {
+    if (!db) return;
     await deleteDoc(doc(db, 'dcDeadlines', id));
   }
 
-  // ── Shared Tailwind class strings ─────────────────────────────────────────
+  // ── Shared class strings ──────────────────────────────────────────────────
   const inputCls =
     'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-tc-blue';
-  const selectCls = inputCls;
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    // position:fixed creates its own stacking/scroll context, escaping
-    // the app's global overflow:hidden on html/body/#root entirely.
     <div style={{ position: 'fixed', inset: 0, overflowY: 'auto', zIndex: 9999 }}>
 
       {/* Mobile block */}
@@ -248,6 +252,9 @@ export default function AdminPage() {
           <h1 className="text-white text-2xl font-bold tracking-tight">
             TC Dual Credit &mdash; Admin Dashboard
           </h1>
+          {!db && (
+            <p className="text-blue-200 text-xs mt-1">Connecting to Firestore…</p>
+          )}
         </header>
 
         <main className="max-w-4xl mx-auto px-8 py-8 space-y-8">
@@ -275,13 +282,13 @@ export default function AdminPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">School</label>
-                  <select value={pushSchool} onChange={e => setPushSchool(e.target.value)} className={selectCls}>
+                  <select value={pushSchool} onChange={e => setPushSchool(e.target.value)} className={inputCls}>
                     {SCHOOLS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                  <select value={pushRole} onChange={e => setPushRole(e.target.value)} className={selectCls}>
+                  <select value={pushRole} onChange={e => setPushRole(e.target.value)} className={inputCls}>
                     <option value="all">All</option>
                     <option value="student">Students Only</option>
                     <option value="parent">Parents Only</option>
@@ -295,12 +302,8 @@ export default function AdminPage() {
                 >
                   {pushStatus === 'sending' ? 'Sending…' : 'Send Now'}
                 </button>
-                {pushStatus === 'success' && (
-                  <span className="text-green-600 text-sm font-medium">Sent successfully!</span>
-                )}
-                {pushStatus === 'error' && (
-                  <span className="text-red-600 text-sm font-medium">Error: {pushError}</span>
-                )}
+                {pushStatus === 'success' && <span className="text-green-600 text-sm font-medium">Sent successfully!</span>}
+                {pushStatus === 'error'   && <span className="text-red-600 text-sm font-medium">Error: {pushError}</span>}
               </div>
             </form>
           </section>
@@ -358,13 +361,13 @@ export default function AdminPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">School</label>
-                  <select value={evtSchool} onChange={e => setEvtSchool(e.target.value)} className={selectCls}>
+                  <select value={evtSchool} onChange={e => setEvtSchool(e.target.value)} className={inputCls}>
                     {SCHOOLS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                  <select value={evtRole} onChange={e => setEvtRole(e.target.value)} className={selectCls}>
+                  <select value={evtRole} onChange={e => setEvtRole(e.target.value)} className={inputCls}>
                     <option value="all">All</option>
                     <option value="student">Students Only</option>
                     <option value="parent">Parents Only</option>
@@ -373,38 +376,29 @@ export default function AdminPage() {
               </div>
               <div className="flex items-center gap-4">
                 <button
-                  type="submit" disabled={evtStatus === 'saving'}
+                  type="submit" disabled={evtStatus === 'saving' || !db}
                   className="bg-tc-blue text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-tc-mid disabled:opacity-50 transition-colors"
                 >
                   {evtStatus === 'saving' ? 'Creating…' : 'Create Event'}
                 </button>
-                {evtStatus === 'success' && (
-                  <span className="text-green-600 text-sm font-medium">Event created!</span>
-                )}
-                {evtStatus === 'error' && (
-                  <span className="text-red-600 text-sm font-medium">Failed to create event.</span>
-                )}
+                {evtStatus === 'success' && <span className="text-green-600 text-sm font-medium">Event created!</span>}
+                {evtStatus === 'error'   && <span className="text-red-600 text-sm font-medium">Failed to create event.</span>}
               </div>
             </form>
 
             <div className="mt-6">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">
-                All Events
-              </h3>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">All Events</h3>
               {eventsList.length === 0 ? (
-                <p className="text-sm text-gray-400">No events yet.</p>
+                <p className="text-sm text-gray-400">{db ? 'No events yet.' : 'Connecting…'}</p>
               ) : (
                 <div className="space-y-2">
                   {eventsList.map(ev => (
-                    <div
-                      key={ev.id}
-                      className="flex items-center justify-between gap-4 border border-gray-200 rounded-lg px-4 py-3"
-                    >
+                    <div key={ev.id} className="flex items-center justify-between gap-4 border border-gray-200 rounded-lg px-4 py-3">
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-gray-900 truncate">{ev.title}</p>
                         <p className="text-xs text-gray-500 mt-0.5">
                           {fmtDate(ev.date)}
-                          {ev.time ? ` · ${ev.time}` : ''}
+                          {ev.time     ? ` · ${ev.time}`     : ''}
                           {ev.location ? ` · ${ev.location}` : ''}
                           {' · '}{schoolName(ev.school)}
                           {' · '}{roleName(ev.role)}
@@ -413,9 +407,7 @@ export default function AdminPage() {
                       <button
                         onClick={() => handleDeleteEvent(ev.id)}
                         className="text-xs px-3 py-1.5 border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors shrink-0"
-                      >
-                        Delete
-                      </button>
+                      >Delete</button>
                     </div>
                   ))}
                 </div>
@@ -457,13 +449,13 @@ export default function AdminPage() {
                 <div />
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">School</label>
-                  <select value={dlSchool} onChange={e => setDlSchool(e.target.value)} className={selectCls}>
+                  <select value={dlSchool} onChange={e => setDlSchool(e.target.value)} className={inputCls}>
                     {SCHOOLS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                  <select value={dlRole} onChange={e => setDlRole(e.target.value)} className={selectCls}>
+                  <select value={dlRole} onChange={e => setDlRole(e.target.value)} className={inputCls}>
                     <option value="all">All</option>
                     <option value="student">Students Only</option>
                     <option value="parent">Parents Only</option>
@@ -472,33 +464,24 @@ export default function AdminPage() {
               </div>
               <div className="flex items-center gap-4">
                 <button
-                  type="submit" disabled={dlStatus === 'saving'}
+                  type="submit" disabled={dlStatus === 'saving' || !db}
                   className="bg-tc-blue text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-tc-mid disabled:opacity-50 transition-colors"
                 >
                   {dlStatus === 'saving' ? 'Creating…' : 'Create Deadline'}
                 </button>
-                {dlStatus === 'success' && (
-                  <span className="text-green-600 text-sm font-medium">Deadline created!</span>
-                )}
-                {dlStatus === 'error' && (
-                  <span className="text-red-600 text-sm font-medium">Failed to create deadline.</span>
-                )}
+                {dlStatus === 'success' && <span className="text-green-600 text-sm font-medium">Deadline created!</span>}
+                {dlStatus === 'error'   && <span className="text-red-600 text-sm font-medium">Failed to create deadline.</span>}
               </div>
             </form>
 
             <div className="mt-6">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">
-                All Deadlines
-              </h3>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">All Deadlines</h3>
               {deadlinesList.length === 0 ? (
-                <p className="text-sm text-gray-400">No deadlines yet.</p>
+                <p className="text-sm text-gray-400">{db ? 'No deadlines yet.' : 'Connecting…'}</p>
               ) : (
                 <div className="space-y-2">
                   {deadlinesList.map(dl => (
-                    <div
-                      key={dl.id}
-                      className="flex items-center justify-between gap-4 border border-gray-200 rounded-lg px-4 py-3"
-                    >
+                    <div key={dl.id} className="flex items-center justify-between gap-4 border border-gray-200 rounded-lg px-4 py-3">
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-gray-900 truncate">{dl.title}</p>
                         <p className="text-xs text-gray-500 mt-0.5">
@@ -510,9 +493,7 @@ export default function AdminPage() {
                       <button
                         onClick={() => handleDeleteDeadline(dl.id)}
                         className="text-xs px-3 py-1.5 border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors shrink-0"
-                      >
-                        Delete
-                      </button>
+                      >Delete</button>
                     </div>
                   ))}
                 </div>
@@ -566,48 +547,29 @@ export default function AdminPage() {
               </div>
               <div className="flex items-center gap-4">
                 <button
-                  type="submit" disabled={schedStatus === 'saving'}
+                  type="submit" disabled={schedStatus === 'saving' || !db}
                   className="bg-tc-blue text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-tc-mid disabled:opacity-50 transition-colors"
                 >
                   {schedStatus === 'saving' ? 'Scheduling…' : 'Schedule Notification'}
                 </button>
-                {schedStatus === 'success' && (
-                  <span className="text-green-600 text-sm font-medium">Scheduled!</span>
-                )}
-                {schedStatus === 'error' && (
-                  <span className="text-red-600 text-sm font-medium">Failed to schedule</span>
-                )}
+                {schedStatus === 'success' && <span className="text-green-600 text-sm font-medium">Scheduled!</span>}
+                {schedStatus === 'error'   && <span className="text-red-600 text-sm font-medium">Failed to schedule</span>}
               </div>
             </form>
 
             {scheduledList.length > 0 && (
               <div className="mt-6">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">
-                  Upcoming Scheduled
-                </h3>
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">Upcoming Scheduled</h3>
                 <div className="space-y-2">
                   {scheduledList.map(item => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between gap-4 border border-gray-200 rounded-lg px-4 py-3"
-                    >
+                    <div key={item.id} className="flex items-center justify-between gap-4 border border-gray-200 rounded-lg px-4 py-3">
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-gray-900 truncate">{item.title}</p>
                         <p className="text-xs text-gray-500 mt-0.5">{fmtTs(item.scheduledAt)}</p>
                       </div>
                       <div className="flex gap-2 shrink-0">
-                        <button
-                          onClick={() => handleCancelSched(item.id)}
-                          className="text-xs px-3 py-1.5 border border-amber-400 text-amber-700 rounded-md hover:bg-amber-50 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={() => handleDeleteSched(item.id)}
-                          className="text-xs px-3 py-1.5 border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors"
-                        >
-                          Delete
-                        </button>
+                        <button onClick={() => handleCancelSched(item.id)} className="text-xs px-3 py-1.5 border border-amber-400 text-amber-700 rounded-md hover:bg-amber-50 transition-colors">Cancel</button>
+                        <button onClick={() => handleDeleteSched(item.id)} className="text-xs px-3 py-1.5 border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors">Delete</button>
                       </div>
                     </div>
                   ))}
@@ -620,35 +582,22 @@ export default function AdminPage() {
           <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-bold text-tc-blue mb-4">Notification History</h2>
             {history.length === 0 ? (
-              <p className="text-sm text-gray-400">No notifications sent yet.</p>
+              <p className="text-sm text-gray-400">{db ? 'No notifications sent yet.' : 'Connecting…'}</p>
             ) : (
               <div className="space-y-3">
                 {history.map(item => (
-                  <div
-                    key={item.id}
-                    className="border border-gray-100 rounded-lg px-4 py-3 bg-gray-50"
-                  >
+                  <div key={item.id} className="border border-gray-100 rounded-lg px-4 py-3 bg-gray-50">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-gray-900">{item.title}</p>
                         <p className="text-sm text-gray-600 mt-0.5">{item.body}</p>
                         <p className="text-xs text-gray-400 mt-1">
                           {fmtTs(item.sentAt)}
-                          {item.targetSchool && item.targetSchool !== 'all'
-                            ? ` · ${schoolName(item.targetSchool)}`
-                            : ''}
-                          {item.targetRole && item.targetRole !== 'all'
-                            ? ` · ${roleName(item.targetRole)}`
-                            : ''}
+                          {item.targetSchool && item.targetSchool !== 'all' ? ` · ${schoolName(item.targetSchool)}` : ''}
+                          {item.targetRole   && item.targetRole   !== 'all' ? ` · ${roleName(item.targetRole)}`   : ''}
                         </p>
                       </div>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full font-medium shrink-0 ${
-                          item.status === 'success'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-700'
-                        }`}
-                      >
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium shrink-0 ${item.status === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                         {item.status || 'sent'}
                       </span>
                     </div>

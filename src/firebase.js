@@ -1,24 +1,26 @@
 /**
- * Firebase configuration — reads from Vite environment variables.
- * Add the following to your Vercel project (and a local .env.local):
- *   VITE_FIREBASE_API_KEY
- *   VITE_FIREBASE_PROJECT_ID
- *   VITE_FIREBASE_MESSAGING_SENDER_ID  (optional but recommended)
- *   VITE_FIREBASE_APP_ID               (optional but recommended)
+ * Firebase initialisation — config is fetched at runtime from /api/firebase-config
+ * so that credentials never need to be in VITE_ environment variables.
+ *
+ * Use the useFirestore() hook (src/hooks/useFirestore.js) in components; it
+ * resolves to the Firestore db instance once the promise settles.
  */
-import { initializeApp } from 'firebase/app';
-import { getFirestore }  from 'firebase/firestore';
+import { initializeApp, getApps } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
 
-const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID || '';
-
-const firebaseConfig = {
-  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY            || '',
-  authDomain:        `${projectId}.firebaseapp.com`,
-  projectId,
-  storageBucket:     `${projectId}.firebasestorage.app`,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId:             import.meta.env.VITE_FIREBASE_APP_ID              || '',
-};
-
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+export const dbReady = fetch('/api/firebase-config')
+  .then(r => r.json())
+  .then(({ apiKey, projectId }) => {
+    if (!projectId) return null;
+    const app =
+      getApps().length > 0
+        ? getApps()[0]
+        : initializeApp({
+            apiKey,
+            projectId,
+            authDomain:    `${projectId}.firebaseapp.com`,
+            storageBucket: `${projectId}.firebasestorage.app`,
+          });
+    return getFirestore(app);
+  })
+  .catch(() => null);
