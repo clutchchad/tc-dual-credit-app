@@ -9,7 +9,7 @@ import HomeScreen       from './screens/HomeScreen';
 import ACDCScreen       from './screens/ACDCScreen';
 import ResourcesScreen  from './screens/ResourcesScreen';
 import EventsScreen     from './screens/EventsScreen';
-import SettingsScreen   from './screens/SettingsScreen';
+import MoreScreen       from './screens/MoreScreen';
 import PathwaysScreen        from './screens/PathwaysScreen';
 import ApplyScreen           from './screens/ApplyScreen';
 import NotificationsScreen   from './screens/NotificationsScreen';
@@ -21,7 +21,7 @@ const NAV_TABS = [
   { id: 'acdc',      label: 'My ACDC',   screen: 'acdc'      },
   { id: 'resources', label: 'Resources', screen: 'resources' },
   { id: 'events',    label: 'Events',    screen: 'events'    },
-  { id: 'settings',  label: 'Settings',  screen: 'settings'  },
+  { id: 'more',      label: 'More',      screen: 'more'      },
 ];
 
 function getStored() {
@@ -106,9 +106,9 @@ export default function App() {
       case 'events':
         return <EventsScreen role={role} school={school} {...navProps} />;
 
-      case 'settings':
+      case 'more':
         return (
-          <SettingsScreen
+          <MoreScreen
             role={role || 'student'}
             school={school || { name:'Your School' }}
             grade={grade}
