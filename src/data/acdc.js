@@ -7,9 +7,6 @@
  *   9th & 10th  → Brooke Barrett
  *   11th        → Mckenzee Harmon
  *   12th        → Kate Page
- *
- * Schools flagged unassigned: true in schools.js (DATX, AR Premier) show the
- * main-office fallback card instead of a coach card.
  */
 
 const SCHEDULING_URL = 'https://share.hsforms.com/2IWy_TsLAQeu7ZOr9qVzCOgxach';
@@ -68,28 +65,16 @@ export const acdcContacts = [
   },
 ];
 
-/** Shown when a school has no assigned ACDC (e.g. DATX, AR Premier) */
-export const OFFICE_FALLBACK = {
-  id: 'dept',
-  name: 'Dual Credit Office',
-  phone: '903-823-3456',
-  hours: 'Mon–Thu  8am–5pm  ·  Fri  8am–4pm',
-  photo: null,
-  schedulingUrl: null,
-  isFallback: true,
-};
-
 /**
  * Look up the ACDC coach for a given school id and optional grade.
  * Grade is only meaningful for Texas High (txh).
- * Returns OFFICE_FALLBACK if no coach is assigned.
  */
 export function getAcdcForSchool(schoolId, grade = null) {
   if (schoolId === 'txh') {
-    if (grade === 'Junior')  return acdcContacts.find(c => c.id === 'mharmon') || OFFICE_FALLBACK;
-    if (grade === 'Senior')  return acdcContacts.find(c => c.id === 'kpage')   || OFFICE_FALLBACK;
+    if (grade === 'Junior')  return acdcContacts.find(c => c.id === 'mharmon');
+    if (grade === 'Senior')  return acdcContacts.find(c => c.id === 'kpage');
     // Freshman, Sophomore, or no grade selected yet
-    return acdcContacts.find(c => c.id === 'bbarrett') || OFFICE_FALLBACK;
+    return acdcContacts.find(c => c.id === 'bbarrett');
   }
-  return acdcContacts.find(c => c.schools.includes(schoolId)) || OFFICE_FALLBACK;
+  return acdcContacts.find(c => c.schools.includes(schoolId));
 }

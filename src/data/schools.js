@@ -3,7 +3,6 @@ export const schools = [
   { id: 'av',    name: 'Avery HS',                city: 'Avery',      bar: '#630113', textColor: '#fff'    },
   { id: 'bl',    name: 'Bloomburg HS',            city: 'Bloomburg',  bar: '#e4bf05', textColor: '#fff'    },
   { id: 'dk',    name: 'DeKalb HS',               city: 'DeKalb',     bar: '#ff6900', textColor: '#000'    },
-  { id: 'gc',    name: 'Genoa Central HS',        city: 'Genoa',      bar: '#1a8d45', textColor: '#fff'    },
   { id: 'hooks', name: 'Hooks HS',                city: 'Hooks',      bar: '#0000b9', textColor: '#fff'    },
   { id: 'jb',    name: 'James Bowie HS (Simms)',  city: 'Simms',      bar: '#072074', textColor: '#efc141' },
   { id: 'le',    name: 'Liberty-Eylau HS',        city: 'Texarkana',  bar: '#9e2335', textColor: '#fff'    },
@@ -16,7 +15,4 @@ export const schools = [
   { id: 'qc',    name: 'Queen City HS',           city: 'Queen City', bar: '#ed6723', textColor: '#000'    },
   { id: 'rw',    name: 'Redwater HS',             city: 'Redwater',   bar: '#0132a0', textColor: '#fff'    },
   { id: 'txh',   name: 'Texas High',              city: 'Texarkana',  bar: '#ff6e00', textColor: '#fff',     gradeRequired: true  },
-  // Schools in the program with no assigned ACDC — show main-office fallback
-  { id: 'datx',  name: 'Digital Academy of Texas', city: 'Texarkana', bar: '#065990', textColor: '#EAFF00',  unassigned: true     },
-  { id: 'arprem',name: 'AR Premier',               city: 'Arkansas',  bar: '#8a2727', textColor: '#fff',     unassigned: true     },
 ];
