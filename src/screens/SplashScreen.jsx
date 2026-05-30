@@ -3,23 +3,26 @@ import { FF } from '../tokens';
 
 export default function SplashScreen({ onComplete }) {
   const [visible, setVisible] = useState(false);
+  const [done,    setDone]    = useState(false);
 
   useEffect(() => {
     const t1 = setTimeout(() => setVisible(true), 80);
-    const t2 = setTimeout(onComplete, 2900);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    // Stop the pulse animation and fully light up the dots 400 ms before leaving —
+    // this gives a clear "loaded" moment instead of cutting away mid-pulse.
+    const t2 = setTimeout(() => setDone(true), 2500);
+    const t3 = setTimeout(onComplete, 2900);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []);
 
   return (
     <div
-      onClick={onComplete}
       className="tc-screen"
       style={{
         width: '100%', height: '100%',
         background: 'linear-gradient(160deg,#011e3a 0%,#065990 58%,#1380c8 100%)',
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
-        position: 'relative', overflow: 'hidden', cursor: 'pointer',
+        position: 'relative', overflow: 'hidden',
       }}
     >
       {/* Glow orbs */}
@@ -66,20 +69,24 @@ export default function SplashScreen({ onComplete }) {
         Earn college credits while in high school.
       </p>
 
-      {/* Dots */}
+      {/* Loading dots — neon lime, pulse while loading, fully lit when done */}
       <div style={{ display: 'flex', gap: 8, opacity: visible ? 1 : 0, transition: 'opacity .6s .7s' }}>
         {[0, 1, 2].map(i => (
-          <div key={i} style={{
-            width: 8, height: 8, borderRadius: '50%',
-            background: i === 0 ? '#EAFF00' : 'rgba(255,255,255,.25)',
-            animation: `tcPulse 1.6s ${i * 0.22}s infinite`,
-          }} />
+          <div
+            key={i}
+            style={{
+              width: 8, height: 8, borderRadius: '50%',
+              background: '#EAFF00',
+              // When done: stop animating, snap to full opacity + scale + glow
+              animation:  done ? 'none' : `tcPulse 1.6s ${i * 0.22}s infinite`,
+              opacity:    done ? 1 : undefined,
+              transform:  done ? 'scale(1)' : undefined,
+              transition: done ? 'opacity .2s, transform .2s' : undefined,
+              boxShadow:  done ? '0 0 8px rgba(234,255,0,.9), 0 0 20px rgba(234,255,0,.4)' : undefined,
+            }}
+          />
         ))}
       </div>
-
-      <p style={{ position: 'absolute', bottom: 100, fontFamily: FF, fontSize: 12, color: 'rgba(255,255,255,.25)' }}>
-        Tap anywhere to continue
-      </p>
     </div>
   );
 }
