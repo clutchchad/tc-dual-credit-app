@@ -1,7 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
 import BottomNav from '../components/BottomNav';
 import { C, FF } from '../tokens';
+import { getStudentProfile } from '../data/studentProfile';
+
+// Milestone key → badge id mapping (Jenzabar-sourced milestones only)
+// Engagement badges (on-a-roll, weekend-warrior, weekend-legend, early-bird) are
+// driven by client-side localStorage behavior tracking — not Jenzabar data.
+// TODO: wire engagement badges to a client-side engagement tracker.
+const MILESTONE_BADGE_MAP = {
+  applicationSubmitted:  'first-step',
+  enrolledInFirstClass:  'officially-in',
+  reached30Hours:        'halfway-there',
+  reached45Hours:        'associates-bound',
+  onTrackForAssociates:  'cap-gown',
+  tcPromiseEligible:     'tc-promise',
+};
 
 const NOTIF_KEY = 'tcdc_v1_notifs';
 const BLUE      = '#065990';
@@ -124,9 +138,57 @@ const BADGES = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Single badge card — all locked in this demo build
+// Single badge card — unlocked cards use brand colors; locked stay muted
 // ─────────────────────────────────────────────────────────────────────────────
-function BadgeCard({ badge }) {
+function BadgeCard({ badge, unlocked }) {
+  if (unlocked) {
+    return (
+      <div style={{
+        background: `linear-gradient(145deg, ${BLUE}, ${DARK})`,
+        border: `1.5px solid ${BLUE}`,
+        borderRadius: 16,
+        padding: '16px 12px 14px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 8,
+        position: 'relative',
+        opacity: 1,
+        boxShadow: '0 4px 18px rgba(6,89,144,.35)',
+      }}>
+        {/* Badge icon circle — Electric Lime fill */}
+        <div style={{
+          width: 52, height: 52, borderRadius: '50%',
+          background: LIME,
+          border: `2px solid rgba(234,255,0,.55)`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+        }}>
+          {badge.icon(DARK)}
+        </div>
+
+        {/* Name */}
+        <div style={{
+          fontFamily: FF, fontSize: 11.5, fontWeight: 800,
+          color: '#fff',
+          textAlign: 'center', lineHeight: 1.25,
+          letterSpacing: '-0.1px',
+        }}>
+          {badge.name}
+        </div>
+
+        {/* Description */}
+        <div style={{
+          fontFamily: FF, fontSize: 10, fontWeight: 500,
+          color: 'rgba(255,255,255,.72)',
+          textAlign: 'center', lineHeight: 1.35,
+        }}>
+          {badge.desc}
+        </div>
+      </div>
+    );
+  }
+
   // Locked appearance: desaturated dark card, padlock overlay in corner
   return (
     <div style={{
@@ -152,7 +214,7 @@ function BadgeCard({ badge }) {
         {badge.icon('rgba(6,89,144,.35)')}
       </div>
 
-      {/* Padlock overlay — bottom-right of icon */}
+      {/* Padlock overlay — top-right corner */}
       <div style={{
         position: 'absolute',
         top: 12, right: 12,
@@ -191,7 +253,7 @@ function BadgeCard({ badge }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Achievements panel — expandable overlay, students only
 // ─────────────────────────────────────────────────────────────────────────────
-function AchievementsPanel() {
+function AchievementsPanel({ unlockedIds }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -242,13 +304,13 @@ function AchievementsPanel() {
           </div>
         </div>
 
-        {/* Badge count pill */}
+        {/* Badge count pill — shows unlocked / total */}
         <div style={{
-          background: 'rgba(6,89,144,.07)',
+          background: unlockedIds.size > 0 ? `rgba(6,89,144,.12)` : 'rgba(6,89,144,.07)',
           borderRadius: 20, padding: '3px 9px', flexShrink: 0,
         }}>
           <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: BLUE }}>
-            {BADGES.length} badges
+            {unlockedIds.size} / {BADGES.length} badges
           </span>
         </div>
 
@@ -284,7 +346,7 @@ function AchievementsPanel() {
             gridTemplateColumns: '1fr 1fr',
             gap: 10,
           }}>
-            {BADGES.map(b => <BadgeCard key={b.id} badge={b} />)}
+            {BADGES.map(b => <BadgeCard key={b.id} badge={b} unlocked={unlockedIds.has(b.id)} />)}
           </div>
 
           {/* Footer note */}
@@ -357,6 +419,22 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
     try { return JSON.parse(localStorage.getItem(NOTIF_KEY)) ?? true; } catch { return true; }
   });
 
+  // Load Jenzabar milestones and derive unlocked badge ids — students only
+  const [unlockedIds, setUnlockedIds] = useState(new Set());
+  useEffect(() => {
+    if (role !== 'student') return;
+    getStudentProfile().then(profile => {
+      const ids = new Set();
+      const m = profile.milestones || {};
+      Object.entries(MILESTONE_BADGE_MAP).forEach(([key, badgeId]) => {
+        if (m[key]) ids.add(badgeId);
+      });
+      // TODO: unlock on-a-roll, weekend-warrior, weekend-legend, early-bird
+      // via a client-side engagement tracker (localStorage behavior tracking) — not Jenzabar data
+      setUnlockedIds(ids);
+    });
+  }, [role]);
+
   if (role === 'guest') {
     return <GuestMoreScreen onChangeRole={onChangeRole} onNavigate={onNavigate} tabs={tabs} />;
   }
@@ -378,7 +456,7 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 14px 100px', marginTop: -42, position: 'relative' }}>
 
         {/* Achievements — students only */}
-        {isStudent && <AchievementsPanel />}
+        {isStudent && <AchievementsPanel unlockedIds={unlockedIds} />}
 
         {/* Profile card */}
         <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.border}`, boxShadow: '0 2px 10px rgba(0,0,0,.05)', padding: '17px 17px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 14 }}>
