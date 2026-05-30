@@ -1,18 +1,13 @@
 import { C, FF } from '../tokens';
 
-const LIME = '#EAFF00';
-
 function NavIcon({ id, active }) {
-  // The "more" tab uses Electric Lime when active; all others use brand blue
-  const col = active ? (id === 'more' ? LIME : C.blue) : C.text3;
+  const col = active ? C.blue : C.text3;
   const sw  = active ? 2.2 : 1.8;
   const base = { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: col, strokeWidth: sw, strokeLinecap: 'round', strokeLinejoin: 'round' };
 
   if (id === 'more') {
-    // Vertical three-dot ellipsis — filled circles, no stroke
-    const dotCol = active ? LIME : C.text3;
     return (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill={dotCol}>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill={col}>
         <circle cx="12" cy="5"  r="1.75"/>
         <circle cx="12" cy="12" r="1.75"/>
         <circle cx="12" cy="19" r="1.75"/>
@@ -45,9 +40,6 @@ export default function BottomNav({ active, onNavigate, tabs }) {
     }}>
       {tabs.map(tab => {
         const on = active === tab.screen;
-        const isMore = tab.id === 'more';
-        const activeColor = isMore ? LIME : C.blue;
-
         return (
           <button
             key={tab.id}
@@ -70,7 +62,7 @@ export default function BottomNav({ active, onNavigate, tabs }) {
                 position: 'absolute', top: -8,
                 width: 24, height: 3,
                 borderRadius: 2,
-                background: activeColor,
+                background: C.blue,
               }} />
             )}
             <NavIcon id={tab.id} active={on} />
@@ -78,7 +70,7 @@ export default function BottomNav({ active, onNavigate, tabs }) {
               fontFamily: FF,
               fontSize: 9.5,
               fontWeight: on ? 700 : 500,
-              color: on ? activeColor : C.text3,
+              color: on ? C.blue : C.text3,
               letterSpacing: '0.1px',
             }}>
               {tab.label}
