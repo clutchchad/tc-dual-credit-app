@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { C, FF } from '../tokens';
 
-export default function OnboardRole({ onSelect }) {
+export default function OnboardRole({ onSelect, onGuestSelect }) {
   const [picked, setPicked] = useState(null);
   const choose = (r) => { setPicked(r); setTimeout(() => onSelect(r), 180); };
 
@@ -70,6 +70,18 @@ export default function OnboardRole({ onSelect }) {
               </div>
             </button>
           ))}
+        </div>
+
+        {/* Guest / browse-only path */}
+        <div style={{ textAlign:'center', marginTop:28 }}>
+          <button
+            onClick={() => onGuestSelect()}
+            style={{ background:'none', border:'none', cursor:'pointer', padding:'6px 0' }}
+          >
+            <span style={{ fontFamily:FF, fontSize:13, fontWeight:600, color:C.text3, textDecoration:'underline', textDecorationColor:'rgba(138,148,170,.4)' }}>
+              Just Browsing? View resources without an account
+            </span>
+          </button>
         </div>
       </div>
     </div>

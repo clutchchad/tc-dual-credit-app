@@ -7,15 +7,16 @@ import { C, FF } from '../tokens';
 import { loadNotifications, relTime } from '../data/notifications';
 import { getStudentProfile } from '../data/studentProfile';
 
+const BLUE = '#065990';
+const LIME = '#EAFF00';
+const DARK = '#022b52';
 
 /* ── Helpers ── */
 function daysUntil(dateStr) {
-  // dateStr is like "Jun 9" — assume current year
   const now = new Date();
   const parsed = new Date(`${dateStr} ${now.getFullYear()}`);
   if (isNaN(parsed)) return null;
-  const diff = Math.ceil((parsed - now) / (1000 * 60 * 60 * 24));
-  return diff;
+  return Math.ceil((parsed - now) / (1000 * 60 * 60 * 24));
 }
 
 function formatDate(dateStr) {
@@ -26,12 +27,14 @@ function formatDate(dateStr) {
 }
 
 function getGreeting(profile, role) {
+  if (role === 'guest') return 'Welcome to TC Dual Credit';
   const name = profile?.firstName;
+  if (role === 'parent') return name ? `Hey, ${name}!` : 'Hey, Parent!';
   if (name) return `Hey, ${name}!`;
-  return role === 'student' ? 'Hey, Student!' : 'Hey!';
+  return 'Hey, Student!';
 }
 
-/* ── Seed timeline cards (fallback when Firestore unavailable) ── */
+/* ── Seed timeline — student / default ── */
 const SEED_TIMELINE = [
   {
     id: 'seed1',
@@ -44,7 +47,7 @@ const SEED_TIMELINE = [
     id: 'seed2',
     category: 'Reminder',
     title: 'Fall 2026 Registration is Coming',
-    body: 'Make sure you meet with your ACDC before registration opens. Spots in dual credit courses fill fast — don\'t wait.',
+    body: "Make sure you meet with your ACDC before registration opens. Spots in dual credit courses fill fast — don't wait.",
     daysAgo: 3,
   },
   {
@@ -56,6 +59,31 @@ const SEED_TIMELINE = [
   },
 ];
 
+/* ── Seed timeline — parent ── */
+const PARENT_SEED_TIMELINE = [
+  {
+    id: 'pseed1',
+    category: 'Announcement',
+    title: "Welcome, Parent!",
+    body: "This app keeps you connected to your child's dual credit journey — deadlines, their Academic Coach, and more, all in one place.",
+    daysAgo: 0,
+  },
+  {
+    id: 'pseed2',
+    category: 'Reminder',
+    title: 'Fall 2026 Registration is Coming',
+    body: 'Encourage your student to meet with their ACDC before registration opens. Dual credit spots fill quickly!',
+    daysAgo: 3,
+  },
+  {
+    id: 'pseed3',
+    category: 'TC Promise',
+    title: 'TC Promise Could Cover Their Tuition',
+    body: 'Students who complete dual credit and meet eligibility requirements may qualify for TC Promise — potentially covering 100% of tuition at Texarkana College.',
+    daysAgo: 7,
+  },
+];
+
 function seedRelTime(daysAgo) {
   if (daysAgo === 0) return 'Today';
   if (daysAgo === 1) return 'Yesterday';
@@ -63,10 +91,10 @@ function seedRelTime(daysAgo) {
 }
 
 const CATEGORY_STYLES = {
-  'Announcement': { bg: 'rgba(6,89,144,.10)',    color: '#065990' },
-  'Reminder':     { bg: 'rgba(249,115,22,.10)',   color: '#c2410c' },
-  'TC Promise':   { bg: 'rgba(22,163,74,.10)',    color: '#15803d' },
-  'Event':        { bg: 'rgba(124,58,237,.10)',   color: '#7c3aed' },
+  'Announcement': { bg: 'rgba(6,89,144,.10)',   color: '#065990' },
+  'Reminder':     { bg: 'rgba(249,115,22,.10)', color: '#c2410c' },
+  'TC Promise':   { bg: 'rgba(22,163,74,.10)',  color: '#15803d' },
+  'Event':        { bg: 'rgba(124,58,237,.10)', color: '#7c3aed' },
 };
 
 /* ── CoachPhoto ── */
@@ -82,7 +110,7 @@ function CoachPhoto({ photo, name, size = 44 }) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0,
       }}>
-        <span style={{ fontFamily: FF, fontSize: size * 0.33, fontWeight: 800, color: C.blue }}>{initials}</span>
+        <span style={{ fontFamily: FF, fontSize: size * 0.33, fontWeight: 800, color: BLUE }}>{initials}</span>
       </div>
     );
   }
@@ -124,7 +152,7 @@ function AcdcStrip({ acdc, onNavigate }) {
           My ACDC
         </div>
         <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, color: C.text, letterSpacing: '-0.2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {acdc.isFallback ? 'Dual Credit Office' : acdc.name}
+          {acdc.name}
         </div>
       </div>
       <a
@@ -133,11 +161,11 @@ function AcdcStrip({ acdc, onNavigate }) {
         rel="noopener noreferrer"
         onClick={e => e.stopPropagation()}
         style={{
-          background: '#EAFF00',
+          background: LIME,
           border: 'none',
           borderRadius: 10,
           padding: '7px 14px',
-          fontFamily: FF, fontSize: 12, fontWeight: 800, color: '#022b52',
+          fontFamily: FF, fontSize: 12, fontWeight: 800, color: DARK,
           cursor: 'pointer',
           textDecoration: 'none',
           whiteSpace: 'nowrap',
@@ -151,17 +179,15 @@ function AcdcStrip({ acdc, onNavigate }) {
 }
 
 /* ── Next Deadline Card ── */
-function NextDeadlineCard({ onNavigate, schoolId }) {
-  const filtered = eventsData.filter(e => e.type === 'deadline');
-  const item = filtered[0] || null;
+function NextDeadlineCard({ onNavigate }) {
+  const item = eventsData.filter(e => e.type === 'deadline')[0] || null;
   const days = item ? item.days : null;
   const formatted = item ? formatDate(item.date) : null;
 
   return (
     <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 3px 14px rgba(6,89,144,.15)' }}>
-      <div style={{ background: C.blue, padding: '13px 15px 11px', position: 'relative' }}>
-        {/* Lime left accent bar */}
-        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: '#EAFF00', borderRadius: '0 0 0 0' }} />
+      <div style={{ background: BLUE, padding: '13px 15px 11px', position: 'relative' }}>
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: LIME }} />
         <div style={{ paddingLeft: 8 }}>
           <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: 'rgba(234,255,0,.85)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 6 }}>
             Next Deadline
@@ -178,7 +204,7 @@ function NextDeadlineCard({ onNavigate, schoolId }) {
               </div>
               {days !== null && (
                 <div style={{ textAlign: 'right', flexShrink: 0, paddingLeft: 12 }}>
-                  <div style={{ fontFamily: FF, fontSize: 32, fontWeight: 900, color: '#EAFF00', lineHeight: 1, letterSpacing: '-2px' }}>{days}</div>
+                  <div style={{ fontFamily: FF, fontSize: 32, fontWeight: 900, color: LIME, lineHeight: 1, letterSpacing: '-2px' }}>{days}</div>
                   <div style={{ fontFamily: FF, fontSize: 9, color: 'rgba(255,255,255,.45)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>days</div>
                 </div>
               )}
@@ -195,7 +221,7 @@ function NextDeadlineCard({ onNavigate, schoolId }) {
         style={{ width: '100%', background: '#fff', border: 'none', padding: '7px 15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
       >
         <span style={{ fontFamily: FF, fontSize: 11, color: C.text2, fontWeight: 500 }}>View all deadlines</span>
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
       </button>
     </div>
   );
@@ -203,16 +229,14 @@ function NextDeadlineCard({ onNavigate, schoolId }) {
 
 /* ── Next Event Card ── */
 function NextEventCard({ onNavigate }) {
-  const filtered = eventsData.filter(e => e.type === 'event');
-  const item = filtered[0] || null;
+  const item = eventsData.filter(e => e.type === 'event')[0] || null;
   const days = item ? item.days : null;
   const formatted = item ? formatDate(item.date) : null;
 
   return (
     <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 3px 14px rgba(6,89,144,.12)' }}>
       <div style={{ background: '#0a3d62', padding: '13px 15px 11px', position: 'relative' }}>
-        {/* Royal Blue left accent bar */}
-        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: '#93d2ff', borderRadius: '0 0 0 0' }} />
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: '#93d2ff' }} />
         <div style={{ paddingLeft: 8 }}>
           <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: 'rgba(147,210,255,.85)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 6 }}>
             Next Event
@@ -246,7 +270,7 @@ function NextEventCard({ onNavigate }) {
         style={{ width: '100%', background: '#fff', border: 'none', padding: '7px 15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
       >
         <span style={{ fontFamily: FF, fontSize: 11, color: C.text2, fontWeight: 500 }}>View all events</span>
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
       </button>
     </div>
   );
@@ -266,8 +290,8 @@ function RecentNotifCard({ notif, onNavigate }) {
         display: 'flex', alignItems: 'center', gap: 12,
       }}
     >
-      <div style={{ width: 40, height: 40, borderRadius: 12, background: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EAFF00" strokeWidth="2.2" strokeLinecap="round">
+      <div style={{ width: 40, height: 40, borderRadius: 12, background: BLUE, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={LIME} strokeWidth="2.2" strokeLinecap="round">
           <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
         </svg>
       </div>
@@ -290,11 +314,50 @@ function RecentNotifCard({ notif, onNavigate }) {
   );
 }
 
+/* ── Guest Apply Banner ── */
+function GuestApplyBanner() {
+  return (
+    <a
+      href="https://txkcol.edu/applydc"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 14,
+        background: LIME,
+        borderRadius: 16,
+        padding: '15px 16px',
+        textDecoration: 'none',
+        boxShadow: '0 4px 20px rgba(234,255,0,.40)',
+      }}
+    >
+      <div style={{ width: 44, height: 44, borderRadius: 14, background: 'rgba(2,43,82,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={DARK} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <path d="M14 2v6h6M12 18v-6M9 15h6"/>
+        </svg>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 900, color: DARK, letterSpacing: '-0.3px' }}>
+          Apply for Dual Credit
+        </div>
+        <div style={{ fontFamily: FF, fontSize: 12, color: 'rgba(2,43,82,.65)', marginTop: 2 }}>
+          Start earning college credits while in high school
+        </div>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={DARK} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+    </a>
+  );
+}
+
 /* ── Timeline Card ── */
 function TimelineCard({ item }) {
   const [expanded, setExpanded] = useState(false);
   const catStyle = CATEGORY_STYLES[item.category] || CATEGORY_STYLES['Announcement'];
-  const timestamp = item.daysAgo !== undefined ? seedRelTime(item.daysAgo) : (item.timestamp ? relTime(item.timestamp) : '');
+  const timestamp = item.daysAgo !== undefined
+    ? seedRelTime(item.daysAgo)
+    : (item.timestamp ? relTime(item.timestamp) : '');
 
   return (
     <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '13px 15px', boxShadow: '0 1px 6px rgba(0,0,0,.04)' }}>
@@ -321,7 +384,7 @@ function TimelineCard({ item }) {
       {!expanded && item.body && item.body.length > 120 && (
         <button
           onClick={() => setExpanded(true)}
-          style={{ background: 'none', border: 'none', padding: '4px 0 0', cursor: 'pointer', fontFamily: FF, fontSize: 12, fontWeight: 700, color: C.blue }}
+          style={{ background: 'none', border: 'none', padding: '4px 0 0', cursor: 'pointer', fontFamily: FF, fontSize: 12, fontWeight: 700, color: BLUE }}
         >
           Read more
         </button>
@@ -330,20 +393,46 @@ function TimelineCard({ item }) {
   );
 }
 
-/* ── Main HomeScreen ── */
-export default function HomeScreen({ role, school, grade, onNavigate, tabs }) {
-  const schoolInfo = schoolList.find(s => s.id === school.id) || {};
-  const barColor   = schoolInfo.bar       || '#065990';
-  const barTextColor = schoolInfo.textColor || '#fff';
-  const acdc       = getAcdcForSchool(school.id, grade);
+/* ── Timeline Section ── */
+function TimelineSection({ items }) {
+  return (
+    <div style={{ padding: '20px 14px 0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+        <span style={{ fontFamily: FF, fontSize: 16, fontWeight: 900, color: C.text, letterSpacing: '-0.3px' }}>Timeline</span>
+        <div style={{ flex: 1, height: 2, borderRadius: 1, background: BLUE, opacity: 0.18 }} />
+        <div style={{ width: 28, height: 2, borderRadius: 1, background: BLUE }} />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 12 }}>
+        {items.map(item => <TimelineCard key={item.id} item={item} />)}
+      </div>
+    </div>
+  );
+}
 
-  const [latestNotif,  setLatestNotif]  = useState(null);
-  const [timeline,     setTimeline]     = useState(SEED_TIMELINE);
-  const [profile,      setProfile]      = useState(null);
+/* ════════════════════════════════════════════════════════
+   Main HomeScreen
+   ════════════════════════════════════════════════════════ */
+export default function HomeScreen({ role, school, grade, onNavigate, tabs }) {
+  const isGuest   = role === 'guest';
+  const isStudent = role === 'student';
+  const isParent  = role === 'parent';
+
+  const schoolInfo    = school ? (schoolList.find(s => s.id === school.id) || {}) : {};
+  const barColor      = schoolInfo.bar       || BLUE;
+  const barTextColor  = schoolInfo.textColor || '#fff';
+  const acdc          = (school && !isGuest) ? getAcdcForSchool(school.id, grade) : null;
+
+  const [latestNotif, setLatestNotif] = useState(null);
+  const [timeline,    setTimeline]    = useState(isParent ? PARENT_SEED_TIMELINE : SEED_TIMELINE);
+  const [profile,     setProfile]     = useState(null);
 
   useEffect(() => {
-    loadNotifications().then(ns => setLatestNotif(ns[0] ?? null));
-    getStudentProfile().then(p => setProfile(p));
+    if (!isGuest) {
+      loadNotifications().then(ns => setLatestNotif(ns[0] ?? null));
+    }
+    if (isStudent) {
+      getStudentProfile().then(p => setProfile(p));
+    }
 
     /* Try Firestore for timeline */
     (async () => {
@@ -359,12 +448,11 @@ export default function HomeScreen({ role, school, grade, onNavigate, tabs }) {
           appId:             import.meta.env.VITE_FIREBASE_APP_ID,
         };
         const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const q = query(collection(db, 'timeline'), orderBy('timestamp', 'desc'), limit(20));
+        const db  = getFirestore(app);
+        const q   = query(collection(db, 'timeline'), orderBy('timestamp', 'desc'), limit(20));
         const snap = await getDocs(q);
         if (!snap.empty) {
-          const cards = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-          setTimeline(cards);
+          setTimeline(snap.docs.map(d => ({ id: d.id, ...d.data() })));
         }
       } catch {}
     })();
@@ -372,20 +460,22 @@ export default function HomeScreen({ role, school, grade, onNavigate, tabs }) {
 
   const greeting = getGreeting(profile, role);
 
-  return (
-    <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-
-      {/* ── HEADER ── */}
-      <div style={{ background: C.blue, flexShrink: 0, paddingTop: 'env(safe-area-inset-top, 0px)' }}>
-        <div style={{ padding: '12px 16px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ fontFamily: FF, fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: '-0.7px', lineHeight: 1.1 }}>
-              {greeting}
-            </div>
-            <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,.55)', marginTop: 2, letterSpacing: '0.1px' }}>
-              {school.name} · {role === 'student' ? 'Student' : 'Parent'}
-            </div>
+  /* ── Shared header ── */
+  const renderHeader = () => (
+    <div style={{ background: BLUE, flexShrink: 0, paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+      <div style={{ padding: '12px 16px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontFamily: FF, fontSize: isGuest ? 20 : 24, fontWeight: 900, color: '#fff', letterSpacing: '-0.7px', lineHeight: 1.1 }}>
+            {greeting}
           </div>
+          <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,.55)', marginTop: 2 }}>
+            {isGuest
+              ? 'Explore dual credit resources'
+              : `${school?.name} · ${isStudent ? 'Student' : 'Parent'}`}
+          </div>
+        </div>
+        {/* Bell only for students and parents */}
+        {!isGuest && (
           <button
             onClick={() => onNavigate('notifications')}
             style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
@@ -394,9 +484,11 @@ export default function HomeScreen({ role, school, grade, onNavigate, tabs }) {
               <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
             </svg>
           </button>
-        </div>
+        )}
+      </div>
 
-        {/* School color bar */}
+      {/* School color bar — only for users with a school */}
+      {school && (
         <div style={{ background: barColor, padding: '6px 16px', display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontFamily: FF, fontSize: 12.5, fontWeight: 700, color: barTextColor }}>{school.name}</span>
           {school.id === 'txh' && grade && (
@@ -405,19 +497,48 @@ export default function HomeScreen({ role, school, grade, onNavigate, tabs }) {
             </span>
           )}
         </div>
-      </div>
+      )}
+    </div>
+  );
 
-      {/* ── BODY ── */}
+  /* ── GUEST home body ── */
+  if (isGuest) {
+    return (
+      <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        {renderHeader()}
+        <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 88 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 14px 0' }}>
+            {/* Apply banner — prominent at top */}
+            <GuestApplyBanner />
+
+            {/* Deadline + Event side-by-side */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <NextDeadlineCard onNavigate={onNavigate} />
+              <NextEventCard onNavigate={onNavigate} />
+            </div>
+          </div>
+
+          <TimelineSection items={timeline} />
+        </div>
+        <BottomNav active="home" onNavigate={onNavigate} tabs={tabs} />
+      </div>
+    );
+  }
+
+  /* ── STUDENT + PARENT home body (shared structure) ── */
+  return (
+    <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      {renderHeader()}
+
       <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 88 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 14px 0' }}>
 
-          {/* ACDC Strip */}
-          <AcdcStrip acdc={acdc} onNavigate={onNavigate} />
+          {/* ACDC strip — if a coach is resolved */}
+          {acdc && <AcdcStrip acdc={acdc} onNavigate={onNavigate} />}
 
-          {/* Deadline + Event side-by-side on wider screens, stacked on mobile */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}
-               className="md:grid-cols-2">
-            <NextDeadlineCard onNavigate={onNavigate} schoolId={school.id} />
+          {/* Deadline + Event side-by-side */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <NextDeadlineCard onNavigate={onNavigate} />
             <NextEventCard onNavigate={onNavigate} />
           </div>
 
@@ -426,19 +547,7 @@ export default function HomeScreen({ role, school, grade, onNavigate, tabs }) {
 
         </div>
 
-        {/* ── TIMELINE ── */}
-        <div style={{ padding: '20px 14px 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-            <span style={{ fontFamily: FF, fontSize: 16, fontWeight: 900, color: C.text, letterSpacing: '-0.3px' }}>Timeline</span>
-            <div style={{ flex: 1, height: 2, borderRadius: 1, background: C.blue, opacity: 0.18 }} />
-            <div style={{ width: 28, height: 2, borderRadius: 1, background: C.blue }} />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 12 }}>
-            {timeline.map(item => (
-              <TimelineCard key={item.id} item={item} />
-            ))}
-          </div>
-        </div>
+        <TimelineSection items={timeline} />
       </div>
 
       <BottomNav active="home" onNavigate={onNavigate} tabs={tabs} />

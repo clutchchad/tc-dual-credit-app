@@ -302,12 +302,64 @@ function AchievementsPanel() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Guest — minimal profile CTA
+// ─────────────────────────────────────────────────────────────────────────────
+function GuestMoreScreen({ onChangeRole, onNavigate, tabs }) {
+  return (
+    <div className="tc-screen" style={{ width:'100%', height:'100%', background:C.bg, display:'flex', flexDirection:'column' }}>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'24px 22px', paddingTop:'env(safe-area-inset-top, 24px)' }}>
+        <div style={{
+          width:'100%', background:'#fff', borderRadius:28,
+          border:`1px solid ${C.border}`,
+          boxShadow:'0 4px 24px rgba(6,89,144,.09)',
+          padding:'36px 24px 32px',
+          display:'flex', flexDirection:'column', alignItems:'center', textAlign:'center',
+        }}>
+          {/* TC logo mark */}
+          <div style={{
+            width:72, height:72, borderRadius:20,
+            background:'linear-gradient(135deg,#022b52,#065990)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            boxShadow:'0 8px 28px rgba(6,89,144,.3)',
+            marginBottom:20,
+          }}>
+            <span style={{ fontFamily:FF, fontSize:28, fontWeight:900, color:LIME, letterSpacing:'-1px' }}>TC</span>
+          </div>
+
+          <div style={{ fontFamily:FF, fontSize:22, fontWeight:900, color:DARK, letterSpacing:'-0.5px', marginBottom:10 }}>
+            Set Up Your Profile
+          </div>
+          <p style={{ fontFamily:FF, fontSize:14, color:C.text2, lineHeight:1.6, margin:'0 0 28px' }}>
+            Get personalized deadlines, connect with your ACDC, and unlock your full dual credit experience.
+          </p>
+
+          <button
+            onClick={onChangeRole}
+            style={{
+              width:'100%', height:54, background:LIME, border:'none', borderRadius:16,
+              cursor:'pointer', boxShadow:'0 4px 20px rgba(234,255,0,.35)',
+            }}
+          >
+            <span style={{ fontFamily:FF, fontSize:16, fontWeight:900, color:DARK }}>Get Started</span>
+          </button>
+        </div>
+      </div>
+      <BottomNav active="more" onNavigate={onNavigate} tabs={tabs} />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Main screen
 // ─────────────────────────────────────────────────────────────────────────────
 export default function MoreScreen({ role, school, grade, onChangeRole, onChangeSchool, onNavigate, tabs }) {
   const [notifs, setNotifs] = useState(() => {
     try { return JSON.parse(localStorage.getItem(NOTIF_KEY)) ?? true; } catch { return true; }
   });
+
+  if (role === 'guest') {
+    return <GuestMoreScreen onChangeRole={onChangeRole} onNavigate={onNavigate} tabs={tabs} />;
+  }
 
   const isStudent = role === 'student';
 
