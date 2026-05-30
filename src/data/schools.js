@@ -16,4 +16,7 @@ export const schools = [
   { id: 'qc',    name: 'Queen City HS',           city: 'Queen City', bar: '#ed6723', textColor: '#000'    },
   { id: 'rw',    name: 'Redwater HS',             city: 'Redwater',   bar: '#0132a0', textColor: '#fff'    },
   { id: 'txh',   name: 'Texas High',              city: 'Texarkana',  bar: '#ff6e00', textColor: '#fff',     gradeRequired: true  },
+  // Schools in the program with no assigned ACDC — show main-office fallback
+  { id: 'datx',  name: 'Digital Academy of Texas', city: 'Texarkana', bar: '#065990', textColor: '#EAFF00',  unassigned: true     },
+  { id: 'arprem',name: 'AR Premier',               city: 'Arkansas',  bar: '#8a2727', textColor: '#fff',     unassigned: true     },
 ];
