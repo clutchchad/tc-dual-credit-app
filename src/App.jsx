@@ -41,6 +41,7 @@ export default function App() {
   const [grade,              setGrade]              = useState(stored.grade              || null);
   const [studentId,          setStudentId]          = useState(stored.studentId          || null);
   const [firstName,          setFirstName]          = useState(stored.firstName          || null);
+  const [lastName,           setLastName]           = useState(stored.lastName           || null);
   const [isJenzabarVerified, setIsJenzabarVerified] = useState(stored.isJenzabarVerified || false);
   const [animKey,            setAnimKey]            = useState(0);
 
@@ -49,7 +50,7 @@ export default function App() {
   const reset = () => {
     localStorage.removeItem(STORAGE_KEY);
     setRole(null); setSchool(null); setGrade(null);
-    setStudentId(null); setFirstName(null); setIsJenzabarVerified(false);
+    setStudentId(null); setFirstName(null); setLastName(null); setIsJenzabarVerified(false);
     go('onboard_role');
   };
 
@@ -83,6 +84,7 @@ export default function App() {
               setGrade(s.grade              || null);
               setStudentId(s.studentId      || null);
               setFirstName(s.firstName      || null);
+              setLastName(s.lastName        || null);
               setIsJenzabarVerified(s.isJenzabarVerified || false);
               go('home');
             } else {
@@ -103,6 +105,7 @@ export default function App() {
               setGrade(gradeVal);
               setStudentId(studentIdVal);
               setFirstName(firstNameVal);
+              setLastName(lastNameVal);
               setIsJenzabarVerified(true);
               // Pre-save so confirm screen can read data if needed
               saveStored({
@@ -153,7 +156,7 @@ export default function App() {
             firstName={firstName}
             isJenzabarVerified={isJenzabarVerified}
             onConfirm={() => {
-              saveStored({ role, school, grade, studentId, firstName, isJenzabarVerified });
+              saveStored({ role, school, grade, studentId, firstName, lastName, isJenzabarVerified });
               go('home');
             }}
             onBack={() => {
@@ -163,15 +166,19 @@ export default function App() {
           />
         ) : null;
 
-      case 'home':
-        if (role === 'guest') {
+      case 'home': {
+        // Use localStorage as ground truth — avoids any React state batching lag
+        const liveStored = getStored();
+        const resolvedRole = role || liveStored.role;
+        if (resolvedRole === 'guest') {
           return <HomeScreen role="guest" school={null} grade={null} {...navProps} />;
         }
-        return role && school ? (
-          <HomeScreen role={role} school={school} grade={grade} {...navProps} />
+        return resolvedRole && school ? (
+          <HomeScreen role={resolvedRole} school={school} grade={grade} {...navProps} />
         ) : (
           renderOnboardRole()
         );
+      }
 
       case 'acdc':
         // Guests have no school — redirect to More (profile CTA)

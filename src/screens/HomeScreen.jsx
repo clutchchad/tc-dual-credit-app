@@ -409,13 +409,28 @@ function TimelineSection({ items }) {
   );
 }
 
+/* ── Read tcdc_v1 from localStorage ── */
+function getLocalProfile() {
+  try { return JSON.parse(localStorage.getItem('tcdc_v1') || '{}'); } catch { return {}; }
+}
+
 /* ════════════════════════════════════════════════════════
    Main HomeScreen
    ════════════════════════════════════════════════════════ */
-export default function HomeScreen({ role, school, grade, onNavigate, tabs }) {
+export default function HomeScreen({ role: roleProp, school, grade, onNavigate, tabs }) {
+  // Use localStorage as ground truth to avoid any state-timing lag on role
+  const localProfile = getLocalProfile();
+  const role      = roleProp || localProfile.role || 'guest';
+
   const isGuest   = role === 'guest';
   const isStudent = role === 'student';
   const isParent  = role === 'parent';
+
+  // Identity data for student header — comes from localStorage (set during ID flow)
+  const storedFirstName = localProfile.firstName || null;
+  const storedLastName  = localProfile.lastName  || null;
+  const storedStudentId = localProfile.studentId || null;
+  const fullName = [storedFirstName, storedLastName].filter(Boolean).join(' ') || null;
 
   const schoolInfo    = school ? (schoolList.find(s => s.id === school.id) || {}) : {};
   const barColor      = schoolInfo.bar       || BLUE;
@@ -465,15 +480,33 @@ export default function HomeScreen({ role, school, grade, onNavigate, tabs }) {
     <div style={{ background: BLUE, flexShrink: 0, paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       <div style={{ padding: '12px 16px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div style={{ fontFamily: FF, fontSize: isGuest ? 20 : 24, fontWeight: 900, color: '#fff', letterSpacing: '-0.7px', lineHeight: 1.1 }}>
-            {greeting}
+            {isStudent ? (
+              /* Student identity block — name / ID / school+grade */
+              <>
+                <div style={{ fontFamily: FF, fontSize: 21, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.2 }}>
+                  {fullName || 'Student'}
+                </div>
+                {storedStudentId && (
+                  <div style={{ fontFamily: FF, fontSize: 11.5, color: 'rgba(255,255,255,.60)', marginTop: 2, letterSpacing: '0.1px' }}>
+                    ID: {storedStudentId}
+                  </div>
+                )}
+                <div style={{ fontFamily: FF, fontSize: 11.5, color: 'rgba(255,255,255,.50)', marginTop: 1 }}>
+                  {school?.name}{grade ? ` · ${grade}` : ''}
+                </div>
+              </>
+            ) : (
+              /* Parent / Guest single-line greeting */
+              <>
+                <div style={{ fontFamily: FF, fontSize: isGuest ? 20 : 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.6px', lineHeight: 1.1 }}>
+                  {greeting}
+                </div>
+                <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,.55)', marginTop: 2 }}>
+                  {isGuest ? 'Explore dual credit resources' : school?.name}
+                </div>
+              </>
+            )}
           </div>
-          <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,.55)', marginTop: 2 }}>
-            {isGuest
-              ? 'Explore dual credit resources'
-              : `${school?.name} · ${isStudent ? 'Student' : 'Parent'}`}
-          </div>
-        </div>
         {/* Bell only for students and parents */}
         {!isGuest && (
           <button
