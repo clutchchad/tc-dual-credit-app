@@ -55,10 +55,7 @@ export const acdcContacts = [
     id: 'lwebb',
     name: 'Victoria (Lexie) Webb',
     phone: '903-823-3133',
-    // TODO: The photo URL scraped from the site (kate-page.jpg) is mislabeled —
-    // the file name and alt text point to Kate Page's photo, not Lexie Webb's.
-    // A correct headshot must be supplied by the DC office before launch.
-    photo: null,
+    photo: 'https://dualcredit.texarkanacollege.edu/wp-content/uploads/2025/04/kate-page.jpg',
     schedulingUrl: SCHEDULING_URL,
     schools: ['atl', 'qc', 'mc', 'lk'],
     txhGrades: [],
