@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
 import BottomNav from '../components/BottomNav';
 import Card from '../components/Card';
-import { getAcdcForSchool, OFFICE_FALLBACK } from '../data/acdc';
+import { getAcdcForSchool } from '../data/acdc';
 import { C, FF } from '../tokens';
 
 const LIME   = '#EAFF00';
@@ -149,69 +149,6 @@ function CoachCard({ acdc, school, grade }) {
   );
 }
 
-/** Fallback card for unassigned schools — shows main office contact */
-function OfficeFallbackCard({ school }) {
-  const { phone, hours } = OFFICE_FALLBACK;
-  return (
-    <Card style={{ padding: '28px 20px 24px', marginBottom: 14, textAlign: 'center' }}>
-      {/* Icon */}
-      <div style={{
-        width: 64, height: 64, borderRadius: '50%', margin: '0 auto 14px',
-        background: `linear-gradient(135deg, rgba(6,89,144,.12), rgba(6,89,144,.28))`,
-        border: `3px solid ${LIME}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '0 4px 18px rgba(6,89,144,.2)',
-      }}>
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.2" strokeLinecap="round">
-          <path d="M3 9L12 2l9 7v11a1 1 0 01-1 1H4a1 1 0 01-1-1z"/><path d="M9 22V12h6v10"/>
-        </svg>
-      </div>
-
-      <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: DARK, letterSpacing: '-0.4px' }}>
-        Dual Credit Office
-      </div>
-      <div style={{ fontFamily: FF, fontSize: 13, color: BLUE, fontWeight: 700, marginTop: 4 }}>
-        Academic Coach for Dual Credit
-      </div>
-      <div style={{ fontFamily: FF, fontSize: 12, color: '#6b7280', marginTop: 3 }}>
-        {school.name}
-      </div>
-
-      <div style={{ height: 1, background: 'rgba(6,89,144,.08)', margin: '20px 0 6px' }} />
-
-      <div style={{ fontFamily: FF, fontSize: 11.5, color: '#6b7280', marginBottom: 14, lineHeight: 1.6 }}>
-        An ACDC hasn't been assigned to your school yet.{'\n'}
-        Reach the main office directly:
-      </div>
-
-      <a
-        href={`tel:${phone}`}
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          textDecoration: 'none', marginBottom: 14,
-        }}
-      >
-        <div style={{
-          width: 34, height: 34, borderRadius: 10, background: 'rgba(6,89,144,.08)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.2" strokeLinecap="round">
-            <path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 0112 18.85a19.5 19.5 0 01-6-6A19.79 19.79 0 012.92 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
-          </svg>
-        </div>
-        <span style={{ fontFamily: FF, fontSize: 16, fontWeight: 700, color: BLUE }}>{phone}</span>
-      </a>
-
-      <div style={{
-        fontFamily: FF, fontSize: 12, color: '#6b7280', fontWeight: 600,
-        background: 'rgba(6,89,144,.05)', borderRadius: 10, padding: '8px 14px',
-      }}>
-        {hours}
-      </div>
-    </Card>
-  );
-}
-
 /** About blurb */
 function AboutCard() {
   return (
@@ -229,8 +166,7 @@ function AboutCard() {
 }
 
 export default function ACDCScreen({ school, grade, onNavigate, tabs }) {
-  const isUnassigned = school?.unassigned === true;
-  const acdc = isUnassigned ? null : getAcdcForSchool(school.id, grade);
+  const acdc = getAcdcForSchool(school.id, grade);
 
   return (
     <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column' }}>
@@ -239,12 +175,7 @@ export default function ACDCScreen({ school, grade, onNavigate, tabs }) {
       </BlueHeader>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 14px 100px', marginTop: -42 }}>
-
-        {isUnassigned
-          ? <OfficeFallbackCard school={school} />
-          : <CoachCard acdc={acdc} school={school} grade={grade} />
-        }
-
+        <CoachCard acdc={acdc} school={school} grade={grade} />
         <AboutCard />
       </div>
 
