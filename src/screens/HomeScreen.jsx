@@ -1,279 +1,401 @@
 import { useState, useEffect } from 'react';
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  KeyboardSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import BottomNav from '../components/BottomNav';
 import { getAcdcForSchool } from '../data/acdc';
 import { schools as schoolList } from '../data/schools';
+import { events as eventsData } from '../data/events';
 import { C, FF } from '../tokens';
 import { loadNotifications, relTime } from '../data/notifications';
+import { getStudentProfile } from '../data/studentProfile';
 
-const CARD_ORDER_KEY = 'tcdc_v1_cards';
-const DEFAULT_ORDER = ['deadline', 'event', 'notification', 'acdc'];
 
-function loadOrder() {
-  try {
-    const s = JSON.parse(localStorage.getItem(CARD_ORDER_KEY));
-    if (Array.isArray(s) && s.length === 4 && DEFAULT_ORDER.every(id => s.includes(id))) return s;
-  } catch {}
-  return [...DEFAULT_ORDER];
+/* ── Helpers ── */
+function daysUntil(dateStr) {
+  // dateStr is like "Jun 9" — assume current year
+  const now = new Date();
+  const parsed = new Date(`${dateStr} ${now.getFullYear()}`);
+  if (isNaN(parsed)) return null;
+  const diff = Math.ceil((parsed - now) / (1000 * 60 * 60 * 24));
+  return diff;
 }
 
-/* ── Drag handle ── */
-const DragHandleIcon = ({ light = false }) => (
-  <div style={{
-    width: 28, height: 28,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    borderRadius: 7,
-    background: light ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.06)',
-    flexShrink: 0,
-  }}>
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-      stroke={light ? 'rgba(255,255,255,0.65)' : C.text3}
-      strokeWidth="2.5" strokeLinecap="round">
-      <line x1="4" y1="6"  x2="20" y2="6"/>
-      <line x1="4" y1="12" x2="20" y2="12"/>
-      <line x1="4" y1="18" x2="20" y2="18"/>
-    </svg>
-  </div>
-);
+function formatDate(dateStr) {
+  const now = new Date();
+  const parsed = new Date(`${dateStr} ${now.getFullYear()}`);
+  if (isNaN(parsed)) return dateStr;
+  return parsed.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
 
-/* ── Sortable wrapper ── */
-function SortableCard({ id, children }) {
-  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id });
+function getGreeting(profile, role) {
+  const name = profile?.firstName;
+  if (name) return `Hey, ${name}!`;
+  return role === 'student' ? 'Hey, Student!' : 'Hey!';
+}
+
+/* ── Seed timeline cards (fallback when Firestore unavailable) ── */
+const SEED_TIMELINE = [
+  {
+    id: 'seed1',
+    category: 'Announcement',
+    title: 'Welcome to the TC Dual Credit App',
+    body: 'Stay connected to your dual credit journey — deadlines, your ACDC, pathways, and more, all in one place.',
+    daysAgo: 0,
+  },
+  {
+    id: 'seed2',
+    category: 'Reminder',
+    title: 'Fall 2026 Registration is Coming',
+    body: 'Make sure you meet with your ACDC before registration opens. Spots in dual credit courses fill fast — don\'t wait.',
+    daysAgo: 3,
+  },
+  {
+    id: 'seed3',
+    category: 'TC Promise',
+    title: 'You Could Qualify for TC Promise',
+    body: 'Students who complete dual credit and meet eligibility requirements may qualify for the TC Promise scholarship. Ask your ACDC for details.',
+    daysAgo: 7,
+  },
+];
+
+function seedRelTime(daysAgo) {
+  if (daysAgo === 0) return 'Today';
+  if (daysAgo === 1) return 'Yesterday';
+  return `${daysAgo}d ago`;
+}
+
+const CATEGORY_STYLES = {
+  'Announcement': { bg: 'rgba(6,89,144,.10)',    color: '#065990' },
+  'Reminder':     { bg: 'rgba(249,115,22,.10)',   color: '#c2410c' },
+  'TC Promise':   { bg: 'rgba(22,163,74,.10)',    color: '#15803d' },
+  'Event':        { bg: 'rgba(124,58,237,.10)',   color: '#7c3aed' },
+};
+
+/* ── CoachPhoto ── */
+function CoachPhoto({ photo, name, size = 44 }) {
+  const [err, setErr] = useState(false);
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  if (!photo || err) {
+    return (
+      <div style={{
+        width: size, height: size, borderRadius: '50%',
+        background: 'linear-gradient(135deg,rgba(6,89,144,.18),rgba(6,89,144,.38))',
+        border: '2px solid rgba(234,255,0,.55)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0,
+      }}>
+        <span style={{ fontFamily: FF, fontSize: size * 0.33, fontWeight: 800, color: C.blue }}>{initials}</span>
+      </div>
+    );
+  }
   return (
-    <div
-      ref={setNodeRef}
+    <img
+      src={photo}
+      alt={name}
+      onError={() => setErr(true)}
       style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.45 : 1,
-        position: 'relative',
-        zIndex: isDragging ? 50 : 'auto',
+        width: size, height: size, borderRadius: '50%',
+        objectFit: 'cover', objectPosition: 'top',
+        border: '2px solid rgba(234,255,0,.55)',
+        flexShrink: 0,
+      }}
+    />
+  );
+}
+
+/* ── ACDC Badge Strip ── */
+function AcdcStrip({ acdc, onNavigate }) {
+  return (
+    <button
+      onClick={() => onNavigate('acdc')}
+      style={{
+        width: '100%', boxSizing: 'border-box',
+        background: '#fff',
+        border: `1px solid ${C.border}`,
+        borderRadius: 16,
+        padding: '10px 14px',
+        display: 'flex', alignItems: 'center', gap: 12,
+        cursor: 'pointer',
+        boxShadow: '0 2px 10px rgba(6,89,144,.08)',
+        textAlign: 'left',
       }}
     >
-      {children(setActivatorNodeRef, listeners, attributes)}
-    </div>
+      <CoachPhoto photo={acdc.photo} name={acdc.name} size={44} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '1.1px', marginBottom: 1 }}>
+          My ACDC
+        </div>
+        <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, color: C.text, letterSpacing: '-0.2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {acdc.isFallback ? 'Dual Credit Office' : acdc.name}
+        </div>
+      </div>
+      <a
+        href={acdc.schedulingUrl || '#'}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: '#EAFF00',
+          border: 'none',
+          borderRadius: 10,
+          padding: '7px 14px',
+          fontFamily: FF, fontSize: 12, fontWeight: 800, color: '#022b52',
+          cursor: 'pointer',
+          textDecoration: 'none',
+          whiteSpace: 'nowrap',
+          flexShrink: 0,
+        }}
+      >
+        Schedule
+      </a>
+    </button>
   );
 }
 
-/* ── Card components ── */
+/* ── Next Deadline Card ── */
+function NextDeadlineCard({ onNavigate, schoolId }) {
+  const filtered = eventsData.filter(e => e.type === 'deadline');
+  const item = filtered[0] || null;
+  const days = item ? item.days : null;
+  const formatted = item ? formatDate(item.date) : null;
 
-function DeadlineCard({ handleRef, listeners, attributes, onNavigate }) {
   return (
-    <div style={{ borderRadius: 18, overflow: 'hidden', boxShadow: '0 4px 16px rgba(6,89,144,.22)' }}>
-      <div style={{ background: '#065990', padding: '13px 13px 10px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 9 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(234,255,0,.15)', border: '1px solid rgba(234,255,0,.3)', borderRadius: 7, padding: '3px 8px' }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#EAFF00', animation: 'tcPulse 2s infinite' }} />
-            <span style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: '#EAFF00', textTransform: 'uppercase', letterSpacing: '1px' }}>Next Deadline</span>
+    <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 3px 14px rgba(6,89,144,.15)' }}>
+      <div style={{ background: C.blue, padding: '13px 15px 11px', position: 'relative' }}>
+        {/* Lime left accent bar */}
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: '#EAFF00', borderRadius: '0 0 0 0' }} />
+        <div style={{ paddingLeft: 8 }}>
+          <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: 'rgba(234,255,0,.85)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 6 }}>
+            Next Deadline
           </div>
-          <div ref={handleRef} {...listeners} {...attributes} style={{ cursor: 'grab', touchAction: 'none' }}>
-            <DragHandleIcon light />
-          </div>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          <div>
-            <div style={{ fontFamily: FF, fontSize: 13.5, fontWeight: 800, color: '#fff', letterSpacing: '-0.3px', lineHeight: 1.25 }}>Summer<br/>Registration</div>
-            <div style={{ fontFamily: FF, fontSize: 11, color: 'rgba(255,255,255,.5)', marginTop: 4 }}>May 28, 2025</div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontFamily: FF, fontSize: 34, fontWeight: 900, color: '#EAFF00', lineHeight: 1, letterSpacing: '-2px' }}>7</div>
-            <div style={{ fontFamily: FF, fontSize: 9, color: 'rgba(255,255,255,.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>days</div>
-          </div>
+          {item ? (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <div>
+                <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 800, color: '#fff', letterSpacing: '-0.3px', lineHeight: 1.25 }}>
+                  {item.title}
+                </div>
+                <div style={{ fontFamily: FF, fontSize: 11, color: 'rgba(255,255,255,.5)', marginTop: 3 }}>
+                  {formatted}
+                </div>
+              </div>
+              {days !== null && (
+                <div style={{ textAlign: 'right', flexShrink: 0, paddingLeft: 12 }}>
+                  <div style={{ fontFamily: FF, fontSize: 32, fontWeight: 900, color: '#EAFF00', lineHeight: 1, letterSpacing: '-2px' }}>{days}</div>
+                  <div style={{ fontFamily: FF, fontSize: 9, color: 'rgba(255,255,255,.45)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>days</div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ fontFamily: FF, fontSize: 13, color: 'rgba(255,255,255,.45)', fontStyle: 'italic' }}>
+              No upcoming deadlines
+            </div>
+          )}
         </div>
       </div>
-      <button onClick={() => onNavigate('events')} style={{ width: '100%', background: '#fff', border: 'none', padding: '8px 13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontFamily: FF, fontSize: 11, color: C.text2, fontWeight: 500 }}>View all</span>
+      <button
+        onClick={() => onNavigate('events')}
+        style={{ width: '100%', background: '#fff', border: 'none', padding: '7px 15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+      >
+        <span style={{ fontFamily: FF, fontSize: 11, color: C.text2, fontWeight: 500 }}>View all deadlines</span>
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
       </button>
     </div>
   );
 }
 
-function EventCard({ handleRef, listeners, attributes, onNavigate }) {
+/* ── Next Event Card ── */
+function NextEventCard({ onNavigate }) {
+  const filtered = eventsData.filter(e => e.type === 'event');
+  const item = filtered[0] || null;
+  const days = item ? item.days : null;
+  const formatted = item ? formatDate(item.date) : null;
+
   return (
-    <div style={{ borderRadius: 18, overflow: 'hidden', boxShadow: '0 4px 16px rgba(10,61,98,.28)' }}>
-      <div style={{ background: '#0a3d62', padding: '13px 13px 10px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 9 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(147,210,255,.13)', border: '1px solid rgba(147,210,255,.28)', borderRadius: 7, padding: '3px 8px' }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#93d2ff' }} />
-            <span style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: '#93d2ff', textTransform: 'uppercase', letterSpacing: '1px' }}>Next Event</span>
+    <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 3px 14px rgba(6,89,144,.12)' }}>
+      <div style={{ background: '#0a3d62', padding: '13px 15px 11px', position: 'relative' }}>
+        {/* Royal Blue left accent bar */}
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: '#93d2ff', borderRadius: '0 0 0 0' }} />
+        <div style={{ paddingLeft: 8 }}>
+          <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: 'rgba(147,210,255,.85)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 6 }}>
+            Next Event
           </div>
-          <div ref={handleRef} {...listeners} {...attributes} style={{ cursor: 'grab', touchAction: 'none' }}>
-            <DragHandleIcon light />
-          </div>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          <div>
-            <div style={{ fontFamily: FF, fontSize: 13.5, fontWeight: 800, color: '#fff', letterSpacing: '-0.3px', lineHeight: 1.25 }}>TSIA Prep<br/>Workshop</div>
-            <div style={{ fontFamily: FF, fontSize: 11, color: 'rgba(255,255,255,.5)', marginTop: 4 }}>Jun 3 · TC Campus</div>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontFamily: FF, fontSize: 34, fontWeight: 900, color: '#93d2ff', lineHeight: 1, letterSpacing: '-2px' }}>13</div>
-            <div style={{ fontFamily: FF, fontSize: 9, color: 'rgba(255,255,255,.4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>days</div>
-          </div>
+          {item ? (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <div>
+                <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 800, color: '#fff', letterSpacing: '-0.3px', lineHeight: 1.25 }}>
+                  {item.title}
+                </div>
+                <div style={{ fontFamily: FF, fontSize: 11, color: 'rgba(255,255,255,.5)', marginTop: 3 }}>
+                  {item.location ? `${formatted} · ${item.location}` : formatted}
+                </div>
+              </div>
+              {days !== null && (
+                <div style={{ textAlign: 'right', flexShrink: 0, paddingLeft: 12 }}>
+                  <div style={{ fontFamily: FF, fontSize: 32, fontWeight: 900, color: '#93d2ff', lineHeight: 1, letterSpacing: '-2px' }}>{days}</div>
+                  <div style={{ fontFamily: FF, fontSize: 9, color: 'rgba(255,255,255,.45)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>days</div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ fontFamily: FF, fontSize: 13, color: 'rgba(255,255,255,.45)', fontStyle: 'italic' }}>
+              No upcoming events
+            </div>
+          )}
         </div>
       </div>
-      <button onClick={() => onNavigate('events')} style={{ width: '100%', background: '#fff', border: 'none', padding: '8px 13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontFamily: FF, fontSize: 11, color: C.text2, fontWeight: 500 }}>View all</span>
+      <button
+        onClick={() => onNavigate('events')}
+        style={{ width: '100%', background: '#fff', border: 'none', padding: '7px 15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+      >
+        <span style={{ fontFamily: FF, fontSize: 11, color: C.text2, fontWeight: 500 }}>View all events</span>
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
       </button>
     </div>
   );
 }
 
-function NotificationCard({ handleRef, listeners, attributes, onNavigate, notif }) {
+/* ── Recent Notification Card ── */
+function RecentNotifCard({ notif, onNavigate }) {
   return (
-    <div style={{ background: '#fff', borderRadius: 18, padding: '11px 14px', boxShadow: '0 2px 8px rgba(0,0,0,.05)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 9 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#EAFF00' }} />
-          <span style={{ fontFamily: FF, fontSize: 10.5, fontWeight: 700, color: C.text, textTransform: 'uppercase', letterSpacing: '1.1px' }}>Last Notification</span>
+    <button
+      onClick={() => onNavigate('notifications')}
+      style={{
+        width: '100%', boxSizing: 'border-box',
+        background: '#fff', border: `1px solid ${C.border}`,
+        borderRadius: 16, padding: '12px 14px',
+        cursor: 'pointer', textAlign: 'left',
+        boxShadow: '0 2px 8px rgba(0,0,0,.04)',
+        display: 'flex', alignItems: 'center', gap: 12,
+      }}
+    >
+      <div style={{ width: 40, height: 40, borderRadius: 12, background: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EAFF00" strokeWidth="2.2" strokeLinecap="round">
+          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
+        </svg>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '1.1px', marginBottom: 2 }}>
+          Recent Notification
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span onClick={() => onNavigate('notifications')} style={{ fontFamily: FF, fontSize: 11.5, fontWeight: 700, color: C.blue, cursor: 'pointer' }}>See all</span>
-          <div ref={handleRef} {...listeners} {...attributes} style={{ cursor: 'grab', touchAction: 'none' }}>
-            <DragHandleIcon />
-          </div>
+        <div style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: C.text, letterSpacing: '-0.1px', marginBottom: 1 }}>
+          {notif ? notif.title : 'No notifications yet'}
+        </div>
+        <div style={{ fontFamily: FF, fontSize: 11.5, color: C.text2, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+          {notif ? notif.body : 'Enable push notifications to stay up to date.'}
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-        <div style={{ width: 42, height: 42, borderRadius: 13, background: '#065990', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#EAFF00" strokeWidth="2.2" strokeLinecap="round">
-            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
-          </svg>
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 1 }}>
-            {notif ? notif.title : 'No notifications yet'}
-          </div>
-          <div style={{ fontFamily: FF, fontSize: 11.5, color: C.text2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {notif ? notif.body : 'Enable push notifications to get started.'}
-          </div>
-        </div>
-        <div style={{ fontFamily: FF, fontSize: 10.5, color: C.text3, flexShrink: 0, paddingLeft: 4 }}>
-          {notif ? relTime(notif.timestamp) : ''}
-        </div>
+      <div style={{ flexShrink: 0, paddingLeft: 4, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+        {notif && <span style={{ fontFamily: FF, fontSize: 10, color: C.text3 }}>{relTime(notif.timestamp)}</span>}
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={C.text3} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
       </div>
-    </div>
+    </button>
   );
 }
 
-function AcdcCard({ handleRef, listeners, attributes, acdc, shortName }) {
+/* ── Timeline Card ── */
+function TimelineCard({ item }) {
+  const [expanded, setExpanded] = useState(false);
+  const catStyle = CATEGORY_STYLES[item.category] || CATEGORY_STYLES['Announcement'];
+  const timestamp = item.daysAgo !== undefined ? seedRelTime(item.daysAgo) : (item.timestamp ? relTime(item.timestamp) : '');
+
   return (
-    <div style={{ background: '#fff', borderRadius: 18, padding: '13px 14px', boxShadow: '0 2px 8px rgba(0,0,0,.05)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 11 }}>
-        <span style={{ fontFamily: FF, fontSize: 12, fontWeight: 800, color: C.text, letterSpacing: '-0.1px' }}>My ACDC</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ background: 'rgba(6,89,144,.08)', borderRadius: 8, padding: '3px 9px' }}>
-            <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: C.blue }}>{shortName}</span>
-          </div>
-          <div ref={handleRef} {...listeners} {...attributes} style={{ cursor: 'grab', touchAction: 'none' }}>
-            <DragHandleIcon />
-          </div>
-        </div>
+    <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 16, padding: '13px 15px', boxShadow: '0 1px 6px rgba(0,0,0,.04)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: catStyle.color, background: catStyle.bg, borderRadius: 20, padding: '3px 9px', letterSpacing: '0.3px' }}>
+          {item.category}
+        </span>
+        <span style={{ fontFamily: FF, fontSize: 10.5, color: C.text3 }}>{timestamp}</span>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 12 }}>
-        <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'linear-gradient(135deg,rgba(6,89,144,.12),rgba(6,89,144,.32))', border: '2.5px solid #fff', boxShadow: '0 3px 10px rgba(6,89,144,.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 800, color: C.blue }}>
-            {acdc.name.split(' ').map(w => w[0]).join('').slice(0, 2)}
-          </span>
-        </div>
-        <div>
-          <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 800, color: C.text, letterSpacing: '-0.3px' }}>{acdc.name}</div>
-          <div style={{ fontFamily: FF, fontSize: 11.5, color: C.blue, fontWeight: 600, marginTop: 1 }}>Academic Coach for Dual Credit</div>
-        </div>
+      <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, color: C.text, letterSpacing: '-0.2px', lineHeight: 1.3, marginBottom: 5 }}>
+        {item.title}
       </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button style={{ flex: 1, height: 40, background: '#EAFF00', border: 'none', borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#022b52" strokeWidth="2.5" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-          <span style={{ fontFamily: FF, fontSize: 12.5, fontWeight: 800, color: '#022b52' }}>Schedule a Meeting</span>
+      <div
+        style={{
+          fontFamily: FF, fontSize: 12.5, color: C.text2, lineHeight: 1.55,
+          overflow: expanded ? 'visible' : 'hidden',
+          display: expanded ? 'block' : '-webkit-box',
+          WebkitLineClamp: expanded ? undefined : 3,
+          WebkitBoxOrient: 'vertical',
+        }}
+      >
+        {item.body}
+      </div>
+      {!expanded && item.body && item.body.length > 120 && (
+        <button
+          onClick={() => setExpanded(true)}
+          style={{ background: 'none', border: 'none', padding: '4px 0 0', cursor: 'pointer', fontFamily: FF, fontSize: 12, fontWeight: 700, color: C.blue }}
+        >
+          Read more
         </button>
-        <a href={`mailto:${acdc.email}`} style={{ width: 40, height: 40, borderRadius: 12, background: '#065990', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/></svg>
-        </a>
-        <a href={`tel:${acdc.phone}`} style={{ width: 40, height: 40, borderRadius: 12, background: '#065990', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 0112 18.85a19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-        </a>
-      </div>
+      )}
     </div>
   );
 }
 
-/* ── Main screen ── */
+/* ── Main HomeScreen ── */
 export default function HomeScreen({ role, school, grade, onNavigate, tabs }) {
   const schoolInfo = schoolList.find(s => s.id === school.id) || {};
-  const barColor = schoolInfo.bar || '#065990';
+  const barColor   = schoolInfo.bar       || '#065990';
   const barTextColor = schoolInfo.textColor || '#fff';
-  const acdc = getAcdcForSchool(school.id, grade);
-  const shortName = school.name.replace(' HS', '').replace(' High', '');
-  const [cardOrder, setCardOrder] = useState(loadOrder);
-  const [latestNotif, setLatestNotif] = useState(null);
+  const acdc       = getAcdcForSchool(school.id, grade);
+
+  const [latestNotif,  setLatestNotif]  = useState(null);
+  const [timeline,     setTimeline]     = useState(SEED_TIMELINE);
+  const [profile,      setProfile]      = useState(null);
 
   useEffect(() => {
     loadNotifications().then(ns => setLatestNotif(ns[0] ?? null));
+    getStudentProfile().then(p => setProfile(p));
+
+    /* Try Firestore for timeline */
+    (async () => {
+      try {
+        const { initializeApp, getApps } = await import('firebase/app');
+        const { getFirestore, collection, query, orderBy, limit, getDocs } = await import('firebase/firestore');
+        const firebaseConfig = {
+          apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
+          authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+          projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID,
+          storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+          messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+          appId:             import.meta.env.VITE_FIREBASE_APP_ID,
+        };
+        const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const q = query(collection(db, 'timeline'), orderBy('timestamp', 'desc'), limit(20));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const cards = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          setTimeline(cards);
+        }
+      } catch {}
+    })();
   }, []);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
-
-  const handleDragEnd = ({ active, over }) => {
-    if (!over || active.id === over.id) return;
-    const next = arrayMove(cardOrder, cardOrder.indexOf(active.id), cardOrder.indexOf(over.id));
-    setCardOrder(next);
-    localStorage.setItem(CARD_ORDER_KEY, JSON.stringify(next));
-  };
-
-  const renderCard = (id, handleRef, listeners, attributes) => {
-    switch (id) {
-      case 'deadline':    return <DeadlineCard    key={id} handleRef={handleRef} listeners={listeners} attributes={attributes} onNavigate={onNavigate} />;
-      case 'event':       return <EventCard       key={id} handleRef={handleRef} listeners={listeners} attributes={attributes} onNavigate={onNavigate} />;
-      case 'notification':return <NotificationCard key={id} handleRef={handleRef} listeners={listeners} attributes={attributes} onNavigate={onNavigate} notif={latestNotif} />;
-      case 'acdc':        return <AcdcCard        key={id} handleRef={handleRef} listeners={listeners} attributes={attributes} acdc={acdc} shortName={shortName} />;
-      default: return null;
-    }
-  };
+  const greeting = getGreeting(profile, role);
 
   return (
-    <div className="tc-screen" style={{ width: '100%', height: '100%', background: '#eef1f5', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+    <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column', position: 'relative' }}>
 
       {/* ── HEADER ── */}
-      <div style={{ background: '#065990', flexShrink: 0, paddingTop: 'env(safe-area-inset-top, 0px)' }}>
-        <div style={{ padding: '10px 16px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontFamily: FF, fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: '-0.7px', lineHeight: 1.1 }}>
-            {role === 'student' ? 'Student' : 'Parent'}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.15)', borderRadius: 20, padding: '5px 11px' }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="4" fill="#EAFF00"/>
-                <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="#EAFF00" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-              <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: '#fff' }}>84°F</span>
+      <div style={{ background: C.blue, flexShrink: 0, paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+        <div style={{ padding: '12px 16px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontFamily: FF, fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: '-0.7px', lineHeight: 1.1 }}>
+              {greeting}
             </div>
-            <button onClick={() => onNavigate('notifications')} style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" strokeWidth="2" strokeLinecap="round">
-                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
-              </svg>
-            </button>
+            <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,.55)', marginTop: 2, letterSpacing: '0.1px' }}>
+              {school.name} · {role === 'student' ? 'Student' : 'Parent'}
+            </div>
           </div>
+          <button
+            onClick={() => onNavigate('notifications')}
+            style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" strokeWidth="2" strokeLinecap="round">
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
+            </svg>
+          </button>
         </div>
+
         {/* School color bar */}
         <div style={{ background: barColor, padding: '6px 16px', display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontFamily: FF, fontSize: 12.5, fontWeight: 700, color: barTextColor }}>{school.name}</span>
@@ -287,37 +409,35 @@ export default function HomeScreen({ role, school, grade, onNavigate, tabs }) {
 
       {/* ── BODY ── */}
       <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 88 }}>
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={cardOrder} strategy={verticalListSortingStrategy}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '10px 12px' }}>
-              {cardOrder.map(id => (
-                <SortableCard key={id} id={id}>
-                  {(handleRef, listeners, attributes) => renderCard(id, handleRef, listeners, attributes)}
-                </SortableCard>
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 14px 0' }}>
 
-        {/* Apply banner — not draggable */}
-        <div style={{ padding: '0 12px 12px' }}>
-          <button
-            onClick={() => onNavigate('apply')}
-            style={{ width: '100%', background: '#EAFF00', border: 'none', borderRadius: 18, padding: '14px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxSizing: 'border-box', boxShadow: '0 4px 20px rgba(234,255,0,.28)' }}
-            onMouseDown={e => e.currentTarget.style.transform = 'scale(0.98)'}
-            onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
-            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-            onTouchStart={e => e.currentTarget.style.transform = 'scale(0.98)'}
-            onTouchEnd={e => e.currentTarget.style.transform = 'scale(1)'}
-          >
-            <div>
-              <div style={{ fontFamily: FF, fontSize: 16, fontWeight: 900, color: '#022b52', letterSpacing: '-0.4px' }}>Apply for Dual Credit</div>
-              <div style={{ fontFamily: FF, fontSize: 11, color: '#044872', marginTop: 2 }}>Start your college journey today</div>
-            </div>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: '#022b52', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EAFF00" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </div>
-          </button>
+          {/* ACDC Strip */}
+          <AcdcStrip acdc={acdc} onNavigate={onNavigate} />
+
+          {/* Deadline + Event side-by-side on wider screens, stacked on mobile */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}
+               className="md:grid-cols-2">
+            <NextDeadlineCard onNavigate={onNavigate} schoolId={school.id} />
+            <NextEventCard onNavigate={onNavigate} />
+          </div>
+
+          {/* Recent Notification */}
+          <RecentNotifCard notif={latestNotif} onNavigate={onNavigate} />
+
+        </div>
+
+        {/* ── TIMELINE ── */}
+        <div style={{ padding: '20px 14px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+            <span style={{ fontFamily: FF, fontSize: 16, fontWeight: 900, color: C.text, letterSpacing: '-0.3px' }}>Timeline</span>
+            <div style={{ flex: 1, height: 2, borderRadius: 1, background: C.blue, opacity: 0.18 }} />
+            <div style={{ width: 28, height: 2, borderRadius: 1, background: C.blue }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 12 }}>
+            {timeline.map(item => (
+              <TimelineCard key={item.id} item={item} />
+            ))}
+          </div>
         </div>
       </div>
 
