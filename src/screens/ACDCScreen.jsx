@@ -228,63 +228,78 @@ function CoachCard({ acdc, school, grade, isTablet }) {
       <div style={{ height: 1, background: 'rgba(6,89,144,.08)', margin: '10px 0 10px' }} />
 
       {/* Three icon buttons row */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 14 }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 20 }}>
 
         {/* Calendar — Electric Lime fill, BLUE icon */}
-        <button
-          onClick={() => window.open(buildSchedulingUrl(), '_blank', 'noopener,noreferrer')}
-          style={{
-            width: 48, height: 48, borderRadius: 14,
-            background: LIME, border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.3" strokeLinecap="round">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-          </svg>
-        </button>
-
-        {/* Phone — gray fill, BLUE icon */}
-        <a
-          href={`tel:${acdc.phone}`}
-          style={{
-            width: 48, height: 48, borderRadius: 14,
-            background: 'rgba(6,89,144,.08)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            textDecoration: 'none',
-          }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.3" strokeLinecap="round">
-            <path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 0112 18.85a19.5 19.5 0 01-6-6A19.79 19.79 0 012.92 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
-          </svg>
-        </a>
-
-        {/* Envelope — Royal Blue fill, Lime icon */}
-        {acdc.email ? (
-          <a
-            href={`mailto:${acdc.email}`}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+          <button
+            onClick={() => window.open(buildSchedulingUrl(), '_blank', 'noopener,noreferrer')}
             style={{
               width: 48, height: 48, borderRadius: 14,
-              background: BLUE,
+              background: LIME, border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.3" strokeLinecap="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+            </svg>
+          </button>
+          <span style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 600, color: '#9ca3af', textAlign: 'center', lineHeight: 1.2, maxWidth: 60 }}>
+            Schedule Appointment
+          </span>
+        </div>
+
+        {/* Phone — gray fill, BLUE icon */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+          <a
+            href={`tel:${acdc.phone}`}
+            style={{
+              width: 48, height: 48, borderRadius: 14,
+              background: 'rgba(6,89,144,.08)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               textDecoration: 'none',
             }}
           >
-            <svg width="20" height="16" viewBox="0 0 24 20" fill="none" stroke={LIME} strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="2" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.3" strokeLinecap="round">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 0112 18.85a19.5 19.5 0 01-6-6A19.79 19.79 0 012.92 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
             </svg>
           </a>
-        ) : (
-          <div style={{
-            width: 48, height: 48, borderRadius: 14,
-            background: BLUE, opacity: 0.35,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}>
-            <svg width="20" height="16" viewBox="0 0 24 20" fill="none" stroke={LIME} strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="2" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/>
-            </svg>
-          </div>
-        )}
+          <span style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 600, color: '#9ca3af', textAlign: 'center', lineHeight: 1.2 }}>
+            Call
+          </span>
+        </div>
+
+        {/* Envelope — Royal Blue fill, Lime icon */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+          {acdc.email ? (
+            <a
+              href={`mailto:${acdc.email}`}
+              style={{
+                width: 48, height: 48, borderRadius: 14,
+                background: BLUE,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                textDecoration: 'none',
+              }}
+            >
+              <svg width="20" height="16" viewBox="0 0 24 20" fill="none" stroke={LIME} strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/>
+              </svg>
+            </a>
+          ) : (
+            <div style={{
+              width: 48, height: 48, borderRadius: 14,
+              background: BLUE, opacity: 0.35,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <svg width="20" height="16" viewBox="0 0 24 20" fill="none" stroke={LIME} strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/>
+              </svg>
+            </div>
+          )}
+          <span style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 600, color: '#9ca3af', textAlign: 'center', lineHeight: 1.2, opacity: acdc.email ? 1 : 0.45 }}>
+            Email
+          </span>
+        </div>
 
       </div>
     </Card>
