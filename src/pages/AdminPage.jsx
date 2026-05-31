@@ -118,13 +118,15 @@ export default function AdminPage() {
   const [timelineList, setTimelineList] = useState([]);
 
   // ── Events & Deadlines ────────────────────────────────────────────────────
-  const [evTitle,    setEvTitle]    = useState('');
-  const [evType,     setEvType]     = useState('Event');
-  const [evDate,     setEvDate]     = useState('');
-  const [evLocation, setEvLocation] = useState('');
-  const [evSchool,   setEvSchool]   = useState('all');
-  const [evStatus,   setEvStatus]   = useState(null);
-  const [eventsList, setEventsList] = useState([]);
+  const [evTitle,        setEvTitle]        = useState('');
+  const [evType,         setEvType]         = useState('Event');
+  const [evDate,         setEvDate]         = useState('');
+  const [evLocation,     setEvLocation]     = useState('');
+  const [evSchool,       setEvSchool]       = useState('all');
+  const [evRole,         setEvRole]         = useState('all');
+  const [evStatus,       setEvStatus]       = useState(null);
+  const [dcEventsList,   setDcEventsList]   = useState([]);
+  const [dcDeadlinesList,setDcDeadlinesList] = useState([]);
 
   // ── Notification history ──────────────────────────────────────────────────
   const [history, setHistory] = useState([]);
@@ -160,10 +162,15 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!db) return;
-    const q = query(collection(db, 'events'), orderBy('date', 'asc'));
-    return onSnapshot(q, snap => {
-      setEventsList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    const qEv = query(collection(db, 'dcEvents'),    orderBy('date',    'asc'));
+    const qDl = query(collection(db, 'dcDeadlines'), orderBy('dueDate', 'asc'));
+    const unsubEv = onSnapshot(qEv, snap => {
+      setDcEventsList(snap.docs.map(d => ({ id: d.id, _col: 'dcEvents', type: 'Event', ...d.data() })));
     }, () => {});
+    const unsubDl = onSnapshot(qDl, snap => {
+      setDcDeadlinesList(snap.docs.map(d => ({ id: d.id, _col: 'dcDeadlines', type: 'Deadline', ...d.data() })));
+    }, () => {});
+    return () => { unsubEv(); unsubDl(); };
   }, [db]);
 
   useEffect(() => {
@@ -281,24 +288,30 @@ export default function AdminPage() {
     if (!db) return;
     setEvStatus('saving');
     try {
-      await addDoc(collection(db, 'events'), {
-        title:    evTitle,
-        type:     evType,
-        date:     evDate,
+      const [year, month, day] = evDate.split('-').map(Number);
+      const dateTs = Timestamp.fromDate(new Date(year, month - 1, day, 12, 0, 0));
+      const isEvent = evType === 'Event';
+      const colName = isEvent ? 'dcEvents' : 'dcDeadlines';
+      await addDoc(collection(db, colName), {
+        title:        evTitle,
+        type:         evType,
+        ...(isEvent ? { date: dateTs } : { dueDate: dateTs }),
         ...(evLocation ? { location: evLocation } : {}),
-        school:    evSchool,
-        active:    true,
-        createdAt: serverTimestamp(),
+        school:       evSchool,
+        targetRole:   evRole,
+        active:       true,
+        createdAt:    serverTimestamp(),
       });
       setEvStatus('success');
-      setEvTitle(''); setEvType('Event'); setEvDate(''); setEvLocation(''); setEvSchool('all');
+      setEvTitle(''); setEvType('Event'); setEvDate('');
+      setEvLocation(''); setEvSchool('all'); setEvRole('all');
       setTimeout(() => setEvStatus(null), 3000);
     } catch { setEvStatus('error'); }
   }
 
-  async function handleDeleteEvent(id) {
+  async function handleDeleteEvent(id, colName) {
     if (!db) return;
-    await deleteDoc(doc(db, 'events', id));
+    await deleteDoc(doc(db, colName, id));
   }
 
   // ── Shared class strings ──────────────────────────────────────────────────
@@ -628,9 +641,7 @@ export default function AdminPage() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Target Role</label>
                     <select value={tlRole} onChange={e => setTlRole(e.target.value)} className={inputCls}>
-                      <option value="all">All</option>
-                      <option value="student">Students Only</option>
-                      <option value="parent">Parents Only</option>
+                      {ROLE_OPTIONS}
                     </select>
                   </div>
                   <div>
@@ -699,7 +710,7 @@ export default function AdminPage() {
               SECTION 5 — EVENTS & DEADLINES
           ══════════════════════════════════════════════════════════════ */}
           <div className="space-y-4">
-            <SectionDivider number="5" title="Events &amp; Deadlines" subtitle="Post events and deadlines visible in the app calendar" />
+            <SectionDivider number="5" title="Events &amp; Deadlines" subtitle="Post events and deadlines visible on the Home screen and Events screen" />
             <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <form onSubmit={handlePostEvent} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -742,6 +753,12 @@ export default function AdminPage() {
                       {SCHOOLS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Target Role</label>
+                    <select value={evRole} onChange={e => setEvRole(e.target.value)} className={inputCls}>
+                      {ROLE_OPTIONS}
+                    </select>
+                  </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <button
@@ -756,48 +773,64 @@ export default function AdminPage() {
                 </div>
               </form>
 
-              <div className="mt-6">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">
-                  All Events &amp; Deadlines {eventsList.length > 0 && `(${eventsList.length})`}
-                </h3>
-                {eventsList.length === 0 ? (
-                  <p className="text-sm text-gray-400">{db ? 'No events or deadlines yet.' : 'Connecting…'}</p>
-                ) : (
-                  <div className="space-y-2">
-                    {eventsList.map(ev => {
-                      const isDeadline = ev.type === 'Deadline';
-                      return (
-                        <div key={ev.id} className="flex items-center justify-between gap-4 border border-gray-200 rounded-lg px-4 py-3">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <span
-                                className="text-xs font-bold px-2 py-0.5 rounded-full"
-                                style={
-                                  isDeadline
-                                    ? { background: 'rgba(249,115,22,.10)', color: '#c2410c' }
-                                    : { background: 'rgba(124,58,237,.10)', color: '#7c3aed' }
-                                }
-                              >
-                                {ev.type || 'Event'}
-                              </span>
+              {(() => {
+                // Merge dcEvents + dcDeadlines, sort by date/dueDate ascending
+                const merged = [
+                  ...dcEventsList.map(e => ({ ...e, _sortTs: e.date })),
+                  ...dcDeadlinesList.map(e => ({ ...e, _sortTs: e.dueDate })),
+                ].sort((a, b) => {
+                  const ta = a._sortTs?.seconds ?? 0;
+                  const tb = b._sortTs?.seconds ?? 0;
+                  return ta - tb;
+                });
+                const totalCount = merged.length;
+                return (
+                  <div className="mt-6">
+                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">
+                      All Events &amp; Deadlines {totalCount > 0 && `(${totalCount})`}
+                    </h3>
+                    {totalCount === 0 ? (
+                      <p className="text-sm text-gray-400">{db ? 'No events or deadlines yet.' : 'Connecting…'}</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {merged.map(ev => {
+                          const isDeadline = ev.type === 'Deadline';
+                          const displayDate = isDeadline ? ev.dueDate : ev.date;
+                          return (
+                            <div key={`${ev._col}-${ev.id}`} className="flex items-center justify-between gap-4 border border-gray-200 rounded-lg px-4 py-3">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  <span
+                                    className="text-xs font-bold px-2 py-0.5 rounded-full"
+                                    style={
+                                      isDeadline
+                                        ? { background: 'rgba(249,115,22,.10)', color: '#c2410c' }
+                                        : { background: 'rgba(124,58,237,.10)', color: '#7c3aed' }
+                                    }
+                                  >
+                                    {ev.type}
+                                  </span>
+                                </div>
+                                <p className="text-sm font-semibold text-gray-900 truncate">{ev.title}</p>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                  {fmtTs(displayDate)}
+                                  {ev.location ? ` · ${ev.location}` : ''}
+                                  {' · '}{schoolName(ev.school)}
+                                  {ev.targetRole && ev.targetRole !== 'all' ? ` · ${roleName(ev.targetRole)}` : ''}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => handleDeleteEvent(ev.id, ev._col)}
+                                className="text-xs px-3 py-1.5 border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors shrink-0"
+                              >Delete</button>
                             </div>
-                            <p className="text-sm font-semibold text-gray-900 truncate">{ev.title}</p>
-                            <p className="text-xs text-gray-500 mt-0.5">
-                              {fmtDate(ev.date)}
-                              {ev.location ? ` · ${ev.location}` : ''}
-                              {' · '}{schoolName(ev.school)}
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => handleDeleteEvent(ev.id)}
-                            className="text-xs px-3 py-1.5 border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors shrink-0"
-                          >Delete</button>
-                        </div>
-                      );
-                    })}
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                );
+              })()}
             </section>
           </div>
 
