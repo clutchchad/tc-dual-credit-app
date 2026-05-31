@@ -229,7 +229,7 @@ export default function App() {
         );
 
       case 'pathways':
-        return <PathwaysScreen onNavigate={go} />;
+        return <PathwaysScreen {...navProps} />;
 
       case 'apply':
         return <ApplyScreen onNavigate={go} />;

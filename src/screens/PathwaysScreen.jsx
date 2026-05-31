@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
+import BottomNav from '../components/BottomNav';
 import { pathways } from '../data/pathways';
 import { schools } from '../data/schools';
 import { C, FF } from '../tokens';
@@ -115,7 +116,7 @@ function PathwayCard({ pathway, pdfUrl }) {
 
 // ── Main Screen ───────────────────────────────────────────────────────────────
 
-export default function PathwaysScreen({ onNavigate }) {
+export default function PathwaysScreen({ onNavigate, tabs }) {
   // Read school from localStorage
   const stored = useMemo(() => {
     try { return JSON.parse(localStorage.getItem('tcdc_v1') || '{}'); }
@@ -148,7 +149,7 @@ export default function PathwaysScreen({ onNavigate }) {
         <PageTitle title="Pathway Plans" sub="Choose your academic direction" onBack={() => onNavigate('home')} />
       </BlueHeader>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 60px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 80px' }}>
 
         {/* Guest banner */}
         {isGuest && (
@@ -191,6 +192,8 @@ export default function PathwaysScreen({ onNavigate }) {
           </>
         )}
       </div>
+
+      <BottomNav active="pathways" onNavigate={onNavigate} tabs={tabs} />
     </div>
   );
 }
