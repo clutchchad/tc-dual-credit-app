@@ -173,8 +173,11 @@ function CoachPhoto({ photo, name, size = 44 }) {
 }
 
 /* ── Unified sortable item — used for all 5 home cards ── */
-function SortableItem({ id, fullWidth, handlePos, children }) {
+// handleColor: 'blue' (default, for light/white/lime backgrounds)
+//              'lime' (for dark Royal Blue backgrounds — Next Deadline, Last Notification)
+function SortableItem({ id, fullWidth, handlePos, handleColor = 'blue', children }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const isLime = handleColor === 'lime';
   return (
     <div
       ref={setNodeRef}
@@ -198,15 +201,15 @@ function SortableItem({ id, fullWidth, handlePos, children }) {
             ? { top: 8, left: '50%', transform: 'translateX(-50%)' }
             : { top: 8, right: 8 }),
           width: 28, height: 22, borderRadius: 6,
-          background: 'rgba(6,89,144,.08)',
+          background: isLime ? 'rgba(234,255,0,.15)' : 'rgba(6,89,144,.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'grab', touchAction: 'none', zIndex: 10,
         }}
       >
         <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
-          <rect x="0" y="0" width="14" height="2" rx="1" fill={BLUE} fillOpacity="0.45"/>
-          <rect x="0" y="4" width="14" height="2" rx="1" fill={BLUE} fillOpacity="0.45"/>
-          <rect x="0" y="8" width="14" height="2" rx="1" fill={BLUE} fillOpacity="0.45"/>
+          <rect x="0" y="0" width="14" height="2" rx="1" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.9' : '0.45'}/>
+          <rect x="0" y="4" width="14" height="2" rx="1" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.9' : '0.45'}/>
+          <rect x="0" y="8" width="14" height="2" rx="1" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.9' : '0.45'}/>
         </svg>
       </div>
     </div>
@@ -839,9 +842,11 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
           {cardOrder.map(id => {
             const content = allCardContent[id];
             if (!content) return null;
-            const isAcdc = id === 'acdc';
+            const isAcdc      = id === 'acdc';
+            // deadline and lastnotif have Royal Blue headers — use Lime handle so it's visible
+            const handleColor = (id === 'deadline' || id === 'lastnotif') ? 'lime' : 'blue';
             return (
-              <SortableItem key={id} id={id} fullWidth={isAcdc} handlePos={isAcdc ? 'center' : 'right'}>
+              <SortableItem key={id} id={id} fullWidth={isAcdc} handlePos={isAcdc ? 'center' : 'right'} handleColor={handleColor}>
                 {content}
               </SortableItem>
             );
