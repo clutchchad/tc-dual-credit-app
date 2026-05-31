@@ -24,6 +24,31 @@ const BLUE      = '#065990';
 const DARK      = '#022b52';
 const LIME      = '#EAFF00';
 
+const FULL_SCHOOL_NAMES = {
+  txh:          'Texas High School',
+  le:           'Liberty-Eylau High School',
+  hooks:        'Hooks High School',
+  pg:           'Pleasant Grove High School',
+  bloomburg:    'Bloomburg High School',
+  avery:        'Avery High School',
+  dekalb:       'DeKalb High School',
+  maud:         'Maud High School',
+  prem:         'Premier High School',
+  nb:           'New Boston High School',
+  simms:        'James Bowie High School',
+  atlanta:      'Atlanta High School',
+  qc:           'Queen City High School',
+  mcleod:       'McLeod High School',
+  lk:           'Linden-Kildare High School',
+  rw:           'Redwater High School',
+  datx:         'Digital Academy of Texas',
+  'ar-premier': 'Premier High School - Arkansas',
+};
+
+function getStoredSchool() {
+  try { return JSON.parse(localStorage.getItem('tcdc_v1') || '{}').school || null; } catch { return null; }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Badge definitions — UI scaffold only, all locked in this build
 // ─────────────────────────────────────────────────────────────────────────────
@@ -490,6 +515,55 @@ function ResourcesPanel() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Pathways button — school-colored for known school, plain blue for guests
+// ─────────────────────────────────────────────────────────────────────────────
+function PathwaysButton({ onNavigate, schoolOverride }) {
+  const stored     = getStoredSchool();
+  const schoolObj  = schoolOverride || stored;
+  const schoolId   = schoolObj?.id   || null;
+  const schoolName = schoolId ? (FULL_SCHOOL_NAMES[schoolId] || schoolObj?.name || 'Your School') : null;
+  const bgColor    = schoolObj?.color     || BLUE;
+  const txtColor   = schoolObj?.textColor || '#ffffff';
+
+  const label = schoolName ? `Pathway Plans at ${schoolName}` : 'Browse Pathway Plans';
+
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ fontFamily: FF, fontSize: 10.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '1.4px', marginBottom: 8, paddingLeft: 4 }}>
+        Pathways
+      </div>
+      <button
+        onClick={() => onNavigate('pathways')}
+        style={{
+          width: '100%', background: bgColor, border: 'none',
+          borderRadius: 14, padding: '14px 15px',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
+          textAlign: 'left', boxSizing: 'border-box',
+          boxShadow: '0 2px 10px rgba(0,0,0,.12)',
+        }}
+      >
+        <div style={{
+          width: 34, height: 34, borderRadius: 10,
+          background: 'rgba(255,255,255,.18)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        }}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={txtColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/>
+            <path d="M12 19h4.5a3.5 3.5 0 000-7h-8a3.5 3.5 0 010-7H12"/>
+          </svg>
+        </div>
+        <span style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: txtColor, flex: 1, lineHeight: 1.3 }}>
+          {label}
+        </span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={txtColor} strokeWidth="2.5" strokeLinecap="round" style={{ opacity: 0.7, flexShrink: 0 }}>
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Guest — minimal profile CTA
 // ─────────────────────────────────────────────────────────────────────────────
 function GuestMoreScreen({ onChangeRole, onNavigate, tabs }) {
@@ -534,6 +608,9 @@ function GuestMoreScreen({ onChangeRole, onNavigate, tabs }) {
             <span style={{ fontFamily:FF, fontSize:16, fontWeight:900, color:DARK }}>Get Started</span>
           </button>
         </div>
+
+        {/* Pathways — guest gets generic blue button */}
+        <PathwaysButton onNavigate={onNavigate} schoolOverride={null} />
 
       </div>
       <BottomNav active="more" onNavigate={onNavigate} tabs={tabs} />
@@ -600,6 +677,9 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
 
         {/* Resources — all roles */}
         <ResourcesPanel />
+
+        {/* Pathways — school-colored button */}
+        <PathwaysButton onNavigate={onNavigate} schoolOverride={school} />
 
         {/* Profile settings */}
         <div style={{ marginBottom: 16 }}>

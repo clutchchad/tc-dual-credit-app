@@ -11,28 +11,29 @@ import OnboardGrade       from './screens/OnboardGrade';
 import OnboardConfirm     from './screens/OnboardConfirm';
 import HomeScreen         from './screens/HomeScreen';
 import ACDCScreen         from './screens/ACDCScreen';
-import ResourcesScreen    from './screens/ResourcesScreen';
-import EventsScreen       from './screens/EventsScreen';
-import MoreScreen         from './screens/MoreScreen';
-import PathwaysScreen     from './screens/PathwaysScreen';
-import ApplyScreen        from './screens/ApplyScreen';
-import NotificationsScreen from './screens/NotificationsScreen';
-import AcademicsScreen    from './screens/AcademicsScreen';
+import ResourcesScreen      from './screens/ResourcesScreen';
+import EventsScreen         from './screens/EventsScreen';
+import MoreScreen           from './screens/MoreScreen';
+import PathwaysScreen       from './screens/PathwaysScreen';
+import ApplyScreen          from './screens/ApplyScreen';
+import NotificationsScreen  from './screens/NotificationsScreen';
+import AcademicsScreen      from './screens/AcademicsScreen';
+import ImportantDatesScreen from './screens/ImportantDatesScreen';
 
 const STORAGE_KEY = 'tcdc_v1';
 
 const NAV_TABS = [
-  { id: 'home',      label: 'Home',      screen: 'home'      },
-  { id: 'acdc',      label: 'My ACDC',   screen: 'acdc'      },
-  { id: 'academics', label: 'Academics', screen: 'academics' },
-  { id: 'pathways',  label: 'Pathways',  screen: 'pathways'  },
-  { id: 'more',      label: 'More',      screen: 'more'      },
+  { id: 'home',      label: 'Home',             screen: 'home'      },
+  { id: 'acdc',      label: 'My ACDC',          screen: 'acdc'      },
+  { id: 'academics', label: 'Academic Progress', screen: 'academics' },
+  { id: 'dates',     label: 'Important Dates',  screen: 'dates'     },
+  { id: 'more',      label: 'More',             screen: 'more'      },
 ];
 
 const GUEST_NAV_TABS = [
-  { id: 'home',      label: 'Home',      screen: 'home'      },
-  { id: 'pathways',  label: 'Pathways',  screen: 'pathways'  },
-  { id: 'resources', label: 'Resources', screen: 'resources' },
+  { id: 'home',      label: 'Home',            screen: 'home'      },
+  { id: 'dates',     label: 'Important Dates', screen: 'dates'     },
+  { id: 'resources', label: 'Resources',       screen: 'resources' },
   { id: 'more',      label: 'More',      screen: 'more'      },
 ];
 
@@ -276,6 +277,11 @@ export default function App() {
       case 'pathways': {
         const isGuest = (role || 'guest') === 'guest';
         return <PathwaysScreen {...(isGuest ? guestNavProps : navProps)} />;
+      }
+
+      case 'dates': {
+        const isGuest = (role || 'guest') === 'guest';
+        return <ImportantDatesScreen {...(isGuest ? guestNavProps : navProps)} />;
       }
 
       case 'apply':
