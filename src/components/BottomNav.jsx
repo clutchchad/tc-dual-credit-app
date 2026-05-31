@@ -26,8 +26,6 @@ function NavIcon({ id, active }) {
   return icons[id] || null;
 }
 
-const BLUE = '#065990';
-
 export default function BottomNav({ active, onNavigate, tabs }) {
   return (
     <div className="tc-bottom-nav" style={{
@@ -87,21 +85,6 @@ export default function BottomNav({ active, onNavigate, tabs }) {
       })}
       </div>
 
-      {/* Logo footer */}
-      <div style={{
-        background: BLUE,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '4px 0',
-        paddingBottom: 'calc(4px + env(safe-area-inset-bottom, 0px))',
-      }}>
-        <img
-          src="/tcdclogo.png?v=4"
-          alt="TC Dual Credit"
-          style={{ width: 72, display: 'block', opacity: 0.85 }}
-        />
-      </div>
     </div>
   );
 }
