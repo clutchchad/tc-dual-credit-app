@@ -527,14 +527,32 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
                   {school?.name}{grade ? ` · ${grade}` : ''}
                 </div>
               </>
-            ) : (
-              /* Parent / Guest single-line greeting */
+            ) : isParent ? (
+              /* Parent identity block — mirrors student block, framed as "Parent of" */
               <>
-                <div style={{ fontFamily: FF, fontSize: isGuest ? 20 : 22, fontWeight: 900, color: '#fff', letterSpacing: '-0.6px', lineHeight: 1.1 }}>
+                <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: 'rgba(234,255,0,.75)', textTransform: 'uppercase', letterSpacing: '1.1px', marginBottom: 3 }}>
+                  Parent of
+                </div>
+                <div style={{ fontFamily: FF, fontSize: 21, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.2 }}>
+                  {fullName || 'Student'}
+                </div>
+                {storedStudentId && (
+                  <div style={{ fontFamily: FF, fontSize: 11.5, color: 'rgba(255,255,255,.60)', marginTop: 2, letterSpacing: '0.1px' }}>
+                    ID: {storedStudentId}
+                  </div>
+                )}
+                <div style={{ fontFamily: FF, fontSize: 11.5, color: 'rgba(255,255,255,.50)', marginTop: 1 }}>
+                  {school?.name}{grade ? ` · ${grade}` : ''}
+                </div>
+              </>
+            ) : (
+              /* Guest single-line greeting */
+              <>
+                <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.6px', lineHeight: 1.1 }}>
                   {greeting}
                 </div>
                 <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,.55)', marginTop: 2 }}>
-                  {isGuest ? 'Explore dual credit resources' : school?.name}
+                  Explore dual credit resources
                 </div>
               </>
             )}

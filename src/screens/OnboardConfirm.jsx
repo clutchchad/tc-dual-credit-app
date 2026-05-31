@@ -26,7 +26,8 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
     label: 'You are',
     value: isVerifiedStudent ? `${firstName} ${lastName}` : (role === 'student' ? 'Student' : role === 'parent' ? 'Parent/Guardian' : 'Guest'),
     sublabel: isVerifiedStudent ? 'Student' : null,
-    school: isVerifiedParent && school ? school.name : null,
+    school: null,
+    studentBlock: isVerifiedParent ? { name: `${firstName} ${lastName}`, grade, studentId } : null,
     iconBg: BLUE,
     rowBg: C.bg,
     badge: (isVerifiedStudent || isVerifiedParent) ? 'verified' : null,
@@ -145,10 +146,24 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
                     {row.sublabel}
                   </div>
                 )}
-                {/* School for verified parents */}
-                {row.school && (
-                  <div style={{ fontFamily:FF, fontSize:11, color:C.text3, marginTop:2 }}>
-                    {row.school}
+                {/* Student info block for verified parents */}
+                {row.studentBlock && (
+                  <div style={{ marginTop:10, paddingTop:10, borderTop:`1px solid ${C.border}`, display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontFamily:FF, fontSize:13, fontWeight:800, color:C.text, lineHeight:1.2 }}>
+                        {row.studentBlock.name}
+                      </div>
+                      {row.studentBlock.grade && (
+                        <div style={{ fontFamily:FF, fontSize:11, color:C.text3, marginTop:2 }}>
+                          {row.studentBlock.grade}
+                        </div>
+                      )}
+                    </div>
+                    {row.studentBlock.studentId && (
+                      <span style={{ fontFamily:'monospace', fontSize:11, color:C.text3, background:'rgba(0,0,0,.04)', borderRadius:6, padding:'2px 7px', flexShrink:0 }}>
+                        {row.studentBlock.studentId}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
