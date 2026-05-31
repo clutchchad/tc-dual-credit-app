@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import BottomNav from '../components/BottomNav';
-import { BlueHeader, PageTitle } from '../components/BlueHeader';
+import { BlueHeader } from '../components/BlueHeader';
 import { PATHWAYS } from '../data/pathways';
 import { SCHOOLS } from '../data/schools';
 import { C, FF } from '../tokens';
@@ -162,9 +162,7 @@ export default function PathwaysScreen({ onNavigate, tabs }) {
   return (
     <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column' }}>
       {/* Standard blue header — always Royal Blue */}
-      <BlueHeader>
-        <PageTitle title="Pathways" />
-      </BlueHeader>
+      <BlueHeader />
 
       {/* School color bar — shown when a school is active */}
       {activeSchool && (
