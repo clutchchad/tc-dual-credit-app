@@ -556,51 +556,56 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
 
         {/* Identity card — name, school/grade, student ID */}
         <div style={{
-          background: '#fff', borderRadius: 20,
-          border: `1px solid ${C.border}`,
-          boxShadow: '0 2px 10px rgba(0,0,0,.05)',
-          padding: '15px 16px',
+          background: BLUE, borderRadius: 20,
+          boxShadow: '0 4px 18px rgba(6,89,144,.30)',
+          padding: '18px 18px 16px',
           marginBottom: 14,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
         }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: FF, fontSize: 16, fontWeight: 800, color: C.text, letterSpacing: '-0.3px', lineHeight: 1.2 }}>
+          {/* Top row: name + ID pill */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
+            <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.2, flex: 1, minWidth: 0 }}>
               {firstName} {lastName}
             </div>
-            {metaLine ? (
-              <div style={{ fontFamily: FF, fontSize: 12, color: C.text3, marginTop: 3, lineHeight: 1.3 }}>
-                {metaLine}
-              </div>
-            ) : null}
-            {(gpa !== null || graduationYear !== null) && (
-              <div style={{ display: 'flex', gap: 6, marginTop: 7, flexWrap: 'wrap' }}>
-                {gpa !== null && (
-                  <span style={{
-                    fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
-                    background: 'rgba(6,89,144,.09)', borderRadius: 20, padding: '3px 9px',
-                  }}>
-                    GPA: {gpa}
-                  </span>
-                )}
-                {graduationYear !== null && (
-                  <span style={{
-                    fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
-                    background: 'rgba(6,89,144,.09)', borderRadius: 20, padding: '3px 9px',
-                  }}>
-                    Class of {graduationYear}
-                  </span>
-                )}
-              </div>
+            {studentId && (
+              <span style={{
+                fontFamily: 'monospace', fontSize: 11, fontWeight: 700,
+                color: BLUE, letterSpacing: '0.4px',
+                background: 'rgba(234,255,0,.85)', borderRadius: 20,
+                padding: '4px 10px', flexShrink: 0, whiteSpace: 'nowrap',
+              }}>
+                {studentId}
+              </span>
             )}
           </div>
-          {studentId ? (
-            <span style={{
-              fontFamily: 'monospace', fontSize: 12, color: C.text3, letterSpacing: '0.5px',
-              background: 'rgba(0,0,0,.04)', borderRadius: 8, padding: '4px 9px', flexShrink: 0,
-            }}>
-              {studentId}
-            </span>
-          ) : null}
+
+          {/* Grade / school line */}
+          {metaLine ? (
+            <div style={{ fontFamily: FF, fontSize: 12.5, color: 'rgba(255,255,255,.65)', marginBottom: 10, lineHeight: 1.3 }}>
+              {metaLine}
+            </div>
+          ) : <div style={{ marginBottom: 8 }} />}
+
+          {/* GPA + Class of chips */}
+          {(gpa !== null || graduationYear !== null) && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {gpa !== null && (
+                <span style={{
+                  fontFamily: FF, fontSize: 11, fontWeight: 700, color: '#fff',
+                  background: 'rgba(255,255,255,.18)', borderRadius: 20, padding: '3px 10px',
+                }}>
+                  GPA: {gpa}
+                </span>
+              )}
+              {graduationYear !== null && (
+                <span style={{
+                  fontFamily: FF, fontSize: 11, fontWeight: 700, color: '#fff',
+                  background: 'rgba(255,255,255,.18)', borderRadius: 20, padding: '3px 10px',
+                }}>
+                  Class of {graduationYear}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Section 2 — Credit Hours */}
