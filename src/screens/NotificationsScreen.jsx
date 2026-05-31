@@ -96,11 +96,28 @@ export default function NotificationsScreen({ onNavigate, tabs }) {
 
   return (
     <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column' }}>
-      <BlueHeader>
-        <PageTitle title="Notifications" onBack={() => onNavigate('home')} />
+      <BlueHeader style={{ paddingBottom: 52 }}>
+        <button
+          onClick={() => onNavigate('home')}
+          style={{ display:'flex', alignItems:'center', gap:5, background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,.75)', padding:'4px 0', marginBottom:8 }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+          <span style={{ fontFamily:FF, fontSize:13, fontWeight:600 }}>Back</span>
+        </button>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 01-3.46 0"/>
+          </svg>
+          <h1 style={{ fontFamily:FF, fontSize:26, fontWeight:900, color:'#fff', letterSpacing:'-0.8px', margin:0 }}>
+            Notifications
+          </h1>
+        </div>
       </BlueHeader>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 14px 100px', marginTop: -42 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 14px 100px', marginTop: -42, position: 'relative' }}>
 
         {/* Push opt-in card */}
         <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.border}`, boxShadow: '0 2px 10px rgba(0,0,0,.05)', padding: '15px 17px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 12 }}>
