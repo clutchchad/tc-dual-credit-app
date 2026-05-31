@@ -28,7 +28,7 @@ export const acdcContacts = [
     phone: '903-823-3200',
     photo: 'https://dualcredit.texarkanacollege.edu/wp-content/uploads/2025/08/113A5495-scaled.jpg',
     schedulingUrl: SCHEDULING_URL,
-    schools: ['pg', 'bl', 'av'],
+    schools: ['pg', 'bloomburg', 'avery'],
     txhGrades: [],
   },
   {
@@ -38,7 +38,7 @@ export const acdcContacts = [
     photo: 'https://dualcredit.texarkanacollege.edu/wp-content/uploads/2025/04/mckenzee-harmon.jpg',
     schedulingUrl: SCHEDULING_URL,
     // Texas High 11th grade; remaining schools below
-    schools: ['dk', 'maud', 'prem'],
+    schools: ['dekalb', 'maud', 'prem'],
     txhGrades: ['Junior'],
   },
   {
@@ -48,7 +48,7 @@ export const acdcContacts = [
     photo: 'https://dualcredit.texarkanacollege.edu/wp-content/uploads/2025/08/113A5500.jpg',
     schedulingUrl: SCHEDULING_URL,
     // Texas High 12th grade; remaining schools below
-    schools: ['nb', 'jb'],
+    schools: ['nb', 'simms'],
     txhGrades: ['Senior'],
   },
   {
@@ -57,7 +57,7 @@ export const acdcContacts = [
     phone: '903-823-3133',
     photo: 'https://dualcredit.texarkanacollege.edu/wp-content/uploads/2025/04/kate-page.jpg',
     schedulingUrl: SCHEDULING_URL,
-    schools: ['atl', 'qc', 'mc', 'lk'],
+    schools: ['atlanta', 'qc', 'mcleod', 'lk'],
     txhGrades: [],
   },
 ];
