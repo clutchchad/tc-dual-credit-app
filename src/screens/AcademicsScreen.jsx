@@ -302,7 +302,7 @@ function AcademicHistoryAccordion({ history }) {
         }}
       >
         <span style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: C.text }}>
-          Academic History
+          Completed Courses
         </span>
         <svg
           width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -332,7 +332,6 @@ function CompletedCoursesSection({ profile, studentId, firstName, lastName, grad
 
   return (
     <div style={{ marginTop: 14 }}>
-      <SectionHeading label="Academics" />
 
       {history.length === 0 ? (
         <p style={{ fontFamily: FF, fontSize: 13, color: C.text3, textAlign: 'center', padding: '16px 0' }}>
@@ -379,7 +378,7 @@ function CompletedCoursesSection({ profile, studentId, firstName, lastName, grad
         })}
         style={{
           width: '100%', height: 46, borderRadius: 13,
-          background: BLUE, border: `2px solid ${LIME}`,
+          background: 'transparent', border: `2px solid ${LIME}`,
           cursor: 'pointer', boxSizing: 'border-box',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           marginBottom: 8,
@@ -392,12 +391,12 @@ function CompletedCoursesSection({ profile, studentId, firstName, lastName, grad
         onTouchEnd={e   => e.currentTarget.style.opacity = '1'}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-          stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          stroke={DARK} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
           <polyline points="7 10 12 15 17 10"/>
           <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
-        <span style={{ fontFamily: FF, fontSize: 13.5, fontWeight: 800, color: '#fff' }}>
+        <span style={{ fontFamily: FF, fontSize: 13.5, fontWeight: 800, color: DARK }}>
           Download Unofficial Transcript
         </span>
       </button>
@@ -452,7 +451,7 @@ function TranscriptCard() {
       padding: '18px 18px 16px',
       marginBottom: 10,
     }}>
-      {/* Request button — lime outlined */}
+      {/* Request button — filled blue */}
       <button
         onClick={() => window.open(
           'https://tsorder.studentclearinghouse.org/school/select',
@@ -460,7 +459,7 @@ function TranscriptCard() {
         )}
         style={{
           width: '100%', height: 44, borderRadius: 13,
-          background: 'transparent', border: `2px solid ${LIME}`,
+          background: BLUE, border: `2px solid ${LIME}`,
           cursor: 'pointer', boxSizing: 'border-box',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
           marginBottom: 10,
@@ -473,12 +472,12 @@ function TranscriptCard() {
         onTouchEnd={e   => e.currentTarget.style.opacity = '1'}
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-          stroke={DARK} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
           <polyline points="15 3 21 3 21 9"/>
           <line x1="10" y1="14" x2="21" y2="3"/>
         </svg>
-        <span style={{ fontFamily: FF, fontSize: 13.5, fontWeight: 800, color: DARK }}>
+        <span style={{ fontFamily: FF, fontSize: 13.5, fontWeight: 800, color: '#fff' }}>
           Request Official Transcript
         </span>
       </button>
