@@ -16,8 +16,19 @@ function roleName(r) {
   if (!r || r === 'all') return 'All';
   if (r === 'student')   return 'Students';
   if (r === 'parent')    return 'Parents';
+  if (r === 'guest')     return 'Guests';
   return r;
 }
+
+// Shared role options including Guests Only — used in Send Now and Schedule forms
+const ROLE_OPTIONS = (
+  <>
+    <option value="all">All</option>
+    <option value="student">Students Only</option>
+    <option value="parent">Parents Only</option>
+    <option value="guest">Guests Only</option>
+  </>
+);
 function fmtDate(str) {
   if (!str) return '—';
   const [y, m, d] = str.split('-').map(Number);
@@ -50,6 +61,8 @@ export default function AdminPage() {
   const [schedMessage,  setSchedMessage]  = useState('');
   const [schedDate,     setSchedDate]     = useState('');
   const [schedTime,     setSchedTime]     = useState('');
+  const [schedSchool,   setSchedSchool]   = useState('all');
+  const [schedRole,     setSchedRole]     = useState('all');
   const [schedStatus,   setSchedStatus]   = useState(null);
   const [scheduledList, setScheduledList] = useState([]);
 
@@ -155,10 +168,12 @@ export default function AdminPage() {
       const scheduledAt = Timestamp.fromDate(new Date(year, month - 1, day, hour, minute, 0, 0));
       await addDoc(collection(db, 'scheduled-notifications'), {
         title: schedTitle, message: schedMessage, scheduledAt,
+        targetSchool: schedSchool, targetRole: schedRole,
         recurrence: 'none', active: true, fired: false, createdAt: Timestamp.now(),
       });
       setSchedStatus('success');
       setSchedTitle(''); setSchedMessage(''); setSchedDate(''); setSchedTime('');
+      setSchedSchool('all'); setSchedRole('all');
       setTimeout(() => setSchedStatus(null), 3000);
     } catch { setSchedStatus('error'); }
   }
@@ -289,9 +304,7 @@ export default function AdminPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                   <select value={pushRole} onChange={e => setPushRole(e.target.value)} className={inputCls}>
-                    <option value="all">All</option>
-                    <option value="student">Students Only</option>
-                    <option value="parent">Parents Only</option>
+                    {ROLE_OPTIONS}
                   </select>
                 </div>
               </div>
@@ -545,6 +558,20 @@ export default function AdminPage() {
                   />
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Target School</label>
+                  <select value={schedSchool} onChange={e => setSchedSchool(e.target.value)} className={inputCls}>
+                    {SCHOOLS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Target Role</label>
+                  <select value={schedRole} onChange={e => setSchedRole(e.target.value)} className={inputCls}>
+                    {ROLE_OPTIONS}
+                  </select>
+                </div>
+              </div>
               <div className="flex items-center gap-4">
                 <button
                   type="submit" disabled={schedStatus === 'saving' || !db}
@@ -565,7 +592,11 @@ export default function AdminPage() {
                     <div key={item.id} className="flex items-center justify-between gap-4 border border-gray-200 rounded-lg px-4 py-3">
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-gray-900 truncate">{item.title}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{fmtTs(item.scheduledAt)}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {fmtTs(item.scheduledAt)}
+                          {item.targetSchool && item.targetSchool !== 'all' ? ` · ${schoolName(item.targetSchool)}` : ''}
+                          {item.targetRole   && item.targetRole   !== 'all' ? ` · ${roleName(item.targetRole)}`    : ''}
+                        </p>
                       </div>
                       <div className="flex gap-2 shrink-0">
                         <button onClick={() => handleCancelSched(item.id)} className="text-xs px-3 py-1.5 border border-amber-400 text-amber-700 rounded-md hover:bg-amber-50 transition-colors">Cancel</button>
