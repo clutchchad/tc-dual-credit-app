@@ -6,6 +6,7 @@ import { events } from '../data/events';
 import { C, FF } from '../tokens';
 import { loadNotifications, relTime } from '../data/notifications';
 import { getStudentProfile } from '../data/studentProfile';
+import { buildSchedulingUrl } from '../data/buildSchedulingUrl';
 
 const BLUE = '#065990';
 const LIME = '#EAFF00';
@@ -172,7 +173,7 @@ function AcdcStrip({ acdc, onNavigate }) {
         </div>
       </div>
       <a
-        href={acdc.schedulingUrl || '#'}
+        href={buildSchedulingUrl()}
         target="_blank"
         rel="noopener noreferrer"
         onClick={e => e.stopPropagation()}

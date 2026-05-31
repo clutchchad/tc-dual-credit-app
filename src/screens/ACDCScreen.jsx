@@ -3,6 +3,7 @@ import { BlueHeader, PageTitle } from '../components/BlueHeader';
 import BottomNav from '../components/BottomNav';
 import Card from '../components/Card';
 import { getAcdcForSchool } from '../data/acdc';
+import { buildSchedulingUrl } from '../data/buildSchedulingUrl';
 import { dbReady } from '../firebase';
 import { C, FF } from '../tokens';
 
@@ -127,7 +128,7 @@ function CoachCard({ acdc, school, grade }) {
 
       {acdc.schedulingUrl && (
         <button
-          onClick={() => window.open(acdc.schedulingUrl, '_blank')}
+          onClick={() => window.open(buildSchedulingUrl(), '_blank', 'noopener,noreferrer')}
           style={{
             width: '100%', height: 52,
             background: LIME,
