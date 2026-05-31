@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   collection, addDoc, query, orderBy,
-  doc, updateDoc, deleteDoc, onSnapshot, Timestamp,
+  doc, updateDoc, deleteDoc, onSnapshot, Timestamp, serverTimestamp,
 } from 'firebase/firestore';
 import { useFirestore } from '../hooks/useFirestore';
 import { schools as schoolList } from '../data/schools';
@@ -89,6 +89,15 @@ export default function AdminPage() {
   // ── Notification history ──────────────────────────────────────────────────
   const [history, setHistory] = useState([]);
 
+  // ── Timeline ──────────────────────────────────────────────────────────────
+  const [tlTitle,    setTlTitle]    = useState('');
+  const [tlBody,     setTlBody]     = useState('');
+  const [tlCategory, setTlCategory] = useState('Announcement');
+  const [tlRole,     setTlRole]     = useState('all');
+  const [tlSchool,   setTlSchool]   = useState('all');
+  const [tlStatus,   setTlStatus]   = useState(null);
+  const [timelineList, setTimelineList] = useState([]);
+
   // ── Firestore listeners — each re-runs once db becomes available ──────────
   useEffect(() => {
     if (!db) return;
@@ -121,6 +130,16 @@ export default function AdminPage() {
     const q = query(collection(db, 'dcDeadlines'), orderBy('dueDate', 'asc'));
     return onSnapshot(q, snap => {
       setDeadlinesList(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }, () => {});
+  }, [db]);
+
+  useEffect(() => {
+    if (!db) return;
+    const q = query(collection(db, 'timeline'), orderBy('timestamp', 'desc'));
+    return onSnapshot(q, snap => {
+      setTimelineList(
+        snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.active !== false).slice(0, 10)
+      );
     }, () => {});
   }, [db]);
 
@@ -239,6 +258,33 @@ export default function AdminPage() {
   async function handleDeleteDeadline(id) {
     if (!db) return;
     await deleteDoc(doc(db, 'dcDeadlines', id));
+  }
+
+  // ── Timeline ──────────────────────────────────────────────────────────────
+  async function handlePostTimeline(e) {
+    e.preventDefault();
+    if (!db) return;
+    setTlStatus('saving');
+    try {
+      await addDoc(collection(db, 'timeline'), {
+        title:      tlTitle,
+        body:       tlBody,
+        category:   tlCategory,
+        targetRole: tlRole,
+        school:     tlSchool,
+        active:     true,
+        timestamp:  serverTimestamp(),
+      });
+      setTlStatus('success');
+      setTlTitle(''); setTlBody('');
+      setTlCategory('Announcement'); setTlRole('all'); setTlSchool('all');
+      setTimeout(() => setTlStatus(null), 3000);
+    } catch { setTlStatus('error'); }
+  }
+
+  async function handleDeleteTimeline(id) {
+    if (!db) return;
+    await updateDoc(doc(db, 'timeline', id), { active: false });
   }
 
   // ── Shared class strings ──────────────────────────────────────────────────
@@ -636,6 +682,108 @@ export default function AdminPage() {
                 ))}
               </div>
             )}
+          </section>
+
+          {/* ── Section 6: Timeline ── */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-bold text-tc-blue mb-4">Timeline</h2>
+            <form onSubmit={handlePostTimeline} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input
+                  type="text" required
+                  value={tlTitle} onChange={e => setTlTitle(e.target.value)}
+                  className={inputCls} placeholder="Card title"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Body</label>
+                <textarea
+                  required rows={3}
+                  value={tlBody} onChange={e => setTlBody(e.target.value)}
+                  className={inputCls} placeholder="Card body text"
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <select value={tlCategory} onChange={e => setTlCategory(e.target.value)} className={inputCls}>
+                    <option value="Announcement">Announcement</option>
+                    <option value="Reminder">Reminder</option>
+                    <option value="TC Promise">TC Promise</option>
+                    <option value="Event">Event</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Target Role</label>
+                  <select value={tlRole} onChange={e => setTlRole(e.target.value)} className={inputCls}>
+                    <option value="all">All</option>
+                    <option value="student">Students Only</option>
+                    <option value="parent">Parents Only</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Target School</label>
+                  <select value={tlSchool} onChange={e => setTlSchool(e.target.value)} className={inputCls}>
+                    {SCHOOLS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <button
+                  type="submit" disabled={tlStatus === 'saving' || !db}
+                  className="bg-tc-lime text-tc-dark px-5 py-2 rounded-lg text-sm font-bold disabled:opacity-50 transition-colors"
+                >
+                  {tlStatus === 'saving' ? 'Posting…' : 'Post to Timeline'}
+                </button>
+                {tlStatus === 'success' && <span className="text-green-600 text-sm font-medium">Posted!</span>}
+                {tlStatus === 'error'   && <span className="text-red-600 text-sm font-medium">Failed to post.</span>}
+              </div>
+            </form>
+
+            <div className="mt-6">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">Recent Posts</h3>
+              {timelineList.length === 0 ? (
+                <p className="text-sm text-gray-400">{db ? 'No timeline posts yet.' : 'Connecting…'}</p>
+              ) : (
+                <div className="space-y-2">
+                  {timelineList.map(item => {
+                    const catColors = {
+                      'Announcement': { bg: 'rgba(6,89,144,.10)',   color: '#065990' },
+                      'Reminder':     { bg: 'rgba(249,115,22,.10)', color: '#c2410c' },
+                      'TC Promise':   { bg: 'rgba(22,163,74,.10)',  color: '#15803d' },
+                      'Event':        { bg: 'rgba(124,58,237,.10)', color: '#7c3aed' },
+                    };
+                    const cs = catColors[item.category] || catColors['Announcement'];
+                    return (
+                      <div key={item.id} className="flex items-start justify-between gap-4 border border-gray-200 rounded-lg px-4 py-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span
+                              className="text-xs font-bold px-2 py-0.5 rounded-full"
+                              style={{ background: cs.bg, color: cs.color }}
+                            >
+                              {item.category}
+                            </span>
+                          </div>
+                          <p className="text-sm font-semibold text-gray-900 truncate">{item.title}</p>
+                          <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{item.body}</p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {fmtTs(item.timestamp)}
+                            {' · '}{roleName(item.targetRole)}
+                            {' · '}{schoolName(item.school)}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteTimeline(item.id)}
+                          className="text-xs px-3 py-1.5 border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors shrink-0"
+                        >Delete</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </section>
 
         </main>

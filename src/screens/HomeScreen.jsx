@@ -465,11 +465,11 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
       getStudentProfile().then(p => setProfile(p));
     }
 
-    /* Try Firestore for timeline */
+    /* Try Firestore for timeline — filter by active, role, and school */
     (async () => {
       try {
         const { initializeApp, getApps } = await import('firebase/app');
-        const { getFirestore, collection, query, orderBy, limit, getDocs } = await import('firebase/firestore');
+        const { getFirestore, collection, query, where, orderBy, limit, getDocs } = await import('firebase/firestore');
         const firebaseConfig = {
           apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
           authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -480,10 +480,26 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
         };
         const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
         const db  = getFirestore(app);
-        const q   = query(collection(db, 'timeline'), orderBy('timestamp', 'desc'), limit(20));
+        // Fetch active posts ordered by recency; filter role+school client-side
+        const q = query(
+          collection(db, 'timeline'),
+          where('active', '==', true),
+          orderBy('timestamp', 'desc'),
+          limit(40),
+        );
         const snap = await getDocs(q);
         if (!snap.empty) {
-          setTimeline(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+          const userRole   = role;
+          const userSchool = school?.id || localProfile.school || null;
+          const filtered = snap.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .filter(item => {
+              const roleMatch   = !item.targetRole || item.targetRole === 'all' || item.targetRole === userRole;
+              const schoolMatch = !item.school     || item.school     === 'all' || (userSchool && item.school === userSchool);
+              return roleMatch && schoolMatch;
+            })
+            .slice(0, 10);
+          if (filtered.length > 0) setTimeline(filtered);
         }
       } catch {}
     })();
