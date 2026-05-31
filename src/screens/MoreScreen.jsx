@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
 import BottomNav from '../components/BottomNav';
-import CreditHoursBar from '../components/CreditHoursBar';
 import { C, FF } from '../tokens';
 import { getStudentProfile } from '../data/studentProfile';
 import { getEngagementBadges, debugUnlockAll } from '../data/engagementTracker';
@@ -366,54 +365,6 @@ function AchievementsPanel({ unlockedIds }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Credit hours progress card — students only
-// ─────────────────────────────────────────────────────────────────────────────
-function CreditHoursCard({ earned, pending, total, target }) {
-  return (
-    <div style={{
-      background: '#fff',
-      borderRadius: 20,
-      border: `1px solid ${C.border}`,
-      boxShadow: '0 2px 10px rgba(0,0,0,.05)',
-      padding: '18px 18px 16px',
-      marginBottom: 14,
-    }}>
-      {/* Heading */}
-      <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 900, color: C.text, letterSpacing: '-0.3px' }}>
-        Associate's Degree Progress
-      </div>
-      <div style={{ fontFamily: FF, fontSize: 12, color: C.text3, marginTop: 2, marginBottom: 14 }}>
-        Dual Credit Hours Toward 60
-      </div>
-
-      {/* Stat chips */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 13 }}>
-        <div style={{ flex: 1, textAlign: 'center', background: 'rgba(6,89,144,.07)', borderRadius: 10, padding: '7px 4px' }}>
-          <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 900, color: BLUE, letterSpacing: '-0.4px' }}>{earned}</div>
-          <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: BLUE, opacity: 0.7, marginTop: 1 }}>Earned</div>
-        </div>
-        <div style={{ flex: 1, textAlign: 'center', background: 'rgba(180,210,40,.14)', borderRadius: 10, padding: '7px 4px' }}>
-          <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 900, color: '#5a7a00', letterSpacing: '-0.4px' }}>{pending}</div>
-          <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: '#5a7a00', opacity: 0.75, marginTop: 1 }}>In Progress</div>
-        </div>
-        <div style={{ flex: 1, textAlign: 'center', background: 'rgba(0,0,0,.04)', borderRadius: 10, padding: '7px 4px' }}>
-          <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 900, color: C.text2, letterSpacing: '-0.4px' }}>{total} <span style={{ fontSize: 11, fontWeight: 600 }}>of {target}</span></div>
-          <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: C.text3, marginTop: 1 }}>Total</div>
-        </div>
-      </div>
-
-      {/* Shared progress bar + motivational line */}
-      <CreditHoursBar earned={earned} pending={pending} total={total} target={target} />
-
-      {/* Disclaimer */}
-      <div style={{ fontFamily: FF, fontSize: 10.5, color: C.text3, textAlign: 'center', lineHeight: 1.5, marginTop: 10 }}>
-        Hours shown are estimates. Verify with your ACDC or myTC portal.
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Guest — minimal profile CTA
 // ─────────────────────────────────────────────────────────────────────────────
 function GuestMoreScreen({ onChangeRole, onNavigate, tabs }) {
@@ -469,9 +420,8 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
     try { return JSON.parse(localStorage.getItem(NOTIF_KEY)) ?? true; } catch { return true; }
   });
 
-  // Load Jenzabar profile — milestones → badge unlock + credit hours progress — students only
+  // Load Jenzabar profile — milestones → badge unlock — students only
   const [unlockedIds,  setUnlockedIds]  = useState(new Set());
-  const [creditHours,  setCreditHours]  = useState(null);
 
   // Engagement badges — refreshable so the debug button can trigger a re-render
   const [engBadges, setEngBadges] = useState(() => getEngagementBadges());
@@ -496,14 +446,6 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
       if (eng.earlyBird)      ids.add('early-bird');
 
       setUnlockedIds(ids);
-
-      // Credit hours progress
-      setCreditHours({
-        earned:  profile.creditHoursEarned         ?? 0,
-        pending: profile.creditHoursPending        ?? 0,
-        total:   profile.creditHoursTotal          ?? 0,
-        target:  profile.associatesDegreeTarget    ?? 60,
-      });
     });
   }, [role, engBadges]); // re-run when engBadges refreshes (debug button)
 
@@ -529,32 +471,6 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
 
         {/* Achievements — students only */}
         {isStudent && <AchievementsPanel unlockedIds={unlockedIds} />}
-
-        {/* Credit hours progress — students only */}
-        {isStudent && creditHours && (
-          <CreditHoursCard
-            earned={creditHours.earned}
-            pending={creditHours.pending}
-            total={creditHours.total}
-            target={creditHours.target}
-          />
-        )}
-
-        {/* Profile card */}
-        <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.border}`, boxShadow: '0 2px 10px rgba(0,0,0,.05)', padding: '17px 17px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ width: 52, height: 52, borderRadius: 16, background: 'linear-gradient(135deg,#022b52,#065990)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          </div>
-          <div>
-            <div style={{ fontFamily: FF, fontSize: 16, fontWeight: 800, color: C.text }}>{isStudent ? 'Student' : 'Parent'}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 1 }}>
-              <span style={{ fontFamily: FF, fontSize: 13, color: C.text2 }}>{school.name}</span>
-              {school.id === 'txh' && grade && (
-                <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: C.blue, background: 'rgba(6,89,144,.1)', borderRadius: 20, padding: '1px 7px' }}>{grade}</span>
-              )}
-            </div>
-          </div>
-        </div>
 
         {/* Profile settings */}
         <div style={{ marginBottom: 16 }}>

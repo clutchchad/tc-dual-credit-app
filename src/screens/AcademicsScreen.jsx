@@ -31,77 +31,6 @@ function SectionHeading({ label }) {
   );
 }
 
-// ── Section 1: Enrollment Status ──────────────────────────────────────────────
-
-function EnrollmentCard({ profile }) {
-  const status = profile.enrollmentStatus || 'unknown';
-
-  const badge = status === 'active'
-    ? { label: 'Active',   bg: 'rgba(22,163,74,.12)',  color: '#15803d', dot: '#16a34a' }
-    : status === 'pending'
-    ? { label: 'Pending',  bg: 'rgba(217,119,6,.12)',  color: '#b45309', dot: '#d97706' }
-    : { label: 'Inactive', bg: 'rgba(220,38,38,.10)',  color: '#b91c1c', dot: '#dc2626' };
-
-  return (
-    <div style={{
-      background: '#fff', borderRadius: 20,
-      border: `1px solid ${C.border}`,
-      boxShadow: '0 2px 10px rgba(0,0,0,.05)',
-      padding: '16px 18px',
-      marginBottom: 10,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        {/* Semester label */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 11,
-            background: 'linear-gradient(135deg,#022b52,#065990)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={LIME} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-            </svg>
-          </div>
-          <div>
-            <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 800, color: C.text, letterSpacing: '-0.2px' }}>
-              {profile.currentSemester || 'Fall 2026'}
-            </div>
-            <div style={{ fontFamily: FF, fontSize: 11, color: C.text3, marginTop: 1 }}>Current Semester</div>
-          </div>
-        </div>
-
-        {/* Status badge */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 5,
-          background: badge.bg, borderRadius: 20, padding: '5px 11px',
-        }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: badge.dot, flexShrink: 0 }} />
-          <span style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: badge.color }}>
-            {badge.label}
-          </span>
-        </div>
-      </div>
-
-      {/* Student name + ID */}
-      <div style={{
-        borderTop: `1px solid ${C.border}`,
-        paddingTop: 10,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      }}>
-        <span style={{ fontFamily: FF, fontSize: 12, color: C.text2, fontWeight: 500 }}>
-          {profile.firstName} {profile.lastName}
-        </span>
-        <span style={{
-          fontFamily: 'monospace', fontSize: 11.5, color: C.text3,
-          background: 'rgba(0,0,0,.04)', borderRadius: 6, padding: '2px 7px',
-        }}>
-          {profile.studentId}
-        </span>
-      </div>
-    </div>
-  );
-}
-
 // ── Section 2: Current Courses ────────────────────────────────────────────────
 
 function CourseCard({ course }) {
@@ -320,13 +249,14 @@ function GuestAcademics({ onNavigate, tabs }) {
 // ── Main content (student + parent share this) ────────────────────────────────
 
 function AcademicsContent({ profile, isParent, onBack, onNavigate, tabs }) {
-  const stored    = readStored();
+  const stored     = readStored();
   const schoolName = stored.school?.name || profile.highSchool || '';
   const grade      = stored.grade        || (profile.grade ? `Grade ${profile.grade}` : '');
+  const firstName  = stored.firstName    || profile.firstName || '';
+  const lastName   = stored.lastName     || profile.lastName  || '';
+  const studentId  = stored.studentId    || profile.studentId || '';
 
-  const subtext = isParent
-    ? [schoolName, grade].filter(Boolean).join(' · ')
-    : [schoolName, grade].filter(Boolean).join(' · ');
+  const metaLine = [schoolName, grade].filter(Boolean).join(' · ');
 
   const creditHours = {
     earned:  profile.creditHoursEarned      ?? 0,
@@ -339,17 +269,41 @@ function AcademicsContent({ profile, isParent, onBack, onNavigate, tabs }) {
     <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column' }}>
       <BlueHeader>
         <PageTitle
-          title={isParent ? "My Student's Academics" : 'My Academics'}
-          sub={subtext || undefined}
+          title={isParent ? "Student's Academics" : 'Academics'}
           onBack={onBack}
         />
       </BlueHeader>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 100px' }}>
 
-        {/* Section 1 — Enrollment Status */}
-        <SectionHeading label="Enrollment Status" />
-        <EnrollmentCard profile={profile} />
+        {/* Identity card — name, school/grade, student ID */}
+        <div style={{
+          background: '#fff', borderRadius: 20,
+          border: `1px solid ${C.border}`,
+          boxShadow: '0 2px 10px rgba(0,0,0,.05)',
+          padding: '15px 16px',
+          marginBottom: 14,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: FF, fontSize: 16, fontWeight: 800, color: C.text, letterSpacing: '-0.3px', lineHeight: 1.2 }}>
+              {firstName} {lastName}
+            </div>
+            {metaLine ? (
+              <div style={{ fontFamily: FF, fontSize: 12, color: C.text3, marginTop: 3, lineHeight: 1.3 }}>
+                {metaLine}
+              </div>
+            ) : null}
+          </div>
+          {studentId ? (
+            <span style={{
+              fontFamily: 'monospace', fontSize: 12, color: C.text3, letterSpacing: '0.5px',
+              background: 'rgba(0,0,0,.04)', borderRadius: 8, padding: '4px 9px', flexShrink: 0,
+            }}>
+              {studentId}
+            </span>
+          ) : null}
+        </div>
 
         {/* Section 2 — Current Courses */}
         <div style={{ marginTop: 14 }}>
