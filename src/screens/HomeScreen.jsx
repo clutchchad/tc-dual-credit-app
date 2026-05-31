@@ -220,9 +220,8 @@ function AcdcStrip({ acdc, onNavigate }) {
     >
       <div style={{
         width: 36, height: 36, borderRadius: 10,
-        background: BLUE, border: `2px solid ${LIME}`,
+        background: BLUE,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: `0 0 8px rgba(234,255,0,.35)`,
       }}>
         {content}
       </div>
@@ -263,7 +262,7 @@ function AcdcStrip({ acdc, onNavigate }) {
           : (
             <div style={{
               width: 36, height: 36, borderRadius: 10,
-              background: BLUE, border: `2px solid ${LIME}`,
+              background: BLUE,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               {mailIcon(LIME)}
