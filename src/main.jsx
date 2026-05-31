@@ -10,6 +10,10 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     window.location.reload();
   });
+  // updateViaCache: 'none' ensures the browser always fetches sw.js fresh from
+  // the server rather than serving a cached copy, so new deploys are picked up
+  // immediately.
+  navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
 }
 
 const Root = window.location.pathname === '/admin' ? AdminPage : App;
