@@ -4,6 +4,7 @@ import BottomNav from '../components/BottomNav';
 import { C, FF } from '../tokens';
 import { getStudentProfile } from '../data/studentProfile';
 import { getEngagementBadges, debugUnlockAll } from '../data/engagementTracker';
+import { resources } from '../data/resources';
 
 // Milestone key → badge id mapping (Jenzabar-sourced milestones only)
 // Engagement badges (on-a-roll, weekend-warrior, weekend-legend, early-bird) are
@@ -365,18 +366,144 @@ function AchievementsPanel({ unlockedIds }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Resources panel — collapsible dropdown, all roles
+// ─────────────────────────────────────────────────────────────────────────────
+const RES_TYPE_COLORS = { pdf: '#b91c1c', video: '#6d28d9', guide: '#0d7654' };
+const RES_TYPE_LABELS = { pdf: 'PDF', video: 'Video', guide: 'Guide' };
+const RES_FILTERS = [['all','All'],['pdf','PDF'],['video','Video'],['guide','Guide']];
+
+function ResourcesPanel() {
+  const [open, setOpen] = useState(false);
+  const [filter, setFilter] = useState('all');
+  const list = filter === 'all' ? resources : resources.filter(r => r.type === filter);
+
+  return (
+    <div style={{ position: 'relative', zIndex: open ? 20 : 1, marginBottom: 14 }}>
+      {/* Header tap target */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', background: '#fff', border: `1px solid ${C.border}`,
+          borderRadius: open ? '20px 20px 0 0' : 20,
+          boxShadow: open ? '0 2px 0 rgba(0,0,0,.04)' : '0 2px 10px rgba(0,0,0,.05)',
+          padding: '15px 17px', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left',
+          transition: 'border-radius .22s', boxSizing: 'border-box',
+        }}
+      >
+        {/* Open book icon */}
+        <div style={{
+          width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+          background: `linear-gradient(135deg, ${DARK}, ${BLUE})`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={LIME} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
+          </svg>
+        </div>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 900, color: C.text, letterSpacing: '-0.3px' }}>Resources</div>
+          <div style={{ fontFamily: FF, fontSize: 12, color: C.text3, marginTop: 1 }}>Guides, PDFs, and videos</div>
+        </div>
+
+        {/* Item count pill */}
+        <div style={{ background: 'rgba(6,89,144,.07)', borderRadius: 20, padding: '3px 9px', flexShrink: 0 }}>
+          <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: BLUE }}>{resources.length} items</span>
+        </div>
+
+        {/* Rotating chevron */}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.text3} strokeWidth="2.5" strokeLinecap="round"
+          style={{ flexShrink: 0, transition: 'transform .25s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+
+      {/* Expanded panel */}
+      {open && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0,
+          background: '#fff', border: `1px solid ${C.border}`, borderTop: 'none',
+          borderRadius: '0 0 20px 20px', boxShadow: '0 16px 40px rgba(0,0,0,.14)',
+          padding: '12px 12px 16px', zIndex: 20, maxHeight: 460, overflowY: 'auto',
+        }}>
+          {/* Filter pills */}
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10, overflowX: 'auto', paddingBottom: 2 }}>
+            {RES_FILTERS.map(([id, label]) => (
+              <button
+                key={id}
+                onClick={e => { e.stopPropagation(); setFilter(id); }}
+                style={{
+                  flexShrink: 0, height: 28, padding: '0 11px', borderRadius: 20,
+                  border: 'none', cursor: 'pointer',
+                  background: filter === id ? BLUE : 'rgba(6,89,144,.08)',
+                  transition: 'background .15s',
+                }}
+              >
+                <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: filter === id ? '#fff' : BLUE }}>
+                  {label}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Resource rows */}
+          {list.map(r => {
+            const col = RES_TYPE_COLORS[r.type] || C.text3;
+            const tag = RES_TYPE_LABELS[r.type] || r.type;
+            return (
+              <button
+                key={r.id}
+                onClick={() => window.open(r.url, '_blank', 'noopener,noreferrer')}
+                style={{
+                  width: '100%', background: C.bg, border: `1px solid ${C.border}`,
+                  borderRadius: 13, padding: '11px 12px', marginBottom: 6,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center',
+                  justifyContent: 'space-between', gap: 10, textAlign: 'left',
+                  boxSizing: 'border-box', transition: 'transform .1s',
+                }}
+                onMouseDown={e  => e.currentTarget.style.transform = 'scale(0.98)'}
+                onMouseUp={e    => e.currentTarget.style.transform = 'scale(1)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                onTouchStart={e => e.currentTarget.style.transform = 'scale(0.98)'}
+                onTouchEnd={e   => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: C.text, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {r.title}
+                </span>
+                <span style={{
+                  fontFamily: FF, fontSize: 9.5, fontWeight: 700,
+                  color: col, background: `${col}14`,
+                  borderRadius: 6, padding: '2px 7px',
+                  textTransform: 'uppercase', letterSpacing: '0.5px', flexShrink: 0,
+                }}>
+                  {tag}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Guest — minimal profile CTA
 // ─────────────────────────────────────────────────────────────────────────────
 function GuestMoreScreen({ onChangeRole, onNavigate, tabs }) {
   return (
     <div className="tc-screen" style={{ width:'100%', height:'100%', background:C.bg, display:'flex', flexDirection:'column' }}>
-      <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'24px 22px', paddingTop:'env(safe-area-inset-top, 24px)' }}>
+      <div style={{ flex:1, overflowY:'auto', padding:'24px 14px 100px', paddingTop:'calc(env(safe-area-inset-top, 0px) + 24px)', position:'relative' }}>
+        {/* Profile CTA card */}
         <div style={{
           width:'100%', background:'#fff', borderRadius:28,
           border:`1px solid ${C.border}`,
           boxShadow:'0 4px 24px rgba(6,89,144,.09)',
           padding:'36px 24px 32px',
           display:'flex', flexDirection:'column', alignItems:'center', textAlign:'center',
+          marginBottom: 14,
         }}>
           {/* TC logo mark */}
           <div style={{
@@ -406,6 +533,9 @@ function GuestMoreScreen({ onChangeRole, onNavigate, tabs }) {
             <span style={{ fontFamily:FF, fontSize:16, fontWeight:900, color:DARK }}>Get Started</span>
           </button>
         </div>
+
+        {/* Resources dropdown — available to guests */}
+        <ResourcesPanel />
       </div>
       <BottomNav active="more" onNavigate={onNavigate} tabs={tabs} />
     </div>
@@ -471,6 +601,9 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
 
         {/* Achievements — students only */}
         {isStudent && <AchievementsPanel unlockedIds={unlockedIds} />}
+
+        {/* Resources — all roles */}
+        <ResourcesPanel />
 
         {/* Profile settings */}
         <div style={{ marginBottom: 16 }}>
