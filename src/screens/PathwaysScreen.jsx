@@ -1,7 +1,10 @@
 import { useMemo } from 'react';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
 import { pathways } from '../data/pathways';
+import { schools } from '../data/schools';
 import { C, FF } from '../tokens';
+
+const FALLBACK_PDF = 'https://dualcredit.texarkanacollege.edu/find-your-pathway-plan/';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -27,7 +30,7 @@ function SectionHeader({ label }) {
   );
 }
 
-function PathwayCard({ pathway }) {
+function PathwayCard({ pathway, pdfUrl }) {
   return (
     <div style={{
       background: '#fff',
@@ -81,7 +84,7 @@ function PathwayCard({ pathway }) {
 
         {/* CTA button */}
         <button
-          onClick={() => window.open(pathway.pdfUrl, '_blank', 'noopener,noreferrer')}
+          onClick={() => window.open(pdfUrl, '_blank', 'noopener,noreferrer')}
           style={{
             width: '100%', height: 40, borderRadius: 12, border: 'none',
             background: '#EAFF00', cursor: 'pointer',
@@ -123,6 +126,13 @@ export default function PathwaysScreen({ onNavigate }) {
 
   const isGuest = role === 'guest' || !schoolId;
 
+  // Resolve the school-specific pathway PDF URL (falls back to generic landing page)
+  const schoolPdfUrl = useMemo(() => {
+    if (isGuest || !schoolId) return FALLBACK_PDF;
+    const record = schools.find(s => s.id === (schoolId?.id || schoolId));
+    return record?.pathwayPdfUrl || FALLBACK_PDF;
+  }, [isGuest, schoolId]);
+
   // For authenticated users: split into school-specific and universal lists
   const { schoolSpecific, universal } = useMemo(() => {
     if (isGuest) return { schoolSpecific: [], universal: [] };
@@ -163,7 +173,7 @@ export default function PathwaysScreen({ onNavigate }) {
         )}
 
         {/* Guest: show all pathways unfiltered */}
-        {isGuest && pathways.map(p => <PathwayCard key={p.id} pathway={p} />)}
+        {isGuest && pathways.map(p => <PathwayCard key={p.id} pathway={p} pdfUrl={FALLBACK_PDF} />)}
 
         {/* Authenticated: school-specific first, then universal */}
         {!isGuest && (
@@ -171,13 +181,13 @@ export default function PathwaysScreen({ onNavigate }) {
             {schoolSpecific.length > 0 && (
               <>
                 <SectionHeader label="Pathways at Your School" />
-                {schoolSpecific.map(p => <PathwayCard key={p.id} pathway={p} />)}
+                {schoolSpecific.map(p => <PathwayCard key={p.id} pathway={p} pdfUrl={schoolPdfUrl} />)}
                 <div style={{ marginBottom: 6 }} />
               </>
             )}
 
             <SectionHeader label="Available to All Schools" />
-            {universal.map(p => <PathwayCard key={p.id} pathway={p} />)}
+            {universal.map(p => <PathwayCard key={p.id} pathway={p} pdfUrl={schoolPdfUrl} />)}
           </>
         )}
       </div>
