@@ -380,13 +380,13 @@ function CreditHoursSection({ earned, pending, total, target }) {
     }}>
       {/* Stat chips */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-        <div style={{ flex: 1, textAlign: 'center', background: 'rgba(6,89,144,.07)', borderRadius: 10, padding: '8px 4px' }}>
-          <div style={{ fontFamily: FF, fontSize: 18, fontWeight: 900, color: BLUE, letterSpacing: '-0.5px' }}>{earned}</div>
-          <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: BLUE, opacity: 0.7, marginTop: 1 }}>Hours Earned</div>
+        <div style={{ flex: 1, textAlign: 'center', background: BLUE, borderRadius: 10, padding: '8px 4px' }}>
+          <div style={{ fontFamily: FF, fontSize: 18, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px' }}>{earned}</div>
+          <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: '#fff', marginTop: 1 }}>Hours Earned</div>
         </div>
-        <div style={{ flex: 1, textAlign: 'center', background: 'rgba(234,255,0,.25)', borderRadius: 10, padding: '8px 4px' }}>
+        <div style={{ flex: 1, textAlign: 'center', background: LIME, borderRadius: 10, padding: '8px 4px' }}>
           <div style={{ fontFamily: FF, fontSize: 18, fontWeight: 900, color: BLUE, letterSpacing: '-0.5px' }}>{pending}</div>
-          <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: BLUE, opacity: 0.75, marginTop: 1 }}>In Progress</div>
+          <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: BLUE, marginTop: 1 }}>In Progress</div>
         </div>
         <div style={{ flex: 1, textAlign: 'center', background: 'rgba(0,0,0,.04)', borderRadius: 10, padding: '8px 4px' }}>
           <div style={{ fontFamily: FF, fontSize: 18, fontWeight: 900, color: C.text2, letterSpacing: '-0.5px' }}>
