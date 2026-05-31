@@ -26,12 +26,27 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
     label: 'You are',
     value: isVerifiedStudent ? `${firstName} ${lastName}` : (role === 'student' ? 'Student' : role === 'parent' ? 'Parent/Guardian' : 'Guest'),
     sublabel: isVerifiedStudent ? 'Student' : null,
-    school: null,
-    studentBlock: isVerifiedParent ? { name: `${firstName} ${lastName}`, grade, studentId } : null,
     iconBg: BLUE,
     rowBg: C.bg,
-    badge: (isVerifiedStudent || isVerifiedParent) ? 'verified' : null,
+    badge: isVerifiedStudent ? 'verified' : null,
   });
+
+  // Verified parent — separate Student row for the student's name
+  if (isVerifiedParent) {
+    rows.push({
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+        </svg>
+      ),
+      label: 'Student',
+      value: `${firstName} ${lastName}`,
+      iconBg: 'rgba(6,89,144,.10)',
+      rowBg: C.bg,
+      badge: 'verified',
+    });
+  }
 
   // Verified student ID row
   if (isJenzabarVerified && studentId) {
@@ -58,7 +73,7 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
           <path d="M3 9L12 2l9 7v11a1 1 0 01-1 1H4a1 1 0 01-1-1z"/>
         </svg>
       ),
-      label: 'Your school',
+      label: 'School',
       value: school.name,
       iconBg: 'rgba(6,89,144,.10)',
       rowBg: C.bg,
@@ -75,7 +90,7 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
           <path d="M6 12v5c3 3 9 3 12 0v-5"/>
         </svg>
       ),
-      label: 'Your grade',
+      label: 'Grade',
       value: grade,
       iconBg: 'rgba(6,89,144,.10)',
       rowBg: C.bg,
@@ -144,26 +159,6 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
                 {row.sublabel && (
                   <div style={{ fontFamily:FF, fontSize:11, color:C.text3, marginTop:2 }}>
                     {row.sublabel}
-                  </div>
-                )}
-                {/* Student info block for verified parents */}
-                {row.studentBlock && (
-                  <div style={{ marginTop:10, paddingTop:10, borderTop:`1px solid ${C.border}`, display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
-                    <div style={{ flex:1, minWidth:0 }}>
-                      <div style={{ fontFamily:FF, fontSize:13, fontWeight:800, color:C.text, lineHeight:1.2 }}>
-                        {row.studentBlock.name}
-                      </div>
-                      {row.studentBlock.grade && (
-                        <div style={{ fontFamily:FF, fontSize:11, color:C.text3, marginTop:2 }}>
-                          {row.studentBlock.grade}
-                        </div>
-                      )}
-                    </div>
-                    {row.studentBlock.studentId && (
-                      <span style={{ fontFamily:'monospace', fontSize:11, color:C.text3, background:'rgba(0,0,0,.04)', borderRadius:6, padding:'2px 7px', flexShrink:0 }}>
-                        {row.studentBlock.studentId}
-                      </span>
-                    )}
                   </div>
                 )}
               </div>
