@@ -198,19 +198,28 @@ function SortableItem({ id, fullWidth, handlePos, handleColor = 'blue', children
         style={{
           position: 'absolute',
           ...(handlePos === 'center'
-            ? { top: 8, left: '50%', transform: 'translateX(-50%)' }
+            ? { top: 2, left: '50%', transform: 'translateX(-50%)' }
             : { top: 8, right: 8 }),
-          width: 28, height: 22, borderRadius: 6,
-          background: isLime ? 'rgba(234,255,0,.15)' : 'rgba(6,89,144,.08)',
+          ...(handlePos === 'center'
+            ? { width: 18, height: 8, borderRadius: 3 }
+            : { width: 28, height: 22, borderRadius: 6 }),
+          background: isLime ? 'rgba(234,255,0,.12)' : 'rgba(6,89,144,.06)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'grab', touchAction: 'none', zIndex: 10,
         }}
       >
-        <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
-          <rect x="0" y="0" width="14" height="2" rx="1" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.9' : '0.45'}/>
-          <rect x="0" y="4" width="14" height="2" rx="1" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.9' : '0.45'}/>
-          <rect x="0" y="8" width="14" height="2" rx="1" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.9' : '0.45'}/>
-        </svg>
+        {handlePos === 'center' ? (
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+            <rect x="0" y="0" width="10" height="1.5" rx="0.75" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.6' : '0.30'}/>
+            <rect x="0" y="4.5" width="10" height="1.5" rx="0.75" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.6' : '0.30'}/>
+          </svg>
+        ) : (
+          <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
+            <rect x="0" y="0" width="14" height="2" rx="1" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.9' : '0.45'}/>
+            <rect x="0" y="4" width="14" height="2" rx="1" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.9' : '0.45'}/>
+            <rect x="0" y="8" width="14" height="2" rx="1" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.9' : '0.45'}/>
+          </svg>
+        )}
       </div>
     </div>
   );
