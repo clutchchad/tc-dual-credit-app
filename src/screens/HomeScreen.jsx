@@ -379,7 +379,7 @@ function CompactAnnouncementCard({ item }) {
       background: '#fff', border: `1px solid ${C.border}`,
       borderRadius: 14, padding: '12px 14px',
       boxShadow: '0 1px 6px rgba(0,0,0,.04)',
-      width: '100%', boxSizing: 'border-box',
+      flex: 1, minWidth: 0, boxSizing: 'border-box',
     }}>
       <div style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: BLUE, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 5 }}>
         Announcements
@@ -425,6 +425,47 @@ function CompactReminderCard({ item }) {
         <div style={{ fontFamily: FF, fontSize: 11, color: C.text3, fontStyle: 'italic' }}>No reminders</div>
       )}
     </div>
+  );
+}
+
+/* ── Compact Notification Card (2-col grid) ── */
+function CompactNotifCard({ notif, onNavigate }) {
+  return (
+    <button
+      onClick={() => onNavigate('notifications')}
+      style={{
+        flex: 1, minWidth: 0, boxSizing: 'border-box',
+        background: '#fff', border: `1px solid ${C.border}`,
+        borderRadius: 14, padding: '12px 11px',
+        boxShadow: '0 1px 6px rgba(0,0,0,.04)',
+        cursor: 'pointer', textAlign: 'left',
+        display: 'flex', flexDirection: 'column', gap: 0,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
+        <div style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: BLUE, textTransform: 'uppercase', letterSpacing: '1px' }}>
+          Notifications
+        </div>
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={C.text3} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      {notif ? (
+        <>
+          <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: C.text, lineHeight: 1.3, marginBottom: 3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+            {notif.title}
+          </div>
+          <div style={{ fontFamily: FF, fontSize: 10.5, color: C.text2, lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+            {notif.body}
+          </div>
+          {notif.timestamp && (
+            <div style={{ fontFamily: FF, fontSize: 10, color: C.text3, marginTop: 4 }}>
+              {relTime(notif.timestamp)}
+            </div>
+          )}
+        </>
+      ) : (
+        <div style={{ fontFamily: FF, fontSize: 11, color: C.text3, fontStyle: 'italic' }}>No notifications yet</div>
+      )}
+    </button>
   );
 }
 
@@ -621,7 +662,12 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
         );
       case 'pair_announce_remind': {
         const latestAnnounce = timeline.find(i => i.category === 'Announcements' || i.category === 'Announcement');
-        return <CompactAnnouncementCard item={latestAnnounce} fullWidth />;
+        return (
+          <div style={{ display: 'flex', gap: 10 }}>
+            <CompactAnnouncementCard item={latestAnnounce} />
+            <CompactNotifCard notif={latestNotif} onNavigate={onNavigate} />
+          </div>
+        );
       }
       default:
         return null;
