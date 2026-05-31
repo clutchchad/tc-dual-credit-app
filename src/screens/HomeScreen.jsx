@@ -192,7 +192,7 @@ function SortableCard({ id, children }) {
         {...attributes}
         {...listeners}
         style={{
-          position: 'absolute', bottom: 6, right: 10,
+          position: 'absolute', top: 6, right: 10,
           width: 26, height: 20, borderRadius: 6,
           background: 'rgba(6,89,144,.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -547,12 +547,17 @@ function TimelineCard({ item }) {
 }
 
 /* ── Timeline Section ── */
-function TimelineSection({ items, isTablet }) {
+// excludeCategories: array of category strings already shown elsewhere (e.g. compact cards)
+function TimelineSection({ items, isTablet, excludeCategories = [] }) {
   const pad = isTablet ? '24px 24px 0' : '20px 14px 0';
+  const visible = excludeCategories.length
+    ? items.filter(i => !excludeCategories.includes(i.category))
+    : items;
+  if (!visible.length) return null;
   return (
     <div style={{ padding: pad }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 12 }}>
-        {items.map(item => <TimelineCard key={item.id} item={item} />)}
+        {visible.map(item => <TimelineCard key={item.id} item={item} />)}
       </div>
     </div>
   );
@@ -811,7 +816,11 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
 
       <div style={{ flex: 1, overflowY: 'auto', paddingBottom: pbottom }}>
         {isTablet ? tabletDashboard : mobileDashboard}
-        <TimelineSection items={timeline} isTablet={isTablet} />
+        <TimelineSection
+          items={timeline}
+          isTablet={isTablet}
+          excludeCategories={isTablet ? [] : ['Announcements', 'Announcement', 'Reminders', 'Reminder']}
+        />
       </div>
 
       <BottomNav active="home" onNavigate={onNavigate} tabs={tabs} />
