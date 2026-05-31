@@ -192,7 +192,7 @@ function SortableCard({ id, children }) {
         {...attributes}
         {...listeners}
         style={{
-          position: 'absolute', top: 6, right: 10,
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
           width: 26, height: 20, borderRadius: 6,
           background: 'rgba(6,89,144,.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
