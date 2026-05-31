@@ -18,10 +18,6 @@ export default function OnboardStudentID({ role, onVerified, onSkip, onBack }) {
     ? "Enter Your Child's Student ID"
     : "Enter Student ID";
 
-  const subtext = isParent
-    ? "This helps us connect you to your child's dual credit journey"
-    : "This helps us personalize your experience";
-
   const handleInput = (e) => {
     const v = e.target.value.replace(/\D/g, '').slice(0, 10);
     setValue(v);
@@ -89,16 +85,11 @@ export default function OnboardStudentID({ role, onVerified, onSkip, onBack }) {
         <h1 style={{ fontFamily:FF, fontSize:28, fontWeight:900, color:C.text, letterSpacing:'-1px', lineHeight:1.15, marginBottom:8 }}>
           {heading}
         </h1>
-        <p style={{ fontFamily:FF, fontSize:14, color:C.text2, marginBottom:32 }}>
-          {subtext}
-        </p>
-
         {/* Numeric input */}
         <input
           type="tel"
           inputMode="numeric"
           pattern="[0-9]*"
-          placeholder="Enter your TC student ID"
           maxLength={10}
           value={value}
           onChange={handleInput}

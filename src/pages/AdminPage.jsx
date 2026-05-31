@@ -636,7 +636,7 @@ export default function AdminPage() {
                     <input
                       type="text"
                       value={evLocation} onChange={e => setEvLocation(e.target.value)}
-                      className={inputCls} placeholder="e.g. TC Campus"
+                      className={inputCls}
                     />
                   </div>
                   <div>
