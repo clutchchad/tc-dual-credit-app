@@ -132,14 +132,14 @@ export const resources = [
   // ── Informational ─────────────────────────────────────────────────────────────
   {
     id: 'faqs',
-    type: 'website',
+    type: 'info',
     title: 'Dual Credit FAQs & Myths',
     desc: 'Get answers to the most common questions about the dual credit program.',
     url: 'https://dualcredit.texarkanacollege.edu/about/myths-faqs/',
   },
   {
     id: 'transfer-planning',
-    type: 'website',
+    type: 'info',
     title: 'Transfer Planning',
     desc: 'Find out how your dual credit hours transfer to four-year colleges and universities.',
     url: 'https://dualcredit.texarkanacollege.edu/resources-for-students-parents/transfer-planning/',
@@ -153,23 +153,9 @@ export const resources = [
   },
   {
     id: 'parent-info',
-    type: 'website',
+    type: 'info',
     title: 'Parent Information',
     desc: 'Resources and information specifically for parents and guardians of dual credit students.',
     url: 'https://dualcredit.texarkanacollege.edu/resources-for-students-parents/parent-information/',
-  },
-  {
-    id: 'transcript-request',
-    type: 'website',
-    title: 'Transcript Request',
-    desc: 'Request an official Texarkana College transcript.',
-    url: 'https://www.texarkanacollege.edu/academics/registrar/request-transcript/',
-  },
-  {
-    id: 'apply-dc',
-    type: 'website',
-    title: 'Apply for Dual Credit',
-    desc: 'Ready to enroll? Start your dual credit application here.',
-    url: 'https://txkcol.edu/applydc',
   },
 ];

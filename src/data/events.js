@@ -56,7 +56,7 @@ export const events = [
     type: 'deadline',
     title: 'Fall 2026 Dual Credit Application Deadline',
     date: '2026-08-01',
-    location: 'Submit at txkcol.edu/applydc',
+    location: 'Submit at my.texarkanacollege.edu/ICS/Admissions/Dual-Credit_Application.jnz',
     school: 'all',
   },
   {
@@ -88,7 +88,7 @@ export const events = [
     type: 'deadline',
     title: 'Spring 2027 Application Opens',
     date: '2026-10-01',
-    location: 'Apply at txkcol.edu/applydc',
+    location: 'Apply at my.texarkanacollege.edu/ICS/Admissions/Dual-Credit_Application.jnz',
     school: 'all',
   },
 ];

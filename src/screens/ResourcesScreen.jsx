@@ -9,6 +9,7 @@ const TYPE_COLORS = {
   pdf:     '#b91c1c',
   video:   '#6d28d9',
   website: '#0d7654',
+  info:    '#0369a1',
 };
 
 // type → human-readable pill label
@@ -16,6 +17,7 @@ const TYPE_LABELS = {
   pdf:     'PDF',
   video:   'Video',
   website: 'Website',
+  info:    'Info',
 };
 
 function ResourceIcon({ type }) {
@@ -33,7 +35,13 @@ function ResourceIcon({ type }) {
       <path d="M10 8l6 4-6 4V8z" fill={col} stroke="none"/>
     </svg>
   );
-  // guide / default — open book
+  if (type === 'info') return (
+    <svg {...p}>
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 16v-4M12 8h.01"/>
+    </svg>
+  );
+  // website / default — open book
   return (
     <svg {...p}>
       <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
@@ -48,6 +56,7 @@ const FILTERS = [
   ['pdf',     'PDF'],
   ['video',   'Video'],
   ['website', 'Website'],
+  ['info',    'Info'],
 ];
 
 export default function ResourcesScreen({ onNavigate, tabs }) {

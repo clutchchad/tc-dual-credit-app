@@ -198,7 +198,7 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
               Start your application — it only takes a few minutes.
             </p>
             <button
-              onClick={() => window.open('https://txkcol.edu/applydc', '_blank', 'noopener,noreferrer')}
+              onClick={() => window.open('https://my.texarkanacollege.edu/ICS/Admissions/Dual-Credit_Application.jnz', '_blank', 'noopener,noreferrer')}
               style={{
                 width: '100%', height: 46,
                 background: 'transparent',

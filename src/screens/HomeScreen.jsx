@@ -335,7 +335,7 @@ function RecentNotifCard({ notif, onNavigate }) {
 function GuestApplyBanner() {
   return (
     <a
-      href="https://txkcol.edu/applydc"
+      href="https://my.texarkanacollege.edu/ICS/Admissions/Dual-Credit_Application.jnz"
       target="_blank"
       rel="noopener noreferrer"
       style={{
