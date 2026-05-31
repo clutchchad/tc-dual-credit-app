@@ -211,17 +211,17 @@ function CoachCard({ acdc, school, grade, isTablet }) {
   /* Original vertical / mobile layout */
   return (
     <Card style={{ padding: '12px 14px 12px', marginBottom: 10, textAlign: 'center' }}>
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
-        <CoachPhoto photo={acdc.photo} name={acdc.name} size={62} />
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+        <CoachPhoto photo={acdc.photo} name={acdc.name} size={130} />
       </div>
 
-      <div style={{ fontFamily: FF, fontSize: 18, fontWeight: 900, color: DARK, letterSpacing: '-0.4px', lineHeight: 1.15 }}>
+      <div style={{ fontFamily: FF, fontSize: 20.5, fontWeight: 900, color: DARK, letterSpacing: '-0.4px', lineHeight: 1.15 }}>
         {acdc.name}
       </div>
-      <div style={{ fontFamily: FF, fontSize: 12, color: BLUE, fontWeight: 700, marginTop: 2 }}>
+      <div style={{ fontFamily: FF, fontSize: 14.5, color: BLUE, fontWeight: 700, marginTop: 2 }}>
         Academic Coach for Dual Credit
       </div>
-      <div style={{ fontFamily: FF, fontSize: 11, color: '#6b7280', marginTop: 1 }}>
+      <div style={{ fontFamily: FF, fontSize: 13.5, color: '#6b7280', marginTop: 1 }}>
         {contextLine}
       </div>
 
