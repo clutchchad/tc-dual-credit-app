@@ -28,7 +28,7 @@ export default function CreditHoursBar({ earned, pending, total, target = 60 }) 
       {/* Track */}
       <div style={{
         position: 'relative', height: 10, borderRadius: 99,
-        background: 'rgba(6,89,144,.08)', overflow: 'hidden', marginBottom: 14,
+        background: 'rgba(0,0,0,.04)', overflow: 'hidden', marginBottom: 14,
       }}>
         {/* Pending segment — Electric Lime, earned + pending wide */}
         <div style={{
