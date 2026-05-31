@@ -18,3 +18,5 @@ export const SCHOOLS = [
   { id: 'rw', name: 'Redwater', city: 'Redwater', color: '#8b0000', textColor: '#ffffff', gradeRequired: false, unassigned: false },
   { id: 'txh', name: 'Texas High', city: 'Texarkana', color: '#003d7a', textColor: '#ffffff', gradeRequired: false, unassigned: false },
 ];
+
+export const schools = SCHOOLS;
