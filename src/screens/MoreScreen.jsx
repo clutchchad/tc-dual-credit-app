@@ -19,7 +19,6 @@ const MILESTONE_BADGE_MAP = {
   tcPromiseEligible:     'tc-promise',
 };
 
-const NOTIF_KEY = 'tcdc_v1_notifs';
 const BLUE      = '#065990';
 const DARK      = '#022b52';
 const LIME      = '#EAFF00';
@@ -546,10 +545,6 @@ function GuestMoreScreen({ onChangeRole, onNavigate, tabs }) {
 // Main screen
 // ─────────────────────────────────────────────────────────────────────────────
 export default function MoreScreen({ role, school, grade, onChangeRole, onChangeSchool, onNavigate, tabs }) {
-  const [notifs, setNotifs] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(NOTIF_KEY)) ?? true; } catch { return true; }
-  });
-
   // Load Jenzabar profile — milestones → badge unlock — students only
   const [unlockedIds,  setUnlockedIds]  = useState(new Set());
 
@@ -624,23 +619,6 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={C.text3} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
             </button>
           ))}
-        </div>
-
-        {/* Preferences */}
-        <div style={{ marginBottom: 18 }}>
-          <div style={{ fontFamily: FF, fontSize: 10.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '1.4px', marginBottom: 8, paddingLeft: 4 }}>Preferences</div>
-          <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14, padding: '13px 15px', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(6,89,144,.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.blue} strokeWidth="2" strokeLinecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
-            </div>
-            <span style={{ fontFamily: FF, fontSize: 14, fontWeight: 600, color: C.text, flex: 1 }}>Push Notifications</span>
-            <div
-              onClick={() => setNotifs(n => { const next = !n; localStorage.setItem(NOTIF_KEY, JSON.stringify(next)); return next; })}
-              style={{ width: 44, height: 26, borderRadius: 13, background: notifs ? C.blue : '#d1d5db', cursor: 'pointer', position: 'relative', transition: 'background .2s', flexShrink: 0 }}
-            >
-              <div style={{ position: 'absolute', width: 20, height: 20, borderRadius: '50%', background: '#fff', top: 3, left: notifs ? 21 : 3, transition: 'left .2s', boxShadow: '0 1px 4px rgba(0,0,0,.2)' }} />
-            </div>
-          </div>
         </div>
 
         {/* App version */}

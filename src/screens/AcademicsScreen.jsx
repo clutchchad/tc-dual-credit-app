@@ -252,15 +252,14 @@ function GuestAcademics({ onNavigate, tabs }) {
 // ── Main content (student + parent share this) ────────────────────────────────
 
 function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
-  const stored     = readStored();
-  const schoolName = stored.school?.name || profile.highSchool || '';
+  const stored    = readStored();
   const GRADE_WORD = { 9: 'Freshman', 10: 'Sophomore', 11: 'Junior', 12: 'Senior' };
-  const grade      = stored.grade        || (profile.grade ? GRADE_WORD[profile.grade] || '' : '');
-  const firstName  = stored.firstName    || profile.firstName || '';
-  const lastName   = stored.lastName     || profile.lastName  || '';
-  const studentId  = stored.studentId    || profile.studentId || '';
+  const grade     = stored.grade || (profile.grade ? GRADE_WORD[profile.grade] || '' : '');
+  const firstName = stored.firstName || profile.firstName || '';
+  const lastName  = stored.lastName  || profile.lastName  || '';
+  const studentId = stored.studentId || profile.studentId || '';
 
-  const metaLine = [schoolName, grade].filter(Boolean).join(' · ');
+  const metaLine = grade || '';
 
   const creditHours = {
     earned:  profile.creditHoursEarned      ?? 0,

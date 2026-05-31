@@ -524,9 +524,11 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
                     ID: {storedStudentId}
                   </div>
                 )}
-                <div style={{ fontFamily: FF, fontSize: 11.5, color: 'rgba(255,255,255,.50)', marginTop: 1 }}>
-                  {school?.name}{grade ? ` · ${grade}` : ''}
-                </div>
+                {grade && (
+                  <div style={{ fontFamily: FF, fontSize: 11.5, color: 'rgba(255,255,255,.50)', marginTop: 1 }}>
+                    {grade}
+                  </div>
+                )}
               </>
             ) : isParent ? (
               /* Parent identity block — mirrors student block, framed as "Parent of" */
@@ -542,9 +544,11 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
                     ID: {storedStudentId}
                   </div>
                 )}
-                <div style={{ fontFamily: FF, fontSize: 11.5, color: 'rgba(255,255,255,.50)', marginTop: 1 }}>
-                  {school?.name}{grade ? ` · ${grade}` : ''}
-                </div>
+                {grade && (
+                  <div style={{ fontFamily: FF, fontSize: 11.5, color: 'rgba(255,255,255,.50)', marginTop: 1 }}>
+                    {grade}
+                  </div>
+                )}
               </>
             ) : (
               /* Guest single-line greeting */
