@@ -557,6 +557,11 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs, isTablet }) {
   const lastName  = stored.lastName  || profile.lastName  || '';
   const studentId = stored.studentId || profile.studentId || '';
 
+  const schoolObj   = stored.school || {};
+  const schoolColor = schoolObj.color     || BLUE;
+  const schoolText  = schoolObj.textColor || '#fff';
+  const schoolName  = schoolObj.name      || profile.highSchool || null;
+
   const metaLine = grade || '';
   const gpa            = profile.gpa            ?? null;
   const graduationYear = profile.graduationYear ?? null;
@@ -590,22 +595,45 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs, isTablet }) {
             {firstName} {lastName}
           </div>
 
-          {/* Student ID — plain white text */}
+          {/* Student ID — bold */}
           {studentId && (
-            <div style={{ fontFamily: 'monospace', fontSize: 11.5, color: 'rgba(255,255,255,.65)', letterSpacing: '0.4px', marginBottom: 10 }}>
+            <div style={{ fontFamily: 'monospace', fontSize: 11.5, fontWeight: 700, color: 'rgba(255,255,255,.75)', letterSpacing: '0.4px', marginBottom: 10 }}>
               {studentId}
             </div>
           )}
 
-          {/* Grade pill */}
-          {metaLine && (
+          {/* Grade + School pill row */}
+          {(metaLine || schoolName) && (
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              <span style={{
-                fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
-                background: 'rgba(234,255,0,.85)', borderRadius: 20, padding: '3px 10px',
-              }}>
-                {metaLine}
-              </span>
+              {metaLine && schoolName ? (
+                /* Combined pill: "[Grade] · [School]" in school brand colors */
+                <span style={{
+                  fontFamily: FF, fontSize: 11, fontWeight: 700,
+                  color: schoolText,
+                  background: schoolColor,
+                  borderRadius: 20, padding: '3px 10px',
+                }}>
+                  {metaLine} · {schoolName}
+                </span>
+              ) : metaLine ? (
+                /* Grade only — fallback to lime if no school data */
+                <span style={{
+                  fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
+                  background: 'rgba(234,255,0,.85)', borderRadius: 20, padding: '3px 10px',
+                }}>
+                  {metaLine}
+                </span>
+              ) : (
+                /* School only */
+                <span style={{
+                  fontFamily: FF, fontSize: 11, fontWeight: 700,
+                  color: schoolText,
+                  background: schoolColor,
+                  borderRadius: 20, padding: '3px 10px',
+                }}>
+                  {schoolName}
+                </span>
+              )}
             </div>
           )}
         </div>
