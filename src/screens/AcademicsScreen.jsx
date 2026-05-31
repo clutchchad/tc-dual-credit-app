@@ -606,7 +606,18 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
           ) : null}
         </div>
 
-        {/* Section 2 — Current Courses */}
+        {/* Section 2 — Credit Hours */}
+        <div style={{ marginTop: 14 }}>
+          <SectionHeading label="Credit Hours" />
+          <CreditHoursSection
+            earned={creditHours.earned}
+            pending={creditHours.pending}
+            total={creditHours.total}
+            target={creditHours.target}
+          />
+        </div>
+
+        {/* Section 3 — Current Courses */}
         <div style={{ marginTop: 14 }}>
           <SectionHeading label="Current Courses" />
           {(profile.currentCourses || []).map(c => (
@@ -617,7 +628,7 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
           </p>
         </div>
 
-        {/* Section 3 — Completed Courses (students + parents only) */}
+        {/* Section 4 — Completed Courses (students + parents only) */}
         <CompletedCoursesSection
           profile={profile}
           studentId={studentId}
@@ -625,17 +636,6 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
           lastName={lastName}
           grade={grade}
         />
-
-        {/* Section 4 — Credit Hours */}
-        <div style={{ marginTop: 14 }}>
-          <SectionHeading label="Credit Hours" />
-          <CreditHoursSection
-            earned={creditHours.earned}
-            pending={creditHours.pending}
-            total={creditHours.total}
-            target={creditHours.target}
-          />
-        </div>
 
         {/* Section 5 — Transcript */}
         <div style={{ marginTop: 14 }}>
