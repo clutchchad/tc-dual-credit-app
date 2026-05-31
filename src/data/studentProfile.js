@@ -18,8 +18,8 @@ const mockStudentProfile = {
   enrolledInFirstClass: true,
   currentSemester: "Fall 2026",
   currentCourses: [
-    { courseId: "ENGL-1301", name: "Composition I", hours: 3, status: "enrolled" },
-    { courseId: "HIST-1301", name: "US History I", hours: 3, status: "enrolled" },
+    { courseId: "ENGL-1301", name: "Composition I", hours: 3, status: "enrolled", grade: "B+" },
+    { courseId: "HIST-1301", name: "US History I",  hours: 3, status: "enrolled", grade: "A"  },
   ],
 
   creditHoursEarned: 24,

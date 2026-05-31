@@ -15,6 +15,7 @@ import MoreScreen         from './screens/MoreScreen';
 import PathwaysScreen     from './screens/PathwaysScreen';
 import ApplyScreen        from './screens/ApplyScreen';
 import NotificationsScreen from './screens/NotificationsScreen';
+import AcademicsScreen    from './screens/AcademicsScreen';
 
 const STORAGE_KEY = 'tcdc_v1';
 
@@ -216,6 +217,15 @@ export default function App() {
 
       case 'notifications':
         return <NotificationsScreen {...navProps} />;
+
+      case 'academics':
+        return (
+          <AcademicsScreen
+            role={role || 'guest'}
+            onNavigate={go}
+            tabs={NAV_TABS}
+          />
+        );
 
       case 'pathways':
         return <PathwaysScreen onNavigate={go} />;
