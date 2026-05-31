@@ -87,8 +87,7 @@ export default function BottomNav({ active, onNavigate, tabs }) {
 
       {/* Logo footer */}
       <div style={{
-        background: '#fff',
-        borderTop: `1px solid ${C.border}`,
+        background: '#065990',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
