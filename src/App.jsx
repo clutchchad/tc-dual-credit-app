@@ -22,8 +22,8 @@ const STORAGE_KEY = 'tcdc_v1';
 const NAV_TABS = [
   { id: 'home',      label: 'Home',      screen: 'home'      },
   { id: 'acdc',      label: 'My ACDC',   screen: 'acdc'      },
-  { id: 'resources', label: 'Resources', screen: 'resources' },
-  { id: 'events',    label: 'Events',    screen: 'events'    },
+  { id: 'academics', label: 'Academics', screen: 'academics' },
+  { id: 'pathways',  label: 'Pathways',  screen: 'pathways'  },
   { id: 'more',      label: 'More',      screen: 'more'      },
 ];
 

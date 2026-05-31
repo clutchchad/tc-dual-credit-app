@@ -312,7 +312,7 @@ function GuestAcademics({ onNavigate, tabs }) {
           </button>
         </div>
       </div>
-      <BottomNav active="more" onNavigate={onNavigate} tabs={tabs} />
+      <BottomNav active="academics" onNavigate={onNavigate} tabs={tabs} />
     </div>
   );
 }
@@ -380,7 +380,7 @@ function AcademicsContent({ profile, isParent, onBack, onNavigate, tabs }) {
         </div>
       </div>
 
-      <BottomNav active="more" onNavigate={onNavigate} tabs={tabs} />
+      <BottomNav active="academics" onNavigate={onNavigate} tabs={tabs} />
     </div>
   );
 }
