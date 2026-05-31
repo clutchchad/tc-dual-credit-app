@@ -631,8 +631,32 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
 
   function handleDragEnd({ active, over }) {
     if (!over || active.id === over.id) return;
+
     setCardOrder(prev => {
-      const next = arrayMove(prev, prev.indexOf(active.id), prev.indexOf(over.id));
+      const activeId = active.id;
+      const overId   = over.id;
+
+      if (activeId === 'acdc') {
+        // Determine where arrayMove would place ACDC, then snap to the
+        // nearest of the three valid flat-array positions: 0 (top), 2 (middle), 4 (bottom).
+        const rawOrder  = arrayMove(prev, prev.indexOf('acdc'), prev.indexOf(overId));
+        const rawIdx    = rawOrder.indexOf('acdc');
+        const snapped   = [0, 2, 4].reduce((best, pos) =>
+          Math.abs(pos - rawIdx) < Math.abs(best - rawIdx) ? pos : best
+        );
+        // Rebuild: extract mini cards in their current relative order, then
+        // splice ACDC into the snapped slot.
+        const minis = prev.filter(id => id !== 'acdc');
+        minis.splice(snapped, 0, 'acdc');          // splice(0)→top, (2)→mid, (4)→bottom
+        try { localStorage.setItem(CARDS_KEY, JSON.stringify(minis)); } catch {}
+        return minis;
+      }
+
+      // Mini card drag: block landing on ACDC (would break the layout).
+      if (overId === 'acdc') return prev;
+
+      // Both active and over are mini cards — free swap.
+      const next = arrayMove(prev, prev.indexOf(activeId), prev.indexOf(overId));
       try { localStorage.setItem(CARDS_KEY, JSON.stringify(next)); } catch {}
       return next;
     });
