@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy, rectSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import BottomNav from '../components/BottomNav';
 import { useIsTablet } from '../hooks/useIsTablet';
@@ -21,6 +21,16 @@ function loadCardOrder() {
     if (Array.isArray(saved) && saved.length === DEFAULT_CARD_ORDER.length) return saved;
   } catch {}
   return [...DEFAULT_CARD_ORDER];
+}
+
+const MINI_KEY = 'tcdc_v1_mini_cards';
+const DEFAULT_MINI_ORDER = ['deadline', 'event', 'announce', 'lastnotif'];
+function loadMiniOrder() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(MINI_KEY));
+    if (Array.isArray(saved) && saved.length === DEFAULT_MINI_ORDER.length) return saved;
+  } catch {}
+  return [...DEFAULT_MINI_ORDER];
 }
 
 const FULL_SCHOOL_NAMES = {
@@ -198,6 +208,43 @@ function SortableCard({ id, handlePos = 'right', children }) {
         {...listeners}
         style={{
           ...handleStyle,
+          width: 28, height: 22, borderRadius: 6,
+          background: 'rgba(6,89,144,.08)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'grab', touchAction: 'none', zIndex: 10,
+        }}
+      >
+        <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
+          <rect x="0" y="0" width="14" height="2" rx="1" fill={BLUE} fillOpacity="0.45"/>
+          <rect x="0" y="4" width="14" height="2" rx="1" fill={BLUE} fillOpacity="0.45"/>
+          <rect x="0" y="8" width="14" height="2" rx="1" fill={BLUE} fillOpacity="0.45"/>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+/* ── Sortable wrapper for each individual mini card in the 2×2 grid ── */
+function SortableMiniCard({ id, children }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.45 : 1,
+        position: 'relative',
+        zIndex: isDragging ? 999 : 'auto',
+        height: '100%',
+      }}
+    >
+      {children}
+      <div
+        {...attributes}
+        {...listeners}
+        style={{
+          position: 'absolute', top: 8, right: 8,
           width: 28, height: 22, borderRadius: 6,
           background: 'rgba(6,89,144,.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -627,6 +674,7 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
   const [timeline,    setTimeline]    = useState(isParent ? PARENT_SEED_TIMELINE : SEED_TIMELINE);
   const [profile,     setProfile]     = useState(null);
   const [cardOrder,   setCardOrder]   = useState(loadCardOrder);
+  const [miniOrder,   setMiniOrder]   = useState(loadMiniOrder);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -639,19 +687,39 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
     });
   }
 
+  function handleMiniDragEnd({ active, over }) {
+    if (!over || active.id === over.id) return;
+    setMiniOrder(prev => {
+      const next = arrayMove(prev, prev.indexOf(active.id), prev.indexOf(over.id));
+      try { localStorage.setItem(MINI_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }
+
   function renderHomeCard(id) {
     switch (id) {
       case 'acdc':
         return acdc ? <AcdcStrip acdc={acdc} onNavigate={onNavigate} /> : null;
       case 'pair_all_four': {
         const latestAnnounce = timeline.find(i => i.category === 'Announcements' || i.category === 'Announcement');
+        const miniCardContent = {
+          deadline:  <NextDeadlineCard onNavigate={onNavigate} />,
+          event:     <NextEventCard onNavigate={onNavigate} />,
+          announce:  <AnnouncementCard item={latestAnnounce} onNavigate={onNavigate} />,
+          lastnotif: <LastNotifCard notif={latestNotif} onNavigate={onNavigate} />,
+        };
         return (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'auto auto', gap: 10, alignItems: 'stretch' }}>
-            <NextDeadlineCard onNavigate={onNavigate} />
-            <NextEventCard onNavigate={onNavigate} />
-            <AnnouncementCard item={latestAnnounce} onNavigate={onNavigate} />
-            <LastNotifCard notif={latestNotif} onNavigate={onNavigate} />
-          </div>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleMiniDragEnd}>
+            <SortableContext items={miniOrder} strategy={rectSortingStrategy}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, alignItems: 'stretch' }}>
+                {miniOrder.map(id => (
+                  <SortableMiniCard key={id} id={id}>
+                    {miniCardContent[id]}
+                  </SortableMiniCard>
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         );
       }
       default:
