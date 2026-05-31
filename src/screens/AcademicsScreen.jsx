@@ -347,21 +347,21 @@ function CompletedCoursesSection({ profile, studentId, firstName, lastName, grad
       }}>
         {cumulativeGpa !== null && (
           <div style={{
-            flex: 1, background: '#fff', borderRadius: 14,
-            border: `2px solid ${BLUE}`,
+            flex: 1, background: BLUE, borderRadius: 14,
+            border: `2px solid ${LIME}`,
             padding: '11px 14px', textAlign: 'center',
           }}>
-            <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: BLUE, letterSpacing: '-0.5px' }}>{cumulativeGpa}</div>
-            <div style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE, marginTop: 2 }}>Cumulative GPA</div>
+            <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px' }}>{cumulativeGpa}</div>
+            <div style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: '#fff', marginTop: 2 }}>Cumulative GPA</div>
           </div>
         )}
         <div style={{
-          flex: 1, background: '#fff', borderRadius: 14,
-          border: `2px solid ${BLUE}`,
+          flex: 1, background: BLUE, borderRadius: 14,
+          border: `2px solid ${LIME}`,
           padding: '11px 14px', textAlign: 'center',
         }}>
-          <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: BLUE, letterSpacing: '-0.5px' }}>{totalHours}</div>
-          <div style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE, marginTop: 2 }}>Total Hours Earned</div>
+          <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px' }}>{totalHours}</div>
+          <div style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: '#fff', marginTop: 2 }}>Total Hours Earned</div>
         </div>
       </div>
 

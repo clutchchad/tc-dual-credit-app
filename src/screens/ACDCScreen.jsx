@@ -285,12 +285,11 @@ function AboutCard() {
   return (
     <Card style={{ padding: '12px 14px 14px', marginBottom: 10 }}>
       <p style={{ fontFamily: FF, fontSize: 12, color: '#374151', lineHeight: 1.55, margin: '0 0 8px' }}>
-        Academic Coaches for Dual Credit (ACDCs) serve as the connection between you, your high school,
-        and Texarkana College. Your ACDC can help you with:
+        <strong>Academic Coaches for Dual Credit (ACDCs) serve as the connection between you, your high school, and Texarkana College.</strong>{' '}Your ACDC can help you with:
       </p>
-      <ul style={{ margin: '0 0 8px', paddingLeft: 18 }}>
+      <ul style={{ margin: '0 0 8px', paddingLeft: 18, listStyleType: 'disc' }}>
         {bullets.map(b => (
-          <li key={b} style={{ fontFamily: FF, fontSize: 12, color: '#374151', lineHeight: 1.5, marginBottom: 2 }}>
+          <li key={b} style={{ fontFamily: FF, fontSize: 12, color: '#374151', lineHeight: 1.5, marginBottom: 2, display: 'list-item' }}>
             {b}
           </li>
         ))}

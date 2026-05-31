@@ -14,7 +14,7 @@ import { buildSchedulingUrl } from '../data/buildSchedulingUrl';
 
 const BLUE = '#065990';
 const CARDS_KEY = 'tcdc_v1_cards';
-const DEFAULT_CARD_ORDER = ['acdc', 'deadline', 'event', 'notif'];
+const DEFAULT_CARD_ORDER = ['acdc', 'pair_deadline_event', 'pair_announce_remind'];
 function loadCardOrder() {
   try {
     const saved = JSON.parse(localStorage.getItem(CARDS_KEY));
@@ -100,7 +100,7 @@ const SEED_TIMELINE = [
   },
   {
     id: 'seed2',
-    category: 'Reminder',
+    category: 'Reminders',
     title: 'Fall 2026 Registration is Coming',
     body: "Make sure you meet with your ACDC before registration opens. Spots in dual credit courses fill fast — don't wait.",
     daysAgo: 3,
@@ -118,7 +118,7 @@ const PARENT_SEED_TIMELINE = [
   },
   {
     id: 'pseed2',
-    category: 'Reminder',
+    category: 'Reminders',
     title: 'Fall 2026 Registration is Coming',
     body: 'Encourage your student to meet with their ACDC before registration opens. Dual credit spots fill quickly!',
     daysAgo: 3,
@@ -134,7 +134,8 @@ function seedRelTime(daysAgo) {
 const CATEGORY_STYLES = {
   'Announcements': { bg: 'rgba(6,89,144,.10)',   color: '#065990' },
   'Announcement':  { bg: 'rgba(6,89,144,.10)',   color: '#065990' },
-  'Reminder':      { bg: 'rgba(234,255,0,.25)',  color: BLUE      },
+  'Reminder':      { bg: 'transparent',          color: LIME      },
+  'Reminders':     { bg: 'transparent',          color: LIME      },
   'TC Promise':    { bg: 'rgba(22,163,74,.10)',  color: '#15803d' },
   'Event':         { bg: 'rgba(124,58,237,.10)', color: '#7c3aed' },
 };
@@ -262,10 +263,10 @@ function AcdcStrip({ acdc, onNavigate }) {
           : (
             <div style={{
               width: 36, height: 36, borderRadius: 10,
-              background: 'rgba(6,89,144,.06)', border: `2px solid rgba(6,89,144,.12)`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.38,
+              background: BLUE, border: `2px solid ${LIME}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              {mailIcon(`rgba(6,89,144,.5)`)}
+              {mailIcon(LIME)}
             </div>
           )
         }
@@ -368,6 +369,62 @@ function NextEventCard({ onNavigate }) {
         <span style={{ fontFamily: FF, fontSize: 11, color: C.text2, fontWeight: 500 }}>View all events</span>
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
       </button>
+    </div>
+  );
+}
+
+/* ── Compact Announcement Card (2-col grid) ── */
+function CompactAnnouncementCard({ item }) {
+  return (
+    <div style={{
+      background: '#fff', border: `1px solid ${C.border}`,
+      borderRadius: 14, padding: '10px 11px',
+      boxShadow: '0 1px 6px rgba(0,0,0,.04)',
+      flex: 1, minWidth: 0,
+    }}>
+      <div style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: BLUE, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 4 }}>
+        Announcements
+      </div>
+      {item ? (
+        <>
+          <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: C.text, lineHeight: 1.3, marginBottom: 3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+            {item.title}
+          </div>
+          <div style={{ fontFamily: FF, fontSize: 10.5, color: C.text2, lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+            {item.body}
+          </div>
+        </>
+      ) : (
+        <div style={{ fontFamily: FF, fontSize: 11, color: C.text3, fontStyle: 'italic' }}>No announcements</div>
+      )}
+    </div>
+  );
+}
+
+/* ── Compact Reminder Card (2-col grid) ── */
+function CompactReminderCard({ item }) {
+  return (
+    <div style={{
+      background: '#fff', border: `1px solid ${C.border}`,
+      borderRadius: 14, padding: '10px 11px',
+      boxShadow: '0 1px 6px rgba(0,0,0,.04)',
+      flex: 1, minWidth: 0,
+    }}>
+      <div style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: LIME, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 4 }}>
+        Reminders
+      </div>
+      {item ? (
+        <>
+          <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: C.text, lineHeight: 1.3, marginBottom: 3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+            {item.title}
+          </div>
+          <div style={{ fontFamily: FF, fontSize: 10.5, color: C.text2, lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+            {item.body}
+          </div>
+        </>
+      ) : (
+        <div style={{ fontFamily: FF, fontSize: 11, color: C.text3, fontStyle: 'italic' }}>No reminders</div>
+      )}
     </div>
   );
 }
@@ -549,11 +606,27 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
 
   function renderHomeCard(id) {
     switch (id) {
-      case 'acdc':     return acdc ? <AcdcStrip acdc={acdc} onNavigate={onNavigate} /> : null;
-      case 'deadline': return <NextDeadlineCard onNavigate={onNavigate} />;
-      case 'event':    return <NextEventCard onNavigate={onNavigate} />;
-      case 'notif':    return <RecentNotifCard notif={latestNotif} onNavigate={onNavigate} />;
-      default:         return null;
+      case 'acdc':
+        return acdc ? <AcdcStrip acdc={acdc} onNavigate={onNavigate} /> : null;
+      case 'pair_deadline_event':
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <NextDeadlineCard onNavigate={onNavigate} />
+            <NextEventCard onNavigate={onNavigate} />
+          </div>
+        );
+      case 'pair_announce_remind': {
+        const latestAnnounce = timeline.find(i => i.category === 'Announcements' || i.category === 'Announcement');
+        const latestRemind   = timeline.find(i => i.category === 'Reminders'     || i.category === 'Reminder');
+        return (
+          <div style={{ display: 'flex', gap: 10 }}>
+            <CompactAnnouncementCard item={latestAnnounce} />
+            <CompactReminderCard item={latestRemind} />
+          </div>
+        );
+      }
+      default:
+        return null;
     }
   }
 
