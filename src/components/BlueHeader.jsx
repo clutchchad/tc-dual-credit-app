@@ -3,7 +3,7 @@ import { FF } from '../tokens';
 export function BlueHeader({ children, style = {} }) {
   return (
     <div style={{
-      background: 'linear-gradient(148deg,#011e3a 0%,#065990 65%,#1077be 100%)',
+      background: '#065990',
       flexShrink: 0,
       paddingTop: 'env(safe-area-inset-top, 0px)',
       ...style,

@@ -268,32 +268,32 @@ function NextEventCard({ onNavigate }) {
   const formatted = item ? formatDate(item.date) : null;
 
   return (
-    <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 3px 14px rgba(6,89,144,.12)' }}>
-      <div style={{ background: '#0a3d62', padding: '13px 15px 11px', position: 'relative' }}>
-        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: '#93d2ff' }} />
+    <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 3px 14px rgba(234,255,0,.25)' }}>
+      <div style={{ background: LIME, padding: '13px 15px 11px', position: 'relative' }}>
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: BLUE }} />
         <div style={{ paddingLeft: 8 }}>
-          <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: 'rgba(147,210,255,.85)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 6 }}>
+          <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: BLUE, textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 6, opacity: 0.7 }}>
             Next Event
           </div>
           {item ? (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
               <div>
-                <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 800, color: '#fff', letterSpacing: '-0.3px', lineHeight: 1.25 }}>
+                <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 800, color: DARK, letterSpacing: '-0.3px', lineHeight: 1.25 }}>
                   {item.title}
                 </div>
-                <div style={{ fontFamily: FF, fontSize: 11, color: 'rgba(255,255,255,.5)', marginTop: 3 }}>
+                <div style={{ fontFamily: FF, fontSize: 11, color: 'rgba(2,43,82,.55)', marginTop: 3 }}>
                   {item.location ? `${formatted} · ${item.location}` : formatted}
                 </div>
               </div>
               {days !== null && (
                 <div style={{ textAlign: 'right', flexShrink: 0, paddingLeft: 12 }}>
-                  <div style={{ fontFamily: FF, fontSize: 32, fontWeight: 900, color: '#93d2ff', lineHeight: 1, letterSpacing: '-2px' }}>{days}</div>
-                  <div style={{ fontFamily: FF, fontSize: 9, color: 'rgba(255,255,255,.45)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>days</div>
+                  <div style={{ fontFamily: FF, fontSize: 32, fontWeight: 900, color: BLUE, lineHeight: 1, letterSpacing: '-2px' }}>{days}</div>
+                  <div style={{ fontFamily: FF, fontSize: 9, color: 'rgba(2,43,82,.45)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px' }}>days</div>
                 </div>
               )}
             </div>
           ) : (
-            <div style={{ fontFamily: FF, fontSize: 13, color: 'rgba(255,255,255,.45)', fontStyle: 'italic' }}>
+            <div style={{ fontFamily: FF, fontSize: 13, color: 'rgba(2,43,82,.45)', fontStyle: 'italic' }}>
               No upcoming events
             </div>
           )}

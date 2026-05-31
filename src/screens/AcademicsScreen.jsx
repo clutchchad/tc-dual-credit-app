@@ -572,7 +572,7 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs, isTablet }) {
     <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column' }}>
       <BlueHeader>
         <PageTitle
-          title={isParent ? "Student's Academics" : 'Academics'}
+          title={isParent ? "Student's Academic Progress" : 'Academic Progress'}
         />
       </BlueHeader>
 
