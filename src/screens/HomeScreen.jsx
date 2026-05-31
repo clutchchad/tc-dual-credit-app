@@ -173,8 +173,13 @@ function CoachPhoto({ photo, name, size = 44 }) {
 }
 
 /* ── Sortable drag-and-drop card wrapper ── */
-function SortableCard({ id, children }) {
+function SortableCard({ id, handlePos = 'right', children }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+
+  const handleStyle = handlePos === 'center'
+    ? { position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)' }
+    : { position: 'absolute', top: 8, right: 8 };
+
   return (
     <div
       ref={setNodeRef}
@@ -187,22 +192,22 @@ function SortableCard({ id, children }) {
       }}
     >
       {children}
-      {/* Drag handle — subtle grip tab at bottom-center */}
+      {/* Drag handle — hamburger lines */}
       <div
         {...attributes}
         {...listeners}
         style={{
-          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-          width: 26, height: 20, borderRadius: 6,
+          ...handleStyle,
+          width: 28, height: 22, borderRadius: 6,
           background: 'rgba(6,89,144,.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'grab', touchAction: 'none', zIndex: 10,
         }}
       >
-        <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
-          {[2, 6, 10].map(cy => [2.5, 7.5].map(cx => (
-            <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="1.2" fill={BLUE} fillOpacity="0.4" />
-          )))}
+        <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
+          <rect x="0" y="0" width="14" height="2" rx="1" fill={BLUE} fillOpacity="0.45"/>
+          <rect x="0" y="4" width="14" height="2" rx="1" fill={BLUE} fillOpacity="0.45"/>
+          <rect x="0" y="8" width="14" height="2" rx="1" fill={BLUE} fillOpacity="0.45"/>
         </svg>
       </div>
     </div>
@@ -842,7 +847,8 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
           {cardOrder.map(id => {
             const content = renderHomeCard(id);
             if (!content) return null;
-            return <SortableCard key={id} id={id}>{content}</SortableCard>;
+            const pos = id === 'acdc' ? 'center' : 'right';
+            return <SortableCard key={id} id={id} handlePos={pos}>{content}</SortableCard>;
           })}
         </div>
       </SortableContext>
