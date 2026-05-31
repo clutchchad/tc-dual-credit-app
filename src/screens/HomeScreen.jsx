@@ -192,7 +192,7 @@ function AcdcStrip({ acdc, onNavigate }) {
         onClick={e => e.stopPropagation()}
         style={{
           background: LIME,
-          border: `1.5px solid ${BLUE}`,
+          border: 'none',
           borderRadius: 10,
           padding: '6px 12px',
           fontFamily: FF, fontSize: 12, fontWeight: 800, color: BLUE,

@@ -188,7 +188,7 @@ function CoachCard({ acdc, school, grade, isTablet }) {
                   onClick={() => window.open(buildSchedulingUrl(), '_blank', 'noopener,noreferrer')}
                   style={{
                     height: 44, padding: '0 20px',
-                    background: LIME, border: `2px solid ${BLUE}`, borderRadius: 12,
+                    background: LIME, border: 'none', borderRadius: 12,
                     cursor: 'pointer',
                     display: 'flex', alignItems: 'center', gap: 8,
                   }}
@@ -254,7 +254,7 @@ function CoachCard({ acdc, school, grade, isTablet }) {
           style={{
             width: '100%', height: 44,
             background: LIME,
-            border: `2px solid ${BLUE}`, borderRadius: 12,
+            border: 'none', borderRadius: 12,
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
           }}
@@ -291,9 +291,9 @@ function AboutCard() {
         Academic Coaches for Dual Credit (ACDCs) serve as the connection between you, your high school,
         and Texarkana College. Your ACDC can help you with:
       </p>
-      <ul style={{ margin: '0 0 12px', paddingLeft: 20 }}>
+      <ul style={{ margin: '0 0 12px', paddingLeft: 22, listStyleType: 'disc' }}>
         {bullets.map(b => (
-          <li key={b} style={{ fontFamily: FF, fontSize: 13, color: '#374151', lineHeight: 1.65, marginBottom: 4 }}>
+          <li key={b} style={{ fontFamily: FF, fontSize: 13, color: '#374151', lineHeight: 1.65, marginBottom: 4, listStyleType: 'disc' }}>
             {b}
           </li>
         ))}
@@ -321,6 +321,7 @@ export default function ACDCScreen({ school, grade, onNavigate, tabs }) {
 
       <div style={{ flex: 1, overflowY: 'auto', padding: sidePad, marginTop: -42 }}>
         {isUnassigned ? <OfficeCard /> : <CoachCard acdc={acdc} school={school} grade={grade} isTablet={isTablet} />}
+        <AboutCard />
       </div>
 
       <BottomNav active="acdc" onNavigate={onNavigate} tabs={tabs} />
