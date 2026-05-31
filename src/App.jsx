@@ -144,6 +144,26 @@ export default function App() {
           />
         );
 
+      // Change My School path (from More screen) — skips grade picker if grade already stored
+      case 'change_school':
+        return (
+          <OnboardSchool
+            role={role}
+            onSelect={sc => {
+              setSchool(sc);
+              const storedGrade = getStored().grade;
+              if (sc.id === 'txh' && !storedGrade) {
+                // Only show grade picker for Texas High when no grade is on record
+                go('onboard_grade');
+              } else {
+                // Keep existing grade; go straight to confirm
+                go('onboard_confirm');
+              }
+            }}
+            onBack={() => go('more')}
+          />
+        );
+
       case 'onboard_grade':
         return school ? (
           <OnboardGrade
@@ -195,7 +215,7 @@ export default function App() {
             school={null}
             grade={null}
             onChangeRole={reset}
-            onChangeSchool={() => go('onboard_school')}
+            onChangeSchool={() => go('change_school')}
             {...navProps}
           />
         );
@@ -214,7 +234,7 @@ export default function App() {
             school={school || { name: 'Your School' }}
             grade={grade}
             onChangeRole={reset}
-            onChangeSchool={() => go('onboard_school')}
+            onChangeSchool={() => go('change_school')}
             {...navProps}
           />
         );
