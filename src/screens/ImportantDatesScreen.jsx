@@ -158,10 +158,20 @@ export default function ImportantDatesScreen({ onNavigate, tabs }) {
           getDocs(query(collection(db, 'dcDeadlines'), orderBy('date', 'asc'))),
         ]);
 
+        const now            = Date.now();
+        const eventCutoff    = now - 12 * 60 * 60 * 1000; // 12h after start
+        const deadlineCutoff = now - 72 * 60 * 60 * 1000; // 72h after due
+
         const live = [
           ...evSnap.docs.map(d => ({ type: 'event',    ...d.data(), id: d.id })),
           ...dlSnap.docs.map(d => ({ type: 'deadline', ...d.data(), id: d.id })),
-        ];
+        ].filter(item => {
+          const ts     = item.type === 'deadline' ? (item.dueDate || item.date) : item.date;
+          if (!ts) return true;
+          const ms     = ts.toDate ? ts.toDate().getTime() : new Date(ts).getTime();
+          const cutoff = item.type === 'deadline' ? deadlineCutoff : eventCutoff;
+          return ms > cutoff;
+        });
 
         if (live.length > 0) {
           setItems(live.sort((a, b) => (a.date > b.date ? 1 : -1)));

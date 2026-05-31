@@ -66,6 +66,61 @@ async function markFired(docId) {
   );
 }
 
+// ── Expiry cleanup ───────────────────────────────────────────────────────────
+
+async function queryExpired(collectionId, dateField, cutoffIso) {
+  const url = `${BASE}/${collectionId}:runQuery?key=${API_KEY}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      structuredQuery: {
+        from: [{ collectionId }],
+        where: {
+          fieldFilter: {
+            field: { fieldPath: dateField },
+            op:    'LESS_THAN',
+            value: { timestampValue: cutoffIso },
+          },
+        },
+      },
+    }),
+  });
+  if (!res.ok) return [];
+  const results = await res.json();
+  return results.filter(r => r.document).map(r => r.document.name);
+}
+
+async function deleteDoc(docName) {
+  await fetch(`${docName}?key=${API_KEY}`, { method: 'DELETE' });
+}
+
+async function purgeExpired(now) {
+  const eventCutoff    = new Date(now - 12 * 60 * 60 * 1000).toISOString();
+  const deadlineCutoff = new Date(now - 72 * 60 * 60 * 1000).toISOString();
+  const announceCutoff = new Date(now - 9  * 24 * 60 * 60 * 1000).toISOString();
+
+  const [expiredEvents, expiredDeadlines, expiredAnnouncements] = await Promise.all([
+    queryExpired('dcEvents',    'date',     eventCutoff),
+    queryExpired('dcDeadlines', 'dueDate',  deadlineCutoff),
+    queryExpired('announcements', 'postedAt', announceCutoff),
+  ]);
+
+  await Promise.all([
+    ...expiredEvents.map(deleteDoc),
+    ...expiredDeadlines.map(deleteDoc),
+    ...expiredAnnouncements.map(deleteDoc),
+  ]);
+
+  return {
+    events:        expiredEvents.length,
+    deadlines:     expiredDeadlines.length,
+    announcements: expiredAnnouncements.length,
+  };
+}
+
+// ── Handler ──────────────────────────────────────────────────────────────────
+
 export default async function handler(req, res) {
   if (req.headers['authorization'] !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -99,5 +154,7 @@ export default async function handler(req, res) {
     fired++;
   }
 
-  res.status(200).json({ ok: true, fired });
+  const purged = await purgeExpired(now.getTime());
+
+  res.status(200).json({ ok: true, fired, purged });
 }

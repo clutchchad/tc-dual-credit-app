@@ -140,10 +140,17 @@ export default function EventsScreen({ role, school, onNavigate, tabs }) {
     const unsub = onSnapshot(
       q,
       snap => {
+        const eventCutoff = Date.now() - 12 * 60 * 60 * 1000; // 12h after start
         setEvents(
           snap.docs
             .map(d => ({ id: d.id, ...d.data() }))
             .filter(ev => matchesUser(ev, userSchoolId, userRole))
+            .filter(ev => {
+              const ts = ev.date;
+              if (!ts) return true;
+              const d = ts.toDate ? ts.toDate() : new Date(ts);
+              return d.getTime() > eventCutoff;
+            })
         );
         setEventsReady(true);
       },
@@ -158,10 +165,17 @@ export default function EventsScreen({ role, school, onNavigate, tabs }) {
     const unsub = onSnapshot(
       q,
       snap => {
+        const deadlineCutoff = Date.now() - 72 * 60 * 60 * 1000; // 72h after due
         setDeadlines(
           snap.docs
             .map(d => ({ id: d.id, ...d.data() }))
             .filter(dl => matchesUser(dl, userSchoolId, userRole))
+            .filter(dl => {
+              const ts = dl.dueDate || dl.date;
+              if (!ts) return true;
+              const d = ts.toDate ? ts.toDate() : new Date(ts);
+              return d.getTime() > deadlineCutoff;
+            })
         );
         setDeadlinesReady(true);
       },

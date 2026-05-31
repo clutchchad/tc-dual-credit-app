@@ -16,15 +16,28 @@ function openDb() {
   });
 }
 
-/** Returns all notifications, newest first. */
+const FOUR_DAYS_MS = 4 * 24 * 60 * 60 * 1000;
+
+/**
+ * Returns all notifications newer than 4 days, newest first.
+ * Also purges expired entries from IndexedDB on each call.
+ */
 export async function loadNotifications() {
   try {
-    const db = await openDb();
+    const db     = await openDb();
+    const cutoff = Date.now() - FOUR_DAYS_MS;
     return new Promise((resolve, reject) => {
-      const tx  = db.transaction(STORE_NAME, 'readonly');
-      const all = tx.objectStore(STORE_NAME).getAll();
-      all.onsuccess = () => { db.close(); resolve([...all.result].reverse()); };
-      all.onerror   = () => { db.close(); reject(all.error); };
+      const tx    = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const all   = store.getAll();
+      all.onsuccess = () => {
+        const items = [...all.result];
+        // Purge expired entries
+        items.forEach(n => { if (n.timestamp < cutoff) store.delete(n.id); });
+        db.close();
+        resolve(items.filter(n => n.timestamp >= cutoff).reverse());
+      };
+      all.onerror = () => { db.close(); reject(all.error); };
     });
   } catch {
     return [];
