@@ -613,7 +613,7 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs, isTablet }) {
                   background: schoolColor,
                   borderRadius: 20, padding: '3px 10px',
                 }}>
-                  {metaLine} · {schoolName}
+                  {schoolName} · {metaLine}
                 </span>
               ) : metaLine ? (
                 /* Grade only — fallback to lime if no school data */
