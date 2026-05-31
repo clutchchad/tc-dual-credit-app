@@ -9,6 +9,31 @@ import { getStudentProfile } from '../data/studentProfile';
 import { buildSchedulingUrl } from '../data/buildSchedulingUrl';
 
 const BLUE = '#065990';
+
+const FULL_SCHOOL_NAMES = {
+  txh:       'Texas High School',
+  le:        'Liberty-Eylau High School',
+  hooks:     'Hooks High School',
+  pg:        'Pleasant Grove High School',
+  bloomburg: 'Bloomburg High School',
+  avery:     'Avery High School',
+  dekalb:    'DeKalb High School',
+  maud:      'Maud High School',
+  prem:      'Premier High School',
+  nb:        'New Boston High School',
+  simms:     'James Bowie High School',
+  atlanta:   'Atlanta High School',
+  qc:        'Queen City High School',
+  mcleod:    'McLeod High School',
+  lk:        'Linden-Kildare High School',
+  rw:        'Redwater High School',
+  datx:      'Digital Academy of Texas',
+  'ar-premier': 'Premier High School - Arkansas',
+};
+
+function getFullSchoolName(id) {
+  return FULL_SCHOOL_NAMES[id] || id;
+}
 const LIME = '#EAFF00';
 const DARK = '#022b52';
 
@@ -524,11 +549,6 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
                     ID: {storedStudentId}
                   </div>
                 )}
-                {grade && (
-                  <div style={{ fontFamily: FF, fontSize: 11.5, color: 'rgba(255,255,255,.50)', marginTop: 1 }}>
-                    {grade}
-                  </div>
-                )}
               </>
             ) : isParent ? (
               /* Parent identity block — mirrors student block, framed as "Parent of" */
@@ -579,7 +599,7 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
       {school && (
         <div style={{ background: barColor, padding: '6px 16px', display: 'flex', alignItems: 'center' }}>
           <span style={{ fontFamily: FF, fontSize: 12.5, fontWeight: 700, color: barTextColor }}>
-            {school.name}{grade ? ` · ${grade}` : ''}
+            {getFullSchoolName(school.id)}{grade ? ` · ${grade}` : ''}
           </span>
         </div>
       )}

@@ -5,6 +5,31 @@ import { PATHWAYS } from '../data/pathways';
 import { SCHOOLS } from '../data/schools';
 import { C, FF } from '../tokens';
 
+const FULL_SCHOOL_NAMES = {
+  txh:       'Texas High School',
+  le:        'Liberty-Eylau High School',
+  hooks:     'Hooks High School',
+  pg:        'Pleasant Grove High School',
+  bloomburg: 'Bloomburg High School',
+  avery:     'Avery High School',
+  dekalb:    'DeKalb High School',
+  maud:      'Maud High School',
+  prem:      'Premier High School',
+  nb:        'New Boston High School',
+  simms:     'James Bowie High School',
+  atlanta:   'Atlanta High School',
+  qc:        'Queen City High School',
+  mcleod:    'McLeod High School',
+  lk:        'Linden-Kildare High School',
+  rw:        'Redwater High School',
+  datx:      'Digital Academy of Texas',
+  'ar-premier': 'Premier High School - Arkansas',
+};
+
+function getFullSchoolName(id) {
+  return FULL_SCHOOL_NAMES[id] || id;
+}
+
 // ── School color bar ──────────────────────────────────────────────────────────
 
 function SchoolColorBar({ school, grade, onBack }) {
@@ -31,7 +56,7 @@ function SchoolColorBar({ school, grade, onBack }) {
         </button>
       )}
       <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 700, color: textColor }}>
-        Pathway Plans at {school.name}{grade ? ` · ${grade}` : ''}
+        Pathway Plans at {getFullSchoolName(school.id)}{grade ? ` · ${grade}` : ''}
       </span>
     </div>
   );

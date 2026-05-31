@@ -10,6 +10,31 @@ const LIME   = '#EAFF00';
 const BLUE   = '#065990';
 const DARK   = '#022b52';
 
+const FULL_SCHOOL_NAMES = {
+  txh:       'Texas High School',
+  le:        'Liberty-Eylau High School',
+  hooks:     'Hooks High School',
+  pg:        'Pleasant Grove High School',
+  bloomburg: 'Bloomburg High School',
+  avery:     'Avery High School',
+  dekalb:    'DeKalb High School',
+  maud:      'Maud High School',
+  prem:      'Premier High School',
+  nb:        'New Boston High School',
+  simms:     'James Bowie High School',
+  atlanta:   'Atlanta High School',
+  qc:        'Queen City High School',
+  mcleod:    'McLeod High School',
+  lk:        'Linden-Kildare High School',
+  rw:        'Redwater High School',
+  datx:      'Digital Academy of Texas',
+  'ar-premier': 'Premier High School - Arkansas',
+};
+
+function getFullSchoolName(id) {
+  return FULL_SCHOOL_NAMES[id] || id;
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Derive 1–2 initials from a name */
@@ -120,8 +145,8 @@ function OfficeCard() {
 
 function CoachCard({ acdc, school, grade }) {
   const contextLine = (() => {
-    if (school.id === 'txh' && grade) return `Texas High · ${grade}`;
-    return school.name;
+    const fullName = getFullSchoolName(school.id);
+    return grade ? `${fullName} · ${grade}` : fullName;
   })();
 
   const gradeLabel = (() => {
