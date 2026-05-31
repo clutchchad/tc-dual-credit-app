@@ -103,7 +103,7 @@ export default function App() {
         return (
           <OnboardStudentID
             role={role}
-            onVerified={({ schoolObj, gradeVal, studentIdVal, firstNameVal, lastNameVal }) => {
+            onVerified={({ schoolObj, gradeVal, studentIdVal, firstNameVal, lastNameVal, emailVal, parentEmailVal, tcEmailVal }) => {
               setSchool(schoolObj);
               setGrade(gradeVal);
               setStudentId(studentIdVal);
@@ -120,6 +120,9 @@ export default function App() {
                 firstName: firstNameVal,
                 lastName: lastNameVal,
                 isJenzabarVerified: true,
+                ...(emailVal       && { email:       emailVal }),
+                ...(parentEmailVal && { parentEmail: parentEmailVal }),
+                ...(tcEmailVal     && { tcEmail:     tcEmailVal }),
               });
               go('onboard_confirm');
             }}

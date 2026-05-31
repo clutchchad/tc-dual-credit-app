@@ -39,7 +39,12 @@ export function buildSchedulingUrl() {
 
   if (stored.firstName) params.push(`firstname=${encodeURIComponent(stored.firstName)}`);
   if (stored.lastName)  params.push(`lastname=${encodeURIComponent(stored.lastName)}`);
-  if (stored.email)     params.push(`email=${encodeURIComponent(stored.email)}`);
+
+  const email = stored.role === 'student' ? stored.email
+              : stored.role === 'parent'  ? stored.parentEmail
+              : null;
+  const resolvedEmail = email || stored.tcEmail || null;
+  if (resolvedEmail) params.push(`email=${encodeURIComponent(resolvedEmail)}`);
 
   const gradeHs  = stored.grade      ? GRADE_MAP[stored.grade]          : null;
   const schoolHs = stored.school?.id ? SCHOOL_MAP[stored.school.id]     : null;

@@ -47,8 +47,11 @@ export default function OnboardStudentID({ role, onVerified, onSkip, onBack }) {
           schoolObj,
           gradeVal,
           studentIdVal: value,
-          firstNameVal: profile.firstName,
-          lastNameVal:  profile.lastName,
+          firstNameVal:    profile.firstName,
+          lastNameVal:     profile.lastName,
+          emailVal:        isParent ? null              : (profile.email     || null),
+          parentEmailVal:  isParent ? profile.parentEmail : null,
+          tcEmailVal:      profile.tcEmail || null,
         });
       } else {
         setLoading(false);
