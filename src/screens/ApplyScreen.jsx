@@ -50,8 +50,9 @@ export default function ApplyScreen({ onNavigate }) {
           onMouseLeave={e=> e.currentTarget.style.transform='scale(1)'}
           onTouchStart={e=> e.currentTarget.style.transform='scale(0.98)'}
           onTouchEnd={e  => e.currentTarget.style.transform='scale(1)'}
+          onClick={() => window.open('https://txkcol.edu/applydc', '_blank', 'noopener,noreferrer')}
         >
-          <span style={{ fontFamily:FF, fontSize:16, fontWeight:800, color:'#022b52' }}>Start Application</span>
+          <span style={{ fontFamily:FF, fontSize:16, fontWeight:800, color:'#022b52' }}>Apply Now</span>
         </button>
         <p style={{ fontFamily:FF, fontSize:12, color:C.text3, textAlign:'center', marginTop:12 }}>
           You will be taken to the ApplyDC portal to complete enrollment.
