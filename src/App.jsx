@@ -138,7 +138,7 @@ export default function App() {
             onSelect={sc => {
               setSchool(sc);
               setGrade(null);
-              go(sc.id === 'txh' ? 'onboard_grade' : 'onboard_confirm');
+              go('onboard_grade');
             }}
             onBack={() => go('onboard_student_id')}
           />
@@ -168,7 +168,7 @@ export default function App() {
             }}
             onBack={() => {
               if (isJenzabarVerified) go('onboard_student_id');
-              else go(school?.id === 'txh' ? 'onboard_grade' : 'onboard_school');
+              else go('onboard_grade');
             }}
           />
         ) : null;
