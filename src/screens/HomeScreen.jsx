@@ -175,12 +175,14 @@ function CoachPhoto({ photo, name, size = 44 }) {
 /* ── Unified sortable item — used for all 5 home cards ── */
 // handleColor: 'blue' (default, for light/white/lime backgrounds)
 //              'lime' (for dark Royal Blue backgrounds — Next Deadline, Last Notification)
-function SortableItem({ id, fullWidth, handlePos, handleColor = 'blue', children }) {
+function SortableItem({ id, fullWidth, handleColor = 'blue', children }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const isLime = handleColor === 'lime';
   return (
     <div
       ref={setNodeRef}
+      {...attributes}
+      {...listeners}
       style={{
         gridColumn: fullWidth ? '1 / -1' : undefined,
         transform: CSS.Transform.toString(transform),
@@ -189,37 +191,27 @@ function SortableItem({ id, fullWidth, handlePos, handleColor = 'blue', children
         position: 'relative',
         zIndex: isDragging ? 999 : 'auto',
         height: '100%',
+        cursor: 'grab',
+        touchAction: 'none',
       }}
     >
       {children}
+      {/* Visual-only drag indicator — upper right, same small style on every card */}
       <div
-        {...attributes}
-        {...listeners}
         style={{
           position: 'absolute',
-          ...(handlePos === 'center'
-            ? { top: 2, left: '50%', transform: 'translateX(-50%)' }
-            : { top: 8, right: 8 }),
-          ...(handlePos === 'center'
-            ? { width: 18, height: 8, borderRadius: 3 }
-            : { width: 28, height: 22, borderRadius: 6 }),
+          top: 6, right: 6,
+          width: 18, height: 8, borderRadius: 3,
           background: isLime ? 'rgba(234,255,0,.12)' : 'rgba(6,89,144,.06)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'grab', touchAction: 'none', zIndex: 10,
+          pointerEvents: 'none',
+          zIndex: 10,
         }}
       >
-        {handlePos === 'center' ? (
-          <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
-            <rect x="0" y="0" width="10" height="1.5" rx="0.75" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.6' : '0.30'}/>
-            <rect x="0" y="4.5" width="10" height="1.5" rx="0.75" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.6' : '0.30'}/>
-          </svg>
-        ) : (
-          <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
-            <rect x="0" y="0" width="14" height="2" rx="1" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.9' : '0.45'}/>
-            <rect x="0" y="4" width="14" height="2" rx="1" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.9' : '0.45'}/>
-            <rect x="0" y="8" width="14" height="2" rx="1" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.9' : '0.45'}/>
-          </svg>
-        )}
+        <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+          <rect x="0" y="0"   width="10" height="1.5" rx="0.75" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.6' : '0.30'}/>
+          <rect x="0" y="4.5" width="10" height="1.5" rx="0.75" fill={isLime ? LIME : BLUE} fillOpacity={isLime ? '0.6' : '0.30'}/>
+        </svg>
       </div>
     </div>
   );
@@ -855,7 +847,7 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
             // deadline and lastnotif have Royal Blue headers — use Lime handle so it's visible
             const handleColor = (id === 'deadline' || id === 'lastnotif') ? 'lime' : 'blue';
             return (
-              <SortableItem key={id} id={id} fullWidth={isAcdc} handlePos={isAcdc ? 'center' : 'right'} handleColor={handleColor}>
+              <SortableItem key={id} id={id} fullWidth={isAcdc} handleColor={handleColor}>
                 {content}
               </SortableItem>
             );
