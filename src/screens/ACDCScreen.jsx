@@ -210,36 +210,36 @@ function CoachCard({ acdc, school, grade, isTablet }) {
 
   /* Original vertical / mobile layout */
   return (
-    <Card style={{ padding: '16px 16px 16px', marginBottom: 10, textAlign: 'center' }}>
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
-        <CoachPhoto photo={acdc.photo} name={acdc.name} size={72} />
+    <Card style={{ padding: '12px 14px 12px', marginBottom: 10, textAlign: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+        <CoachPhoto photo={acdc.photo} name={acdc.name} size={62} />
       </div>
 
-      <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: DARK, letterSpacing: '-0.5px', lineHeight: 1.15 }}>
+      <div style={{ fontFamily: FF, fontSize: 18, fontWeight: 900, color: DARK, letterSpacing: '-0.4px', lineHeight: 1.15 }}>
         {acdc.name}
       </div>
-      <div style={{ fontFamily: FF, fontSize: 12.5, color: BLUE, fontWeight: 700, marginTop: 3 }}>
+      <div style={{ fontFamily: FF, fontSize: 12, color: BLUE, fontWeight: 700, marginTop: 2 }}>
         Academic Coach for Dual Credit
       </div>
-      <div style={{ fontFamily: FF, fontSize: 11.5, color: '#6b7280', marginTop: 2 }}>
+      <div style={{ fontFamily: FF, fontSize: 11, color: '#6b7280', marginTop: 1 }}>
         {contextLine}
       </div>
 
-      <div style={{ height: 1, background: 'rgba(6,89,144,.08)', margin: '12px 0 10px' }} />
+      <div style={{ height: 1, background: 'rgba(6,89,144,.08)', margin: '10px 0 8px' }} />
 
       <a
         href={`tel:${acdc.phone}`}
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          textDecoration: 'none', marginBottom: 10,
+          textDecoration: 'none', marginBottom: 8,
         }}
       >
         <div style={{
-          width: 32, height: 32, borderRadius: 9,
+          width: 30, height: 30, borderRadius: 8,
           background: 'rgba(6,89,144,.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.2" strokeLinecap="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.2" strokeLinecap="round">
             <path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 0112 18.85a19.5 19.5 0 01-6-6A19.79 19.79 0 012.92 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
           </svg>
         </div>
@@ -252,17 +252,17 @@ function CoachCard({ acdc, school, grade, isTablet }) {
         <button
           onClick={() => window.open(buildSchedulingUrl(), '_blank', 'noopener,noreferrer')}
           style={{
-            width: '100%', height: 44,
+            width: '100%', height: 40,
             background: LIME,
-            border: 'none', borderRadius: 12,
+            border: 'none', borderRadius: 11,
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round">
             <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
           </svg>
-          <span style={{ fontFamily: FF, fontSize: 14, fontWeight: 900, color: BLUE, letterSpacing: '-0.2px' }}>
+          <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 900, color: BLUE, letterSpacing: '-0.2px' }}>
             Schedule Advising
           </span>
         </button>
@@ -283,22 +283,19 @@ function AboutCard() {
   ];
 
   return (
-    <Card style={{ padding: '20px 18px 22px', marginBottom: 14 }}>
-      <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 800, color: DARK, marginBottom: 10 }}>
-        About Your ACDC
-      </div>
-      <p style={{ fontFamily: FF, fontSize: 13, color: '#374151', lineHeight: 1.65, margin: '0 0 12px' }}>
+    <Card style={{ padding: '12px 14px 14px', marginBottom: 10 }}>
+      <p style={{ fontFamily: FF, fontSize: 12, color: '#374151', lineHeight: 1.55, margin: '0 0 8px' }}>
         Academic Coaches for Dual Credit (ACDCs) serve as the connection between you, your high school,
         and Texarkana College. Your ACDC can help you with:
       </p>
-      <ul style={{ margin: '0 0 12px', paddingLeft: 22, listStyleType: 'disc' }}>
+      <ul style={{ margin: '0 0 8px', paddingLeft: 18 }}>
         {bullets.map(b => (
-          <li key={b} style={{ fontFamily: FF, fontSize: 13, color: '#374151', lineHeight: 1.65, marginBottom: 4, listStyleType: 'disc' }}>
+          <li key={b} style={{ fontFamily: FF, fontSize: 12, color: '#374151', lineHeight: 1.5, marginBottom: 2 }}>
             {b}
           </li>
         ))}
       </ul>
-      <p style={{ fontFamily: FF, fontSize: 13, color: '#374151', lineHeight: 1.65, margin: 0, fontWeight: 600 }}>
+      <p style={{ fontFamily: FF, fontSize: 12, color: '#374151', lineHeight: 1.5, margin: 0, fontWeight: 600 }}>
         Your ACDC is on your campus and in your corner all semester long.
       </p>
     </Card>
@@ -311,15 +308,15 @@ export default function ACDCScreen({ school, grade, onNavigate, tabs }) {
   const isTablet     = useIsTablet();
   const acdc         = getAcdcForSchool(school.id, grade);
   const isUnassigned = school.unassigned === true;
-  const sidePad      = isTablet ? '0 24px 40px' : '0 14px 150px';
+  const sidePad      = isTablet ? '0 24px 40px' : '0 14px 100px';
 
   return (
     <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column' }}>
-      <BlueHeader style={{ paddingBottom: 52 }}>
+      <BlueHeader style={{ paddingBottom: 36 }}>
         <PageTitle title="My ACDC" sub="Your Academic Coach for Dual Credit" />
       </BlueHeader>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: sidePad, marginTop: -42 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: sidePad, marginTop: -28 }}>
         {isUnassigned ? <OfficeCard /> : <CoachCard acdc={acdc} school={school} grade={grade} isTablet={isTablet} />}
         <AboutCard />
       </div>
