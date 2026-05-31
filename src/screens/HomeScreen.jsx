@@ -81,7 +81,7 @@ function getGreeting(profile, role) {
 const SEED_TIMELINE = [
   {
     id: 'seed1',
-    category: 'Announcement',
+    category: 'Announcements',
     title: 'Welcome to the TC Dual Credit App',
     body: 'Stay connected to your dual credit journey — deadlines, your ACDC, pathways, and more, all in one place.',
     daysAgo: 0,
@@ -93,20 +93,13 @@ const SEED_TIMELINE = [
     body: "Make sure you meet with your ACDC before registration opens. Spots in dual credit courses fill fast — don't wait.",
     daysAgo: 3,
   },
-  {
-    id: 'seed3',
-    category: 'TC Promise',
-    title: 'You Could Qualify for TC Promise',
-    body: 'Students who complete dual credit and meet eligibility requirements may qualify for the TC Promise scholarship. Ask your ACDC for details.',
-    daysAgo: 7,
-  },
 ];
 
 /* ── Seed timeline — parent ── */
 const PARENT_SEED_TIMELINE = [
   {
     id: 'pseed1',
-    category: 'Announcement',
+    category: 'Announcements',
     title: "Welcome, Parent!",
     body: "This app keeps you connected to your child's dual credit journey — deadlines, their Academic Coach, and more, all in one place.",
     daysAgo: 0,
@@ -118,13 +111,6 @@ const PARENT_SEED_TIMELINE = [
     body: 'Encourage your student to meet with their ACDC before registration opens. Dual credit spots fill quickly!',
     daysAgo: 3,
   },
-  {
-    id: 'pseed3',
-    category: 'TC Promise',
-    title: 'TC Promise Could Cover Their Tuition',
-    body: 'Students who complete dual credit and meet eligibility requirements may qualify for TC Promise — potentially covering 100% of tuition at Texarkana College.',
-    daysAgo: 7,
-  },
 ];
 
 function seedRelTime(daysAgo) {
@@ -134,10 +120,11 @@ function seedRelTime(daysAgo) {
 }
 
 const CATEGORY_STYLES = {
-  'Announcement': { bg: 'rgba(6,89,144,.10)',   color: '#065990' },
-  'Reminder':     { bg: 'rgba(249,115,22,.10)', color: '#c2410c' },
-  'TC Promise':   { bg: 'rgba(22,163,74,.10)',  color: '#15803d' },
-  'Event':        { bg: 'rgba(124,58,237,.10)', color: '#7c3aed' },
+  'Announcements': { bg: 'rgba(6,89,144,.10)',   color: '#065990' },
+  'Announcement':  { bg: 'rgba(6,89,144,.10)',   color: '#065990' },
+  'Reminder':      { bg: 'rgba(249,115,22,.10)', color: '#c2410c' },
+  'TC Promise':    { bg: 'rgba(22,163,74,.10)',  color: '#15803d' },
+  'Event':         { bg: 'rgba(124,58,237,.10)', color: '#7c3aed' },
 };
 
 /* ── CoachPhoto ── */
@@ -204,18 +191,22 @@ function AcdcStrip({ acdc, onNavigate }) {
         rel="noopener noreferrer"
         onClick={e => e.stopPropagation()}
         style={{
-          background: LIME,
-          border: 'none',
+          background: 'transparent',
+          border: `1.5px solid ${BLUE}`,
           borderRadius: 10,
-          padding: '7px 14px',
-          fontFamily: FF, fontSize: 12, fontWeight: 800, color: DARK,
+          padding: '6px 12px',
+          fontFamily: FF, fontSize: 12, fontWeight: 800, color: BLUE,
           cursor: 'pointer',
           textDecoration: 'none',
           whiteSpace: 'nowrap',
           flexShrink: 0,
+          display: 'flex', alignItems: 'center', gap: 5,
         }}
       >
-        Schedule
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
+        Schedule Advising
       </a>
     </button>
   );
@@ -441,11 +432,6 @@ function TimelineSection({ items, isTablet }) {
   const pad = isTablet ? '24px 24px 0' : '20px 14px 0';
   return (
     <div style={{ padding: pad }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-        <span style={{ fontFamily: FF, fontSize: isTablet ? 18 : 16, fontWeight: 900, color: C.text, letterSpacing: '-0.3px' }}>Timeline</span>
-        <div style={{ flex: 1, height: 2, borderRadius: 1, background: BLUE, opacity: 0.18 }} />
-        <div style={{ width: 28, height: 2, borderRadius: 1, background: BLUE }} />
-      </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 12 }}>
         {items.map(item => <TimelineCard key={item.id} item={item} />)}
       </div>

@@ -633,17 +633,6 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
           <div style={{ fontFamily: FF, fontSize: 11, color: C.text3, marginTop: 2 }}>Texarkana College</div>
         </div>
 
-        {/* Debug: engagement badge unlock — demo purposes only */}
-        <div style={{ textAlign: 'center', paddingBottom: 20 }}>
-          <button
-            onClick={() => { debugUnlockAll(); refreshEngBadges(); }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px' }}
-          >
-            <span style={{ fontFamily: FF, fontSize: 10, color: 'rgba(6,89,144,.25)', fontWeight: 500 }}>
-              Debug: Unlock Engagement Badges
-            </span>
-          </button>
-        </div>
       </div>
 
       <BottomNav active="more" onNavigate={onNavigate} tabs={tabs} />

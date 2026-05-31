@@ -56,6 +56,17 @@ async function unsubscribe() {
   if (sub) await sub.unsubscribe();
 }
 
+const BLUE = '#065990';
+const LIME = '#EAFF00';
+const DARK = '#022b52';
+
+const FILTER_PILLS = [
+  { id: 'Announcements', label: 'Announcements' },
+  { id: 'Reminder',      label: 'Reminders'     },
+  { id: 'Event',         label: 'Events'         },
+  { id: 'TC Promise',    label: 'TC Promise'     },
+];
+
 // ── Component ───────────────────────────────────────────────────────────────
 export default function NotificationsScreen({ onNavigate, tabs }) {
   const isTablet = useIsTablet();
@@ -63,6 +74,15 @@ export default function NotificationsScreen({ onNavigate, tabs }) {
   const [toggling,   setToggling]     = useState(false);
   const [notifs,     setNotifs]       = useState([]);
   const [supported,  setSupported]    = useState(true);
+  const [activeFilters, setActiveFilters] = useState(new Set());
+
+  function toggleFilter(id) {
+    setActiveFilters(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
 
   // Check real subscription state and load history on mount
   const refresh = useCallback(async () => {
@@ -150,6 +170,30 @@ export default function NotificationsScreen({ onNavigate, tabs }) {
           )}
         </div>
 
+        {/* Filter pills */}
+        <div style={{ display: 'flex', gap: 7, marginBottom: 14, flexWrap: 'wrap' }}>
+          {FILTER_PILLS.map(p => {
+            const active = activeFilters.has(p.id);
+            return (
+              <button
+                key={p.id}
+                onClick={() => toggleFilter(p.id)}
+                style={{
+                  height: 30, padding: '0 13px', borderRadius: 20,
+                  border: `1.5px solid ${BLUE}`,
+                  background: active ? BLUE : '#fff',
+                  cursor: 'pointer',
+                  transition: 'background .15s',
+                }}
+              >
+                <span style={{ fontFamily: FF, fontSize: 11.5, fontWeight: 700, color: active ? '#fff' : BLUE }}>
+                  {p.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         {/* Notifications list */}
         <div style={{ fontFamily: FF, fontSize: 10.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '1.4px', marginBottom: 8, paddingLeft: 4 }}>Recent</div>
 
@@ -166,7 +210,9 @@ export default function NotificationsScreen({ onNavigate, tabs }) {
             </div>
           </div>
         ) : (
-          notifs.map(n => (
+          notifs
+          .filter(n => activeFilters.size === 0 || activeFilters.has(n.category))
+          .map(n => (
             <div
               key={n.id}
               style={{ background: '#fff', borderRadius: 16, border: `1px solid ${C.border}`, padding: '13px 14px', marginBottom: 8, display: 'flex', alignItems: 'flex-start', gap: 12 }}

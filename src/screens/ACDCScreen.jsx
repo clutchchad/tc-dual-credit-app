@@ -202,16 +202,15 @@ function CoachCard({ acdc, school, grade, isTablet }) {
                   onClick={() => window.open(buildSchedulingUrl(), '_blank', 'noopener,noreferrer')}
                   style={{
                     height: 44, padding: '0 20px',
-                    background: LIME, border: 'none', borderRadius: 12,
+                    background: 'transparent', border: `2px solid ${BLUE}`, borderRadius: 12,
                     cursor: 'pointer',
                     display: 'flex', alignItems: 'center', gap: 8,
-                    boxShadow: '0 2px 12px rgba(234,255,0,.35)',
                   }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={DARK} strokeWidth="2.5" strokeLinecap="round">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round">
                     <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
                   </svg>
-                  <span style={{ fontFamily: FF, fontSize: 14, fontWeight: 900, color: DARK, letterSpacing: '-0.1px' }}>
+                  <span style={{ fontFamily: FF, fontSize: 14, fontWeight: 900, color: BLUE, letterSpacing: '-0.1px' }}>
                     Schedule Advising
                   </span>
                 </button>
@@ -280,17 +279,16 @@ function CoachCard({ acdc, school, grade, isTablet }) {
           onClick={() => window.open(buildSchedulingUrl(), '_blank', 'noopener,noreferrer')}
           style={{
             width: '100%', height: 52,
-            background: LIME,
-            border: 'none', borderRadius: 14,
+            background: 'transparent',
+            border: `2px solid ${BLUE}`, borderRadius: 14,
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
-            boxShadow: '0 2px 12px rgba(234,255,0,.35)',
           }}
         >
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={DARK} strokeWidth="2.5" strokeLinecap="round">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round">
             <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
           </svg>
-          <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 900, color: DARK, letterSpacing: '-0.2px' }}>
+          <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 900, color: BLUE, letterSpacing: '-0.2px' }}>
             Schedule Advising
           </span>
         </button>
