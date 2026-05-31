@@ -368,8 +368,8 @@ function AchievementsPanel({ unlockedIds }) {
 // Resources panel — collapsible dropdown, all roles
 // ─────────────────────────────────────────────────────────────────────────────
 const RES_TYPE_COLORS = { pdf: '#b91c1c', video: '#6d28d9', website: '#0d7654', info: '#0369a1' };
-const RES_TYPE_LABELS = { pdf: 'PDF', video: 'Video', website: 'Website', info: 'Info' };
-const RES_FILTERS = [['all','All'],['pdf','PDF'],['video','Video'],['website','Website'],['info','Info']];
+const RES_TYPE_LABELS = { pdf: 'Document', video: 'Video', website: 'Website', info: 'Info' };
+const RES_FILTERS = [['all','All'],['pdf','Document'],['video','Video'],['website','Website'],['info','Info']];
 
 function ResourcesPanel() {
   const [open, setOpen] = useState(false);
@@ -404,7 +404,7 @@ function ResourcesPanel() {
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 900, color: C.text, letterSpacing: '-0.3px' }}>Resources</div>
-          <div style={{ fontFamily: FF, fontSize: 12, color: C.text3, marginTop: 1 }}>Guides, PDFs, and videos</div>
+          <div style={{ fontFamily: FF, fontSize: 12, color: C.text3, marginTop: 1 }}>Additional information, Documents, Websites, Videos</div>
         </div>
 
         {/* Item count pill */}
