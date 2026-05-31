@@ -519,7 +519,7 @@ function GuestMoreScreen({ onChangeRole, onNavigate, tabs }) {
             Set Up Your Profile
           </div>
           <p style={{ fontFamily:FF, fontSize:14, color:C.text2, lineHeight:1.6, margin:'0 0 28px' }}>
-            Get personalized deadlines, connect with your ACDC, and unlock your full dual credit experience.
+            Unlock the full Dual Credit mobile app experience.
           </p>
 
           <button
@@ -533,8 +533,6 @@ function GuestMoreScreen({ onChangeRole, onNavigate, tabs }) {
           </button>
         </div>
 
-        {/* Resources dropdown — available to guests */}
-        <ResourcesPanel />
       </div>
       <BottomNav active="more" onNavigate={onNavigate} tabs={tabs} />
     </div>

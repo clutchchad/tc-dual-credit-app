@@ -27,6 +27,13 @@ const NAV_TABS = [
   { id: 'more',      label: 'More',      screen: 'more'      },
 ];
 
+const GUEST_NAV_TABS = [
+  { id: 'home',      label: 'Home',      screen: 'home'      },
+  { id: 'pathways',  label: 'Pathways',  screen: 'pathways'  },
+  { id: 'resources', label: 'Resources', screen: 'resources' },
+  { id: 'more',      label: 'More',      screen: 'more'      },
+];
+
 function getStored() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
 }
@@ -56,7 +63,8 @@ export default function App() {
     go('onboard_role');
   };
 
-  const navProps = { tabs: NAV_TABS, onNavigate: go };
+  const navProps      = { tabs: NAV_TABS,       onNavigate: go };
+  const guestNavProps = { tabs: GUEST_NAV_TABS, onNavigate: go };
 
   /* Shared OnboardRole renderer — used in two cases */
   const renderOnboardRole = () => (
@@ -198,7 +206,7 @@ export default function App() {
         const liveStored = getStored();
         const resolvedRole = role || liveStored.role;
         if (resolvedRole === 'guest') {
-          return <HomeScreen role="guest" school={null} grade={null} {...navProps} />;
+          return <HomeScreen role="guest" school={null} grade={null} {...guestNavProps} />;
         }
         return resolvedRole && school ? (
           <HomeScreen role={resolvedRole} school={school} grade={grade} {...navProps} />
@@ -216,18 +224,21 @@ export default function App() {
             grade={null}
             onChangeRole={reset}
             onChangeSchool={() => go('change_school')}
-            {...navProps}
+            {...guestNavProps}
           />
         );
         return <ACDCScreen school={school} grade={grade} {...navProps} />;
 
-      case 'resources':
-        return <ResourcesScreen {...navProps} />;
+      case 'resources': {
+        const isGuest = (role || 'guest') === 'guest';
+        return <ResourcesScreen {...(isGuest ? guestNavProps : navProps)} />;
+      }
 
       case 'events':
         return <EventsScreen role={role} school={school} {...navProps} />;
 
-      case 'more':
+      case 'more': {
+        const isGuest = (role || 'guest') === 'guest';
         return (
           <MoreScreen
             role={role || 'guest'}
@@ -235,24 +246,29 @@ export default function App() {
             grade={grade}
             onChangeRole={reset}
             onChangeSchool={() => go('change_school')}
-            {...navProps}
+            {...(isGuest ? guestNavProps : navProps)}
           />
         );
+      }
 
       case 'notifications':
         return <NotificationsScreen {...navProps} />;
 
-      case 'academics':
+      case 'academics': {
+        const isGuest = (role || 'guest') === 'guest';
         return (
           <AcademicsScreen
             role={role || 'guest'}
             onNavigate={go}
-            tabs={NAV_TABS}
+            tabs={isGuest ? GUEST_NAV_TABS : NAV_TABS}
           />
         );
+      }
 
-      case 'pathways':
-        return <PathwaysScreen {...navProps} />;
+      case 'pathways': {
+        const isGuest = (role || 'guest') === 'guest';
+        return <PathwaysScreen {...(isGuest ? guestNavProps : navProps)} />;
+      }
 
       case 'apply':
         return <ApplyScreen onNavigate={go} />;
