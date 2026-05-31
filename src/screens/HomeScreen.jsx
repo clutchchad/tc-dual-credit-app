@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -14,6 +14,186 @@ import { buildSchedulingUrl } from '../data/buildSchedulingUrl';
 
 const BLUE = '#065990';
 const CARDS_KEY = 'tcdc_v1_cards';
+
+/* ── Weather ── */
+const SCHOOL_COORDS = {
+  txh:          { lat: 33.4418, lon: -94.0377 },
+  le:           { lat: 33.4418, lon: -94.0377 },
+  hooks:        { lat: 33.4674, lon: -94.2858 },
+  pg:           { lat: 33.4418, lon: -94.0377 },
+  bloomburg:    { lat: 33.1318, lon: -94.0543 },
+  avery:        { lat: 33.5457, lon: -94.7749 },
+  dekalb:       { lat: 33.5068, lon: -94.6196 },
+  maud:         { lat: 33.3318, lon: -94.3416 },
+  prem:         { lat: 33.4418, lon: -94.0377 },
+  nb:           { lat: 33.4557, lon: -94.4160 },
+  simms:        { lat: 33.3657, lon: -94.3524 },
+  atlanta:      { lat: 33.1135, lon: -94.1641 },
+  qc:           { lat: 33.1493, lon: -94.1502 },
+  mcleod:       { lat: 33.2068, lon: -94.0877 },
+  lk:           { lat: 33.0018, lon: -94.3585 },
+  rw:           { lat: 33.3568, lon: -94.1338 },
+  datx:         { lat: 33.4418, lon: -94.0377 },
+  'ar-premier': { lat: 33.4418, lon: -94.0377 },
+};
+const DEFAULT_COORDS = { lat: 33.4418, lon: -94.0377 };
+
+function wmoIcon(code) {
+  if (code === 0)                            return '☀️';
+  if (code <= 3)                             return '⛅';
+  if (code === 45 || code === 48)            return '🌫️';
+  if ([51,53,55,61,63,65].includes(code))    return '🌧️';
+  if (code === 71 || code === 73 || code === 75) return '❄️';
+  if (code === 80 || code === 81 || code === 82) return '🌦️';
+  if (code === 95 || code === 96 || code === 99) return '⛈️';
+  return '🌡️';
+}
+
+function formatHour(isoStr) {
+  const d = new Date(isoStr);
+  const h = d.getHours();
+  if (h === 0)  return '12 AM';
+  if (h === 12) return '12 PM';
+  return h < 12 ? `${h} AM` : `${h - 12} PM`;
+}
+
+function useWeather(schoolId) {
+  const [weather, setWeather]   = useState(null);
+  const [loading, setLoading]   = useState(true);
+
+  useEffect(() => {
+    const coords = SCHOOL_COORDS[schoolId] || DEFAULT_COORDS;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}`
+      + `&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m`
+      + `&hourly=temperature_2m,weathercode,precipitation_probability`
+      + `&temperature_unit=fahrenheit&wind_speed_unit=mph`
+      + `&timezone=America%2FChicago&forecast_days=1`;
+
+    let cancelled = false;
+    setLoading(true);
+    fetch(url)
+      .then(r => r.json())
+      .then(data => {
+        if (cancelled) return;
+        const cur = data.current;
+        const times = data.hourly?.time || [];
+        const nowIdx = times.findIndex(t => t >= cur.time.slice(0, 13));
+        const start = nowIdx >= 0 ? nowIdx : 0;
+        const hourly = times.slice(start, start + 12).map((t, i) => ({
+          time: t,
+          temp: Math.round(data.hourly.temperature_2m[start + i]),
+          code: data.hourly.weathercode[start + i],
+          precip: data.hourly.precipitation_probability[start + i],
+        }));
+        setWeather({
+          temp: Math.round(cur.temperature_2m),
+          code: cur.weathercode,
+          hourly,
+        });
+        setLoading(false);
+      })
+      .catch(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [schoolId]);
+
+  return { weather, loading };
+}
+
+/* ── Forecast Modal ── */
+function ForecastModal({ weather, onClose }) {
+  if (!weather) return null;
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(2,43,82,0.55)',
+        display: 'flex', alignItems: 'flex-end',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', maxHeight: '70vh',
+          background: '#fff',
+          borderRadius: '20px 20px 0 0',
+          overflow: 'hidden',
+          display: 'flex', flexDirection: 'column',
+        }}
+      >
+        {/* Handle + header */}
+        <div style={{ padding: '12px 16px 10px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, color: C.text }}>
+            12-Hour Forecast
+          </div>
+          <button
+            onClick={onClose}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.text3} strokeWidth="2.5" strokeLinecap="round">
+              <path d="M18 6 6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        {/* Rows */}
+        <div style={{ overflowY: 'auto', padding: '6px 0 env(safe-area-inset-bottom, 12px)' }}>
+          {weather.hourly.map((h, i) => (
+            <div
+              key={i}
+              style={{
+                display: 'flex', alignItems: 'center',
+                padding: '9px 18px',
+                borderBottom: i < weather.hourly.length - 1 ? `1px solid ${C.border}` : 'none',
+              }}
+            >
+              <span style={{ fontFamily: FF, fontSize: 13, color: C.text3, width: 58, flexShrink: 0 }}>{formatHour(h.time)}</span>
+              <span style={{ fontSize: 18, width: 30, textAlign: 'center', flexShrink: 0 }}>{wmoIcon(h.code)}</span>
+              <span style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: C.text, flex: 1, paddingLeft: 8 }}>{h.temp}°F</span>
+              <span style={{ fontFamily: FF, fontSize: 12, color: h.precip > 30 ? '#065990' : C.text3, fontWeight: h.precip > 30 ? 700 : 500 }}>
+                💧 {h.precip}%
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Weather Pill ── */
+function WeatherPill({ schoolId, onClick }) {
+  const { weather, loading } = useWeather(schoolId);
+
+  if (loading) {
+    return (
+      <div style={{
+        height: 28, width: 68, borderRadius: 20,
+        background: 'rgba(255,255,255,.12)',
+        animation: 'tcPulse 1.4s ease-in-out infinite',
+      }} />
+    );
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 5,
+        background: 'rgba(255,255,255,.13)',
+        border: '1px solid rgba(255,255,255,.18)',
+        borderRadius: 20,
+        padding: '4px 10px 4px 7px',
+        cursor: 'pointer',
+        flexShrink: 0,
+      }}
+    >
+      <span style={{ fontSize: 14, lineHeight: 1 }}>{weather ? wmoIcon(weather.code) : '—'}</span>
+      <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: '#fff', letterSpacing: '-0.2px' }}>
+        {weather ? `${weather.temp}°` : '—'}
+      </span>
+    </button>
+  );
+}
 const DEFAULT_CARD_ORDER = ['acdc', 'deadline', 'event', 'announce', 'lastnotif'];
 function loadCardOrder() {
   try {
@@ -626,10 +806,13 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
   const resolvedGrade = grade || localProfile.grade || null;
   const acdc          = (school && !isGuest) ? getAcdcForSchool(school.id, resolvedGrade) : null;
 
-  const [latestNotif, setLatestNotif] = useState(null);
-  const [timeline,    setTimeline]    = useState(isParent ? PARENT_SEED_TIMELINE : SEED_TIMELINE);
-  const [profile,     setProfile]     = useState(null);
-  const [cardOrder, setCardOrder] = useState(loadCardOrder);
+  const [latestNotif,   setLatestNotif]   = useState(null);
+  const [timeline,      setTimeline]      = useState(isParent ? PARENT_SEED_TIMELINE : SEED_TIMELINE);
+  const [profile,       setProfile]       = useState(null);
+  const [cardOrder,     setCardOrder]     = useState(loadCardOrder);
+  const [forecastOpen,  setForecastOpen]  = useState(false);
+
+  const weatherSchoolId = school?.id || null;
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -724,73 +907,84 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
   }, []);
 
   const greeting = getGreeting(profile, role);
+  const { weather: weatherData } = useWeather(weatherSchoolId);
 
   /* ── Shared header ── */
   const renderHeader = () => (
-    <div style={{ background: BLUE, flexShrink: 0, paddingTop: 'env(safe-area-inset-top, 0px)' }}>
-      <div style={{ padding: '12px 16px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-            {isStudent ? (
-              /* Student identity block — name / ID / school+grade */
-              <>
-                <div style={{ fontFamily: FF, fontSize: 21, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.2 }}>
-                  {fullName || 'Student'}
-                </div>
-                {storedStudentId && (
-                  <div style={{ fontFamily: FF, fontSize: 11.5, color: 'rgba(255,255,255,.60)', marginTop: 2, letterSpacing: '0.1px' }}>
-                    ID: {storedStudentId}
+    <>
+      <div style={{ background: BLUE, flexShrink: 0, paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+        <div style={{ padding: '12px 16px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+              {isStudent ? (
+                /* Student identity block — name / ID / school+grade */
+                <>
+                  <div style={{ fontFamily: FF, fontSize: 21, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.2 }}>
+                    {fullName || 'Student'}
                   </div>
-                )}
-              </>
-            ) : isParent ? (
-              /* Parent identity block — mirrors student block, framed as "Parent of" */
-              <>
-                <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: 'rgba(234,255,0,.75)', textTransform: 'uppercase', letterSpacing: '1.1px', marginBottom: 3 }}>
-                  Parent of
-                </div>
-                <div style={{ fontFamily: FF, fontSize: 21, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.2 }}>
-                  {fullName || 'Student'}
-                </div>
-                {storedStudentId && (
-                  <div style={{ fontFamily: FF, fontSize: 11.5, color: 'rgba(255,255,255,.60)', marginTop: 2, letterSpacing: '0.1px' }}>
-                    ID: {storedStudentId}
+                  {storedStudentId && (
+                    <div style={{ fontFamily: FF, fontSize: 11.5, color: 'rgba(255,255,255,.60)', marginTop: 2, letterSpacing: '0.1px' }}>
+                      ID: {storedStudentId}
+                    </div>
+                  )}
+                </>
+              ) : isParent ? (
+                /* Parent identity block — mirrors student block, framed as "Parent of" */
+                <>
+                  <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: 'rgba(234,255,0,.75)', textTransform: 'uppercase', letterSpacing: '1.1px', marginBottom: 3 }}>
+                    Parent of
                   </div>
-                )}
-              </>
-            ) : (
-              /* Guest single-line greeting */
-              <>
-                <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.6px', lineHeight: 1.1 }}>
-                  {greeting}
-                </div>
-                <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,.55)', marginTop: 2 }}>
-                  Explore dual credit resources
-                </div>
-              </>
+                  <div style={{ fontFamily: FF, fontSize: 21, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.2 }}>
+                    {fullName || 'Student'}
+                  </div>
+                  {storedStudentId && (
+                    <div style={{ fontFamily: FF, fontSize: 11.5, color: 'rgba(255,255,255,.60)', marginTop: 2, letterSpacing: '0.1px' }}>
+                      ID: {storedStudentId}
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* Guest single-line greeting */
+                <>
+                  <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.6px', lineHeight: 1.1 }}>
+                    {greeting}
+                  </div>
+                  <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,.55)', marginTop: 2 }}>
+                    Explore dual credit resources
+                  </div>
+                </>
+              )}
+            </div>
+
+          {/* Right cluster: weather pill + bell */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <WeatherPill schoolId={weatherSchoolId} onClick={() => setForecastOpen(true)} />
+            {/* Bell only for students and parents */}
+            {!isGuest && (
+              <button
+                onClick={() => onNavigate('notifications')}
+                style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={LIME} strokeWidth="2" strokeLinecap="round">
+                  <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
+                </svg>
+              </button>
             )}
           </div>
-        {/* Bell only for students and parents */}
-        {!isGuest && (
-          <button
-            onClick={() => onNavigate('notifications')}
-            style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={LIME} strokeWidth="2" strokeLinecap="round">
-              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
-            </svg>
-          </button>
+        </div>
+
+        {/* School color bar — only for users with a school */}
+        {school && (
+          <div style={{ background: barColor, padding: '6px 16px', display: 'flex', alignItems: 'center' }}>
+            <span style={{ fontFamily: FF, fontSize: 12.5, fontWeight: 700, color: barTextColor }}>
+              {getFullSchoolName(school.id)}{resolvedGrade ? ` · ${resolvedGrade}` : ''}
+            </span>
+          </div>
         )}
       </div>
-
-      {/* School color bar — only for users with a school */}
-      {school && (
-        <div style={{ background: barColor, padding: '6px 16px', display: 'flex', alignItems: 'center' }}>
-          <span style={{ fontFamily: FF, fontSize: 12.5, fontWeight: 700, color: barTextColor }}>
-            {getFullSchoolName(school.id)}{resolvedGrade ? ` · ${resolvedGrade}` : ''}
-          </span>
-        </div>
+      {forecastOpen && (
+        <ForecastModal weather={weatherData} onClose={() => setForecastOpen(false)} />
       )}
-    </div>
+    </>
   );
 
   /* ── GUEST home body ── */
