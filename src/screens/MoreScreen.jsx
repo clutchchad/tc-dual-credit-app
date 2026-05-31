@@ -3,6 +3,7 @@ import { BlueHeader, PageTitle } from '../components/BlueHeader';
 import BottomNav from '../components/BottomNav';
 import { C, FF } from '../tokens';
 import { getStudentProfile } from '../data/studentProfile';
+import { getEngagementBadges, debugUnlockAll } from '../data/engagementTracker';
 
 // Milestone key → badge id mapping (Jenzabar-sourced milestones only)
 // Engagement badges (on-a-roll, weekend-warrior, weekend-legend, early-bird) are
@@ -521,17 +522,29 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
   // Load Jenzabar profile — milestones → badge unlock + credit hours progress — students only
   const [unlockedIds,  setUnlockedIds]  = useState(new Set());
   const [creditHours,  setCreditHours]  = useState(null);
+
+  // Engagement badges — refreshable so the debug button can trigger a re-render
+  const [engBadges, setEngBadges] = useState(() => getEngagementBadges());
+
+  const refreshEngBadges = () => setEngBadges(getEngagementBadges());
+
   useEffect(() => {
     if (role !== 'student') return;
     getStudentProfile().then(profile => {
-      // Badge unlock
+      // Jenzabar milestone badges
       const ids = new Set();
       const m = profile.milestones || {};
       Object.entries(MILESTONE_BADGE_MAP).forEach(([key, badgeId]) => {
         if (m[key]) ids.add(badgeId);
       });
-      // TODO: unlock on-a-roll, weekend-warrior, weekend-legend, early-bird
-      // via a client-side engagement tracker (localStorage behavior tracking) — not Jenzabar data
+
+      // Merge engagement badges from localStorage tracker
+      const eng = getEngagementBadges();
+      if (eng.onARoll)        ids.add('on-a-roll');
+      if (eng.weekendWarrior) ids.add('weekend-warrior');
+      if (eng.weekendLegend)  ids.add('weekend-legend');
+      if (eng.earlyBird)      ids.add('early-bird');
+
       setUnlockedIds(ids);
 
       // Credit hours progress
@@ -542,7 +555,7 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
         target:  profile.associatesDegreeTarget    ?? 60,
       });
     });
-  }, [role]);
+  }, [role, engBadges]); // re-run when engBadges refreshes (debug button)
 
   if (role === 'guest') {
     return <GuestMoreScreen onChangeRole={onChangeRole} onNavigate={onNavigate} tabs={tabs} />;
@@ -640,6 +653,18 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
         <div style={{ textAlign: 'center', paddingBottom: 10 }}>
           <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 900, color: C.blue, letterSpacing: '-0.3px' }}>TC Dual Credit</div>
           <div style={{ fontFamily: FF, fontSize: 11, color: C.text3, marginTop: 2 }}>Texarkana College</div>
+        </div>
+
+        {/* Debug: engagement badge unlock — demo purposes only */}
+        <div style={{ textAlign: 'center', paddingBottom: 20 }}>
+          <button
+            onClick={() => { debugUnlockAll(); refreshEngBadges(); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px' }}
+          >
+            <span style={{ fontFamily: FF, fontSize: 10, color: 'rgba(6,89,144,.25)', fontWeight: 500 }}>
+              Debug: Unlock Engagement Badges
+            </span>
+          </button>
         </div>
       </div>
 

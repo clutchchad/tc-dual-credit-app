@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { recordAppOpen } from './data/engagementTracker';
 
 import SplashScreen       from './screens/SplashScreen';
 import OnboardRole        from './screens/OnboardRole';
@@ -74,6 +75,7 @@ export default function App() {
       case 'splash':
         return (
           <SplashScreen onComplete={() => {
+            recordAppOpen();
             const s = getStored();
             if (s.role === 'guest') {
               setRole('guest');
