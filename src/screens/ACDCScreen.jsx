@@ -1,28 +1,20 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState } from 'react';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
 import BottomNav from '../components/BottomNav';
 import Card from '../components/Card';
 import { getAcdcForSchool } from '../data/acdc';
 import { buildSchedulingUrl } from '../data/buildSchedulingUrl';
-import { dbReady } from '../firebase';
 import { C, FF } from '../tokens';
 
 const LIME   = '#EAFF00';
 const BLUE   = '#065990';
 const DARK   = '#022b52';
-const MAX_MSG = 500;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Derive 1–2 initials from a name */
 function initials(name) {
   return name.split(' ').filter(w => /^[A-Z]/.test(w)).map(w => w[0]).join('').slice(0, 2);
-}
-
-/** Read tcdc_v1 from localStorage safely */
-function readStored() {
-  try { return JSON.parse(localStorage.getItem('tcdc_v1') || '{}'); }
-  catch { return {}; }
 }
 
 // ── CoachPhoto ────────────────────────────────────────────────────────────────
@@ -40,7 +32,7 @@ function CoachPhoto({ photo, name, size = 96 }) {
         style={{
           width: size, height: size, borderRadius: '50%',
           objectFit: 'cover',
-          border: `3.5px solid ${LIME}`,
+          border: `3.5px solid ${BLUE}`,
           boxShadow: '0 6px 24px rgba(6,89,144,.28)',
           display: 'block',
         }}
@@ -51,7 +43,7 @@ function CoachPhoto({ photo, name, size = 96 }) {
     <div style={{
       width: size, height: size, borderRadius: '50%',
       background: `linear-gradient(135deg, rgba(6,89,144,.18), rgba(6,89,144,.38))`,
-      border: `3.5px solid ${LIME}`,
+      border: `3.5px solid ${BLUE}`,
       boxShadow: '0 6px 24px rgba(6,89,144,.28)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
@@ -231,285 +223,10 @@ function AboutCard() {
   );
 }
 
-// ── GuestPromptCard ───────────────────────────────────────────────────────────
-
-function GuestPromptCard({ onNavigate }) {
-  return (
-    <Card style={{ padding: '22px 18px', marginBottom: 14, textAlign: 'center' }}>
-      <div style={{
-        width: 48, height: 48, borderRadius: 14,
-        background: 'rgba(6,89,144,.08)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        margin: '0 auto 12px',
-      }}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-          stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2"/>
-          <path d="M7 11V7a5 5 0 0110 0v4"/>
-        </svg>
-      </div>
-
-      <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 800, color: DARK, marginBottom: 6 }}>
-        Set up your profile to contact your ACDC
-      </div>
-      <p style={{ fontFamily: FF, fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 16 }}>
-        Create your profile to unlock messaging and see your personal academic coach.
-      </p>
-
-      <button
-        onClick={() => onNavigate('onboard_role')}
-        style={{
-          width: '100%', height: 46,
-          background: LIME, border: 'none', borderRadius: 12,
-          cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}
-      >
-        <span style={{ fontFamily: FF, fontSize: 14, fontWeight: 900, color: DARK }}>
-          Get Started
-        </span>
-      </button>
-    </Card>
-  );
-}
-
-// ── MessageForm ───────────────────────────────────────────────────────────────
-
-function MessageForm({ acdc, school }) {
-  const stored = useMemo(() => readStored(), []);
-
-  const defaultName = [stored.firstName, stored.lastName].filter(Boolean).join(' ');
-
-  const [name,      setName]      = useState(defaultName);
-  const [studentId, setStudentId] = useState(stored.studentId || '');
-  const [message,   setMessage]   = useState('');
-  const [status,    setStatus]    = useState('idle'); // 'idle' | 'submitting' | 'success' | 'error'
-
-  const canSubmit = name.trim().length > 0 && message.trim().length > 0 && status !== 'submitting';
-
-  const handleSubmit = useCallback(async () => {
-    if (!canSubmit) return;
-    setStatus('submitting');
-    try {
-      const db = await dbReady;
-      if (!db) throw new Error('Firestore unavailable');
-      const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
-      await addDoc(collection(db, 'acdc-messages'), {
-        name:      name.trim(),
-        studentId: studentId.trim() || null,
-        school:    school?.name || school?.id || null,
-        message:   message.trim(),
-        acdcName:  acdc.name,
-        timestamp: serverTimestamp(),
-        status:    'unread',
-      });
-      setStatus('success');
-    } catch {
-      setStatus('error');
-    }
-  }, [canSubmit, name, studentId, message, school, acdc]);
-
-  const handleReset = useCallback(() => {
-    setMessage('');
-    setStatus('idle');
-  }, []);
-
-  // ── Success state ──────────────────────────────────────────────────────────
-  if (status === 'success') {
-    return (
-      <Card style={{ padding: '26px 18px', marginBottom: 14, textAlign: 'center' }}>
-        <div style={{
-          width: 56, height: 56, borderRadius: '50%',
-          background: 'rgba(6,89,144,.1)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          margin: '0 auto 14px',
-        }}>
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-            stroke={BLUE} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        </div>
-
-        <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: DARK, marginBottom: 8 }}>
-          Message Sent!
-        </div>
-        <p style={{ fontFamily: FF, fontSize: 13, color: '#374151', lineHeight: 1.65, marginBottom: 22 }}>
-          Your ACDC will be in touch soon. You can also call or schedule a meeting using the options above.
-        </p>
-
-        <button
-          onClick={handleReset}
-          style={{
-            width: '100%', height: 44,
-            background: LIME, border: 'none', borderRadius: 12,
-            cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >
-          <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 900, color: DARK }}>
-            Send Another Message
-          </span>
-        </button>
-      </Card>
-    );
-  }
-
-  // ── Shared styles ──────────────────────────────────────────────────────────
-  const inputStyle = {
-    width: '100%', boxSizing: 'border-box',
-    fontFamily: FF, fontSize: 14, color: C.text,
-    background: '#f8fafc', border: `1.5px solid ${C.border}`,
-    borderRadius: 10, padding: '10px 13px',
-    outline: 'none', transition: 'border-color .15s',
-  };
-  const labelStyle = {
-    fontFamily: FF, fontSize: 12, fontWeight: 700,
-    color: '#374151', marginBottom: 5, display: 'block',
-  };
-
-  return (
-    <Card style={{ padding: '18px 18px 20px', marginBottom: 14 }}>
-      {/* Section heading */}
-      <div style={{ marginBottom: 4 }}>
-        <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 900, color: DARK, letterSpacing: '-0.3px' }}>
-          Send a Message to Your ACDC
-        </div>
-        <div style={{ fontFamily: FF, fontSize: 12, color: '#6b7280', marginTop: 3, lineHeight: 1.5 }}>
-          Have a question? Reach out directly and your coach will follow up.
-        </div>
-      </div>
-
-      <div style={{ height: 1, background: 'rgba(6,89,144,.08)', margin: '14px 0' }} />
-
-      {/* Name */}
-      <div style={{ marginBottom: 12 }}>
-        <label style={labelStyle}>Name</label>
-        <input
-          type="text"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          placeholder="Your name"
-          style={inputStyle}
-        />
-      </div>
-
-      {/* Student ID */}
-      <div style={{ marginBottom: 12 }}>
-        <label style={labelStyle}>Student ID</label>
-        <input
-          type="text"
-          value={studentId}
-          onChange={e => setStudentId(e.target.value)}
-          placeholder="Optional"
-          style={inputStyle}
-        />
-      </div>
-
-      {/* School (read-only) */}
-      <div style={{ marginBottom: 12 }}>
-        <label style={labelStyle}>School</label>
-        <div style={{
-          ...inputStyle,
-          background: 'rgba(6,89,144,.05)',
-          color: '#6b7280',
-          fontWeight: 600,
-        }}>
-          {school?.name || '—'}
-        </div>
-      </div>
-
-      {/* Message */}
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
-          <label style={{ ...labelStyle, marginBottom: 0 }}>Message</label>
-          <span style={{
-            fontFamily: FF, fontSize: 11, fontWeight: 600,
-            color: message.length > MAX_MSG * 0.9 ? '#b91c1c' : '#9ca3af',
-          }}>
-            {message.length} / {MAX_MSG}
-          </span>
-        </div>
-        <textarea
-          value={message}
-          onChange={e => setMessage(e.target.value.slice(0, MAX_MSG))}
-          placeholder="What can your ACDC help you with today?"
-          rows={4}
-          style={{ ...inputStyle, resize: 'vertical', minHeight: 96, lineHeight: 1.6 }}
-        />
-      </div>
-
-      {/* Error state */}
-      {status === 'error' && (
-        <div style={{
-          background: '#fef2f2', border: '1px solid #fca5a5',
-          borderRadius: 10, padding: '11px 14px', marginBottom: 14,
-          display: 'flex', alignItems: 'flex-start', gap: 9,
-        }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="#b91c1c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            style={{ flexShrink: 0, marginTop: 1 }}>
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          <p style={{ fontFamily: FF, fontSize: 13, color: '#991b1b', lineHeight: 1.55, margin: 0 }}>
-            Something went wrong. Please try calling your ACDC directly:{' '}
-            <a href={`tel:${acdc.phone}`} style={{ color: '#991b1b', fontWeight: 700 }}>
-              {acdc.phone}
-            </a>
-          </p>
-        </div>
-      )}
-
-      {/* Submit button */}
-      <button
-        onClick={handleSubmit}
-        disabled={!canSubmit}
-        style={{
-          width: '100%', height: 48,
-          background: canSubmit ? LIME : 'rgba(234,255,0,.35)',
-          border: 'none', borderRadius: 12,
-          cursor: canSubmit ? 'pointer' : 'not-allowed',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-          transition: 'background .15s',
-        }}
-      >
-        {status === 'submitting' ? (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke={DARK} strokeWidth="2.5" strokeLinecap="round"
-            style={{ animation: 'spin 0.8s linear infinite' }}>
-            <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeOpacity="0.25"/>
-            <path d="M21 12a9 9 0 00-9-9"/>
-          </svg>
-        ) : (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke={canSubmit ? DARK : 'rgba(2,43,82,.45)'}
-            strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"/>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-          </svg>
-        )}
-        <span style={{
-          fontFamily: FF, fontSize: 14, fontWeight: 900,
-          color: canSubmit ? DARK : 'rgba(2,43,82,.45)',
-        }}>
-          {status === 'submitting' ? 'Sending…' : 'Send Message'}
-        </span>
-      </button>
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </Card>
-  );
-}
-
 // ── Main Screen ───────────────────────────────────────────────────────────────
 
 export default function ACDCScreen({ school, grade, onNavigate, tabs }) {
   const acdc = getAcdcForSchool(school.id, grade);
-
-  // Role is not passed as a prop — read it from localStorage
-  const role    = useMemo(() => readStored().role || 'guest', []);
-  const isGuest = role === 'guest';
   const isUnassigned = school.unassigned === true;
 
   return (
@@ -521,12 +238,6 @@ export default function ACDCScreen({ school, grade, onNavigate, tabs }) {
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 14px 100px', marginTop: -42 }}>
         {isUnassigned ? <OfficeCard /> : <CoachCard acdc={acdc} school={school} grade={grade} />}
         <AboutCard />
-
-        {/* Students and parents: reach-out form */}
-        {!isGuest && !isUnassigned && <MessageForm acdc={acdc} school={school} />}
-
-        {/* Guests: profile prompt */}
-        {isGuest && <GuestPromptCard onNavigate={onNavigate} />}
       </div>
 
       <BottomNav active="acdc" onNavigate={onNavigate} tabs={tabs} />

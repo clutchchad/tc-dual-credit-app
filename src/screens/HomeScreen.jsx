@@ -123,7 +123,7 @@ function CoachPhoto({ photo, name, size = 44 }) {
       <div style={{
         width: size, height: size, borderRadius: '50%',
         background: 'linear-gradient(135deg,rgba(6,89,144,.18),rgba(6,89,144,.38))',
-        border: '2px solid rgba(234,255,0,.55)',
+        border: `2px solid ${BLUE}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0,
       }}>
@@ -139,7 +139,7 @@ function CoachPhoto({ photo, name, size = 44 }) {
       style={{
         width: size, height: size, borderRadius: '50%',
         objectFit: 'cover', objectPosition: 'top',
-        border: '2px solid rgba(234,255,0,.55)',
+        border: `2px solid ${BLUE}`,
         flexShrink: 0,
       }}
     />

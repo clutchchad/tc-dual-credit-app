@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  collection, addDoc, query, orderBy, limit,
+  collection, addDoc, query, orderBy,
   doc, updateDoc, deleteDoc, onSnapshot, Timestamp, serverTimestamp,
 } from 'firebase/firestore';
 import { useFirestore } from '../hooks/useFirestore';
@@ -105,9 +105,6 @@ export default function AdminPage() {
   const [schedStatus,   setSchedStatus]   = useState(null);
   const [scheduledList, setScheduledList] = useState([]);
 
-  // ── ACDC Messages ─────────────────────────────────────────────────────────
-  const [acdcMessages, setAcdcMessages] = useState([]);
-
   // ── Timeline ──────────────────────────────────────────────────────────────
   const [tlTitle,      setTlTitle]      = useState('');
   const [tlBody,       setTlBody]       = useState('');
@@ -139,14 +136,6 @@ export default function AdminPage() {
       setScheduledList(
         snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.active !== false && !d.fired)
       );
-    }, () => {});
-  }, [db]);
-
-  useEffect(() => {
-    if (!db) return;
-    const q = query(collection(db, 'acdc-messages'), orderBy('timestamp', 'desc'), limit(20));
-    return onSnapshot(q, snap => {
-      setAcdcMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     }, () => {});
   }, [db]);
 
@@ -244,17 +233,6 @@ export default function AdminPage() {
     await deleteDoc(doc(db, 'scheduled-notifications', id));
   }
 
-  // ── ACDC Messages ─────────────────────────────────────────────────────────
-  async function handleMarkRead(id) {
-    if (!db) return;
-    await updateDoc(doc(db, 'acdc-messages', id), { status: 'read' });
-  }
-  async function handleDeleteMessage(id) {
-    if (!window.confirm('Delete this message? This cannot be undone.')) return;
-    if (!db) return;
-    await deleteDoc(doc(db, 'acdc-messages', id));
-  }
-
   // ── Timeline ──────────────────────────────────────────────────────────────
   async function handlePostTimeline(e) {
     e.preventDefault();
@@ -317,8 +295,6 @@ export default function AdminPage() {
   // ── Shared class strings ──────────────────────────────────────────────────
   const inputCls =
     'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-tc-blue';
-
-  const unreadCount = acdcMessages.filter(m => m.status !== 'read').length;
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -522,94 +498,10 @@ export default function AdminPage() {
           </div>
 
           {/* ══════════════════════════════════════════════════════════════
-              SECTION 3 — ACDC MESSAGES
+              SECTION 3 — TIMELINE
           ══════════════════════════════════════════════════════════════ */}
           <div className="space-y-4">
-            <SectionDivider
-              number="3"
-              title="ACDC Messages"
-              subtitle={unreadCount > 0 ? `${unreadCount} unread message${unreadCount !== 1 ? 's' : ''}` : 'Student reach-out messages'}
-            />
-            <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              {acdcMessages.length === 0 ? (
-                <p className="text-sm text-gray-400">{db ? 'No messages yet.' : 'Connecting…'}</p>
-              ) : (
-                <div className="space-y-3">
-                  {acdcMessages.map(msg => {
-                    const isUnread = msg.status !== 'read';
-                    return (
-                      <div
-                        key={msg.id}
-                        className={`rounded-xl border px-5 py-4 ${isUnread ? 'border-tc-blue bg-blue-50' : 'border-gray-200 bg-white'}`}
-                      >
-                        {/* Top row — name, ID, timestamp, status badge */}
-                        <div className="flex items-start justify-between gap-4 mb-2">
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-sm font-bold text-gray-900">{msg.name || '—'}</span>
-                              {msg.studentId && (
-                                <span className="text-xs text-gray-400 font-mono">ID: {msg.studentId}</span>
-                              )}
-                              <span className="text-xs text-gray-400">{relTime(msg.timestamp)}</span>
-                            </div>
-                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                              {msg.school && (
-                                <span className="text-xs text-gray-500">{schoolName(msg.school)}</span>
-                              )}
-                              {msg.acdcName && (
-                                <>
-                                  <span className="text-xs text-gray-300">→</span>
-                                  <span className="text-xs text-gray-500">ACDC: {msg.acdcName}</span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                          <div className="shrink-0 flex items-center gap-2">
-                            {isUnread ? (
-                              <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: '#EAFF00', color: '#022b52' }}>
-                                Unread
-                              </span>
-                            ) : (
-                              <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">
-                                Read
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Message body */}
-                        <p className="text-sm text-gray-700 leading-relaxed mb-3">{msg.message}</p>
-
-                        {/* Actions */}
-                        <div className="flex items-center gap-2">
-                          {isUnread && (
-                            <button
-                              onClick={() => handleMarkRead(msg.id)}
-                              className="text-xs px-3 py-1.5 bg-tc-blue text-white rounded-md hover:bg-tc-mid transition-colors font-medium"
-                            >
-                              Mark as Read
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleDeleteMessage(msg.id)}
-                            className="text-xs px-3 py-1.5 border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </section>
-          </div>
-
-          {/* ══════════════════════════════════════════════════════════════
-              SECTION 4 — TIMELINE
-          ══════════════════════════════════════════════════════════════ */}
-          <div className="space-y-4">
-            <SectionDivider number="4" title="Timeline" subtitle="Post cards to the Home screen timeline feed" />
+            <SectionDivider number="3" title="Timeline" subtitle="Post cards to the Home screen timeline feed" />
             <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <form onSubmit={handlePostTimeline} className="space-y-4">
                 <div>
@@ -707,10 +599,10 @@ export default function AdminPage() {
           </div>
 
           {/* ══════════════════════════════════════════════════════════════
-              SECTION 5 — EVENTS & DEADLINES
+              SECTION 4 — EVENTS & DEADLINES
           ══════════════════════════════════════════════════════════════ */}
           <div className="space-y-4">
-            <SectionDivider number="5" title="Events &amp; Deadlines" subtitle="Post events and deadlines visible on the Home screen and Events screen" />
+            <SectionDivider number="4" title="Events &amp; Deadlines" subtitle="Post events and deadlines visible on the Home screen and Events screen" />
             <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <form onSubmit={handlePostEvent} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -835,10 +727,10 @@ export default function AdminPage() {
           </div>
 
           {/* ══════════════════════════════════════════════════════════════
-              SECTION 6 — NOTIFICATION HISTORY (read-only log)
+              SECTION 5 — NOTIFICATION HISTORY (read-only log)
           ══════════════════════════════════════════════════════════════ */}
           <div className="space-y-4">
-            <SectionDivider number="6" title="Notification History" subtitle="Log of all sent push notifications" />
+            <SectionDivider number="5" title="Notification History" subtitle="Log of all sent push notifications" />
             <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               {history.length === 0 ? (
                 <p className="text-sm text-gray-400">{db ? 'No notifications sent yet.' : 'Connecting…'}</p>
