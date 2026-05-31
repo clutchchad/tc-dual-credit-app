@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import {
   collection, addDoc, query, orderBy,
-  doc, deleteDoc, onSnapshot, Timestamp, serverTimestamp,
+  doc, deleteDoc, getDocs, onSnapshot, Timestamp, serverTimestamp,
 } from 'firebase/firestore';
 import { useFirestore } from '../hooks/useFirestore';
 import { schools as schoolList } from '../data/schools';
@@ -30,13 +31,21 @@ function fmtTs(ts) {
     hour: 'numeric', minute: '2-digit', hour12: true,
   });
 }
+function fmtIso(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit', hour12: true,
+  });
+}
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
 const inputCls =
   'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-tc-blue';
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-
 function SchoolSelect({ value, onChange }) {
   return (
     <select value={value} onChange={e => onChange(e.target.value)} className={inputCls}>
@@ -71,26 +80,57 @@ function StatusBadge({ status }) {
   );
 }
 
+// ── Confirm dialog (simple modal) ─────────────────────────────────────────────
+function ConfirmDialog({ message, onConfirm, onCancel }) {
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center z-50 px-4"
+      style={{ background: 'rgba(0,0,0,.45)' }}
+    >
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+        <p className="text-sm text-gray-800 leading-relaxed">{message}</p>
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 text-sm font-semibold text-white rounded-lg transition-colors"
+            style={{ background: '#cc0000' }}
+          >
+            Clear History
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 // TAB 1 — SEND NOTIFICATION
 // ═════════════════════════════════════════════════════════════════════════════
 function SendNotificationTab({ db }) {
-  const [mode,    setMode]    = useState('now'); // 'now' | 'later'
+  const [mode,    setMode]    = useState('now');
   const [title,   setTitle]   = useState('');
   const [message, setMessage] = useState('');
   const [school,  setSchool]  = useState('all');
   const [role,    setRole]    = useState('all');
   const [date,    setDate]    = useState('');
   const [time,    setTime]    = useState('');
-  const [status,  setStatus]  = useState(null); // null | 'sending' | 'success' | 'error'
+  const [status,  setStatus]  = useState(null);
   const [errMsg,  setErrMsg]  = useState('');
 
-  const [notifList, setNotifList] = useState([]);
-
-  // Merge notification-history (sent) + scheduled-notifications (pending)
   const [historyList,   setHistoryList]   = useState([]);
   const [scheduledList, setScheduledList] = useState([]);
 
+  const [logBusy,       setLogBusy]       = useState(false);    // download in progress
+  const [clearBusy,     setClearBusy]     = useState(false);    // clear in progress
+  const [showConfirm,   setShowConfirm]   = useState(false);
+
+  // ── Firestore listeners ─────────────────────────────────────────────────
   useEffect(() => {
     if (!db) return;
     const q = query(collection(db, 'notification-history'), orderBy('sentAt', 'desc'));
@@ -111,12 +151,26 @@ function SendNotificationTab({ db }) {
     }, () => {});
   }, [db]);
 
-  // Merge: scheduled first (upcoming), then sent (newest first)
-  const merged = [
-    ...scheduledList,
-    ...historyList,
-  ];
+  const merged = [...scheduledList, ...historyList];
 
+  // ── Permanent log helper ────────────────────────────────────────────────
+  async function appendToLog({ title, message, targetSchool, targetAudience, sendMode, scheduledFor }) {
+    if (!db) return;
+    try {
+      await addDoc(collection(db, 'notification-log'), {
+        datetimeISO:    new Date().toISOString(),
+        loggedAt:       serverTimestamp(),
+        title,
+        message,
+        targetSchool,
+        targetAudience,
+        sendMode,
+        ...(scheduledFor ? { scheduledFor } : {}),
+      });
+    } catch { /* log failure is non-blocking */ }
+  }
+
+  // ── Submit (send now or schedule) ───────────────────────────────────────
   async function handleSubmit(e) {
     e.preventDefault();
     setStatus('sending');
@@ -136,8 +190,14 @@ function SendNotificationTab({ db }) {
           const data = await res.json().catch(() => ({}));
           throw new Error(data.error || `HTTP ${res.status}`);
         }
+        await appendToLog({
+          title,
+          message,
+          targetSchool:   schoolName(school),
+          targetAudience: audienceName(role),
+          sendMode:       'Sent Now',
+        });
       } else {
-        // Schedule Later
         const [yr, mo, dy] = date.split('-').map(Number);
         const [hr, min]    = time.split(':').map(Number);
         const scheduledAt  = new Date(yr, mo - 1, dy, hr, min, 0, 0).toISOString();
@@ -153,6 +213,14 @@ function SendNotificationTab({ db }) {
           const data = await res.json().catch(() => ({}));
           throw new Error(data.error || `HTTP ${res.status}`);
         }
+        await appendToLog({
+          title,
+          message,
+          targetSchool:   schoolName(school),
+          targetAudience: audienceName(role),
+          sendMode:       'Scheduled',
+          scheduledFor:   scheduledAt,
+        });
       }
 
       setStatus('success');
@@ -165,160 +233,242 @@ function SendNotificationTab({ db }) {
     }
   }
 
+  // ── Cancel a scheduled notification ────────────────────────────────────
   async function handleCancelScheduled(id) {
     if (!db) return;
     await deleteDoc(doc(db, 'scheduled-notifications', id));
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Form card */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-5">
+  // ── Download permanent log as xlsx ──────────────────────────────────────
+  async function handleDownloadLog() {
+    if (!db || logBusy) return;
+    setLogBusy(true);
+    try {
+      const snap = await getDocs(
+        query(collection(db, 'notification-log'), orderBy('loggedAt', 'asc'))
+      );
+      const rows = snap.docs.map(d => {
+        const e = d.data();
+        return {
+          'Date Logged':     fmtIso(e.datetimeISO),
+          'Title':           e.title        || '',
+          'Message':         e.message      || '',
+          'Target School':   e.targetSchool || '',
+          'Target Audience': e.targetAudience || '',
+          'Send Mode':       e.sendMode     || '',
+          'Scheduled For':   e.scheduledFor ? fmtIso(e.scheduledFor) : '',
+        };
+      });
+      if (rows.length === 0) {
+        alert('No log entries yet.');
+        return;
+      }
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Notification Log');
+      XLSX.writeFile(wb, 'notification-log.xlsx');
+    } catch (err) {
+      alert(`Download failed: ${err.message}`);
+    } finally {
+      setLogBusy(false);
+    }
+  }
 
-        {/* Segmented toggle */}
-        <div className="flex rounded-lg border border-gray-200 overflow-hidden w-fit">
-          {['now', 'later'].map(m => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setMode(m)}
-              className="px-5 py-2 text-sm font-semibold transition-colors"
-              style={
-                mode === m
-                  ? { background: '#065990', color: '#fff' }
-                  : { background: '#f9fafb', color: '#374151' }
-              }
-            >
-              {m === 'now' ? 'Send Now' : 'Schedule Later'}
-            </button>
-          ))}
+  // ── Clear sent history (not scheduled, not permanent log) ───────────────
+  async function handleClearHistory() {
+    if (!db || clearBusy) return;
+    setClearBusy(true);
+    setShowConfirm(false);
+    try {
+      const snap = await getDocs(collection(db, 'notification-history'));
+      await Promise.all(snap.docs.map(d => deleteDoc(doc(db, 'notification-history', d.id))));
+    } catch (err) {
+      alert(`Clear failed: ${err.message}`);
+    } finally {
+      setClearBusy(false);
+    }
+  }
+
+  // ── Render ──────────────────────────────────────────────────────────────
+  return (
+    <>
+      {showConfirm && (
+        <ConfirmDialog
+          message="Clear all sent notification history? Scheduled notifications and the permanent log are not affected. This cannot be undone."
+          onConfirm={handleClearHistory}
+          onCancel={() => setShowConfirm(false)}
+        />
+      )}
+
+      <div className="space-y-6">
+        {/* ── Form card ── */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-5">
+
+          {/* Segmented toggle */}
+          <div className="flex rounded-lg border border-gray-200 overflow-hidden w-fit">
+            {['now', 'later'].map(m => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setMode(m)}
+                className="px-5 py-2 text-sm font-semibold transition-colors"
+                style={
+                  mode === m
+                    ? { background: '#065990', color: '#fff' }
+                    : { background: '#f9fafb', color: '#374151' }
+                }
+              >
+                {m === 'now' ? 'Send Now' : 'Schedule Later'}
+              </button>
+            ))}
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+              <input
+                type="text" required
+                value={title} onChange={e => setTitle(e.target.value)}
+                className={inputCls} placeholder="Notification title"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+              <textarea
+                required rows={3}
+                value={message} onChange={e => setMessage(e.target.value)}
+                className={inputCls} placeholder="Notification message"
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Target School</label>
+                <SchoolSelect value={school} onChange={setSchool} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Target Audience</label>
+                <AudienceSelect value={role} onChange={setRole} />
+              </div>
+            </div>
+
+            {mode === 'later' && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <input
+                      type="date" required={mode === 'later'}
+                      value={date} onChange={e => setDate(e.target.value)}
+                      className={inputCls}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                    <input
+                      type="time" required={mode === 'later'}
+                      value={time} onChange={e => setTime(e.target.value)}
+                      className={inputCls}
+                    />
+                  </div>
+                </div>
+                <p className="text-xs font-bold leading-relaxed" style={{ color: '#cc0000' }}>
+                  Scheduled notifications must be created at least 24 hours in advance.
+                  Delivery occurs within 15 minutes of the scheduled time.
+                </p>
+              </div>
+            )}
+
+            <div className="flex items-center gap-4 pt-1">
+              <button
+                type="submit"
+                disabled={status === 'sending'}
+                className="px-5 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+                style={{ background: '#065990', color: '#fff' }}
+              >
+                {status === 'sending'
+                  ? (mode === 'now' ? 'Sending…' : 'Scheduling…')
+                  : (mode === 'now' ? 'Send' : 'Schedule')}
+              </button>
+              {status === 'success' && (
+                <span className="text-green-600 text-sm font-medium">
+                  ✓ {mode === 'now' ? 'Sent!' : 'Scheduled!'}
+                </span>
+              )}
+              {status === 'error' && (
+                <span className="text-red-600 text-sm font-medium">Error: {errMsg}</span>
+              )}
+            </div>
+          </form>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-            <input
-              type="text" required
-              value={title} onChange={e => setTitle(e.target.value)}
-              className={inputCls} placeholder="Notification title"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-            <textarea
-              required rows={3}
-              value={message} onChange={e => setMessage(e.target.value)}
-              className={inputCls} placeholder="Notification message"
-            />
-          </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Target School</label>
-              <SchoolSelect value={school} onChange={setSchool} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Target Audience</label>
-              <AudienceSelect value={role} onChange={setRole} />
+        {/* ── Notifications list header + actions ── */}
+        <div>
+          <div className="flex flex-col gap-2 mb-3 md:flex-row md:items-center md:justify-between">
+            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+              Notifications {merged.length > 0 && `(${merged.length})`}
+            </h2>
+            <div className="flex gap-2">
+              <button
+                onClick={handleDownloadLog}
+                disabled={logBusy || !db}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors disabled:opacity-50"
+                style={{ borderColor: '#065990', color: '#065990' }}
+              >
+                {logBusy ? 'Downloading…' : '↓ Download Log'}
+              </button>
+              <button
+                onClick={() => setShowConfirm(true)}
+                disabled={clearBusy || !db || historyList.length === 0}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+              >
+                {clearBusy ? 'Clearing…' : 'Clear History'}
+              </button>
             </div>
           </div>
 
-          {mode === 'later' && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                  <input
-                    type="date" required={mode === 'later'}
-                    value={date} onChange={e => setDate(e.target.value)}
-                    className={inputCls}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
-                  <input
-                    type="time" required={mode === 'later'}
-                    value={time} onChange={e => setTime(e.target.value)}
-                    className={inputCls}
-                  />
-                </div>
-              </div>
-              <p className="text-xs font-bold leading-relaxed" style={{ color: '#cc0000' }}>
-                Scheduled notifications must be created at least 24 hours in advance.
-                Delivery occurs within 15 minutes of the scheduled time.
-              </p>
+          {merged.length === 0 ? (
+            <p className="text-sm text-gray-400 py-4 text-center">
+              {db ? 'No notifications yet.' : 'Connecting to Firestore…'}
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {merged.map(item => {
+                const isScheduled = item._type === 'scheduled';
+                const dateTs      = isScheduled ? item.scheduledAt : item.sentAt;
+                const preview     = (item.message || item.body || '').slice(0, 80);
+                return (
+                  <div
+                    key={`${item._type}-${item.id}`}
+                    className="bg-white rounded-xl border border-gray-200 px-4 py-3 flex items-start justify-between gap-4"
+                  >
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{item.title}</p>
+                      <p className="text-xs text-gray-500 line-clamp-1">{preview}</p>
+                      <p className="text-xs text-gray-400">
+                        {schoolName(item.targetSchool)}
+                        {' · '}{audienceName(item.targetRole)}
+                        {' · '}{isScheduled ? `Scheduled ${fmtTs(dateTs)}` : fmtTs(dateTs)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 mt-0.5">
+                      <StatusBadge status={isScheduled ? 'scheduled' : 'sent'} />
+                      {isScheduled && (
+                        <button
+                          onClick={() => handleCancelScheduled(item.id)}
+                          className="text-xs px-3 py-1.5 border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
-
-          <div className="flex items-center gap-4 pt-1">
-            <button
-              type="submit"
-              disabled={status === 'sending'}
-              className="px-5 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
-              style={{ background: '#065990', color: '#fff' }}
-            >
-              {status === 'sending'
-                ? (mode === 'now' ? 'Sending…' : 'Scheduling…')
-                : (mode === 'now' ? 'Send' : 'Schedule')}
-            </button>
-            {status === 'success' && (
-              <span className="text-green-600 text-sm font-medium">
-                ✓ {mode === 'now' ? 'Sent!' : 'Scheduled!'}
-              </span>
-            )}
-            {status === 'error' && (
-              <span className="text-red-600 text-sm font-medium">Error: {errMsg}</span>
-            )}
-          </div>
-        </form>
+        </div>
       </div>
-
-      {/* Notifications list */}
-      <div>
-        <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
-          Notifications {merged.length > 0 && `(${merged.length})`}
-        </h2>
-        {merged.length === 0 ? (
-          <p className="text-sm text-gray-400 py-4 text-center">
-            {db ? 'No notifications yet.' : 'Connecting to Firestore…'}
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {merged.map(item => {
-              const isScheduled = item._type === 'scheduled';
-              const dateTs      = isScheduled ? item.scheduledAt : item.sentAt;
-              const preview     = (item.message || item.body || '').slice(0, 80);
-              return (
-                <div
-                  key={`${item._type}-${item.id}`}
-                  className="bg-white rounded-xl border border-gray-200 px-4 py-3 flex items-start justify-between gap-4"
-                >
-                  <div className="min-w-0 flex-1 space-y-0.5">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{item.title}</p>
-                    <p className="text-xs text-gray-500 line-clamp-1">{preview}</p>
-                    <p className="text-xs text-gray-400">
-                      {schoolName(item.targetSchool)}
-                      {' · '}{audienceName(item.targetRole)}
-                      {' · '}{isScheduled ? `Scheduled ${fmtTs(dateTs)}` : fmtTs(dateTs)}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                    <StatusBadge status={isScheduled ? 'scheduled' : 'sent'} />
-                    {isScheduled && (
-                      <button
-                        onClick={() => handleCancelScheduled(item.id)}
-                        className="text-xs px-3 py-1.5 border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
+    </>
   );
 }
 
@@ -369,7 +519,6 @@ function AnnouncementsTab({ db }) {
 
   return (
     <div className="space-y-6">
-      {/* Form card */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
         <form onSubmit={handlePost} className="space-y-4">
           <div>
@@ -413,7 +562,6 @@ function AnnouncementsTab({ db }) {
         </form>
       </div>
 
-      {/* Announcements list */}
       <div>
         <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
           Announcements {list.length > 0 && `(${list.length})`}
@@ -463,10 +611,8 @@ export default function AdminPage() {
   return (
     <div style={{ position: 'fixed', inset: 0, overflowY: 'auto', zIndex: 9999 }}>
 
-      {/* Mobile layout */}
+      {/* ── Mobile layout ── */}
       <div className="md:hidden min-h-screen bg-gray-50 flex flex-col">
-
-        {/* Mobile header */}
         <header className="px-4 py-4 shadow-lg" style={{ background: '#065990' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -485,8 +631,6 @@ export default function AdminPage() {
               {db ? '● Connected' : '○ Connecting…'}
             </p>
           </div>
-
-          {/* Mobile tab bar */}
           <div className="flex mt-4 border-b border-white/20">
             {TABS.map((tab, i) => (
               <button
@@ -498,26 +642,20 @@ export default function AdminPage() {
               >
                 {tab}
                 {activeTab === i && (
-                  <span
-                    className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
-                    style={{ background: '#EAFF00' }}
-                  />
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full" style={{ background: '#EAFF00' }} />
                 )}
               </button>
             ))}
           </div>
         </header>
-
         <main className="flex-1 px-4 py-5">
           {activeTab === 0 && <SendNotificationTab db={db} />}
           {activeTab === 1 && <AnnouncementsTab db={db} />}
         </main>
       </div>
 
-      {/* Desktop layout */}
+      {/* ── Desktop layout ── */}
       <div className="hidden md:block min-h-screen bg-gray-50">
-
-        {/* Desktop header */}
         <header className="px-8 py-5 shadow-lg" style={{ background: '#065990' }}>
           <div className="max-w-3xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -540,8 +678,6 @@ export default function AdminPage() {
               {db ? '● Connected' : '○ Connecting to Firestore…'}
             </p>
           </div>
-
-          {/* Desktop tab bar */}
           <div className="max-w-3xl mx-auto flex mt-5 border-b border-white/20">
             {TABS.map((tab, i) => (
               <button
@@ -553,16 +689,12 @@ export default function AdminPage() {
               >
                 {tab}
                 {activeTab === i && (
-                  <span
-                    className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
-                    style={{ background: '#EAFF00' }}
-                  />
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full" style={{ background: '#EAFF00' }} />
                 )}
               </button>
             ))}
           </div>
         </header>
-
         <main className="max-w-3xl mx-auto px-8 py-8">
           {activeTab === 0 && <SendNotificationTab db={db} />}
           {activeTab === 1 && <AnnouncementsTab db={db} />}
