@@ -108,7 +108,7 @@ function ForecastModal({ weather, onClose }) {
       style={{
         position: 'fixed', inset: 0, zIndex: 1000,
         background: 'rgba(2,43,82,0.55)',
-        display: 'flex', alignItems: 'flex-end',
+        display: 'flex', alignItems: 'flex-start',
       }}
     >
       <div
@@ -116,7 +116,7 @@ function ForecastModal({ weather, onClose }) {
         style={{
           width: '100%', maxHeight: '70vh',
           background: '#fff',
-          borderRadius: '20px 20px 0 0',
+          borderRadius: '0 0 20px 20px',
           overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
         }}
