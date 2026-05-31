@@ -450,7 +450,7 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
   const fullName = [storedFirstName, storedLastName].filter(Boolean).join(' ') || null;
 
   const schoolInfo    = school ? (schoolList.find(s => s.id === school.id) || {}) : {};
-  const barColor      = schoolInfo.bar       || BLUE;
+  const barColor      = schoolInfo.color     || BLUE;
   const barTextColor  = schoolInfo.textColor || '#fff';
   const acdc          = (school && !isGuest) ? getAcdcForSchool(school.id, grade) : null;
 
