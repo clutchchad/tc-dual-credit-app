@@ -7,7 +7,7 @@
 const mockStudentProfile = {
   firstName: "Alex",
   lastName: "Sosa",
-  studentId: "TC-2024-00142",
+  studentId: null,
   email: 'alexsosa10@gmail.com',
   tcEmail: 'a.sosa3456@tc.edu',
   parentEmail: 'sosabichote@gmail.com',
