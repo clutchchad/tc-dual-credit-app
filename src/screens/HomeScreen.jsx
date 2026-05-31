@@ -477,7 +477,8 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
   const schoolInfo    = school ? (schoolList.find(s => s.id === school.id) || {}) : {};
   const barColor      = schoolInfo.color     || BLUE;
   const barTextColor  = schoolInfo.textColor || '#fff';
-  const acdc          = (school && !isGuest) ? getAcdcForSchool(school.id, grade) : null;
+  const resolvedGrade = grade || localProfile.grade || null;
+  const acdc          = (school && !isGuest) ? getAcdcForSchool(school.id, resolvedGrade) : null;
 
   const [latestNotif, setLatestNotif] = useState(null);
   const [timeline,    setTimeline]    = useState(isParent ? PARENT_SEED_TIMELINE : SEED_TIMELINE);
@@ -599,7 +600,7 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
       {school && (
         <div style={{ background: barColor, padding: '6px 16px', display: 'flex', alignItems: 'center' }}>
           <span style={{ fontFamily: FF, fontSize: 12.5, fontWeight: 700, color: barTextColor }}>
-            {getFullSchoolName(school.id)}{grade ? ` · ${grade}` : ''}
+            {getFullSchoolName(school.id)}{resolvedGrade ? ` · ${resolvedGrade}` : ''}
           </span>
         </div>
       )}
