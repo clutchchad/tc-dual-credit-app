@@ -590,16 +590,16 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {gpa !== null && (
                 <span style={{
-                  fontFamily: FF, fontSize: 11, fontWeight: 700, color: '#fff',
-                  background: 'rgba(255,255,255,.18)', borderRadius: 20, padding: '3px 10px',
+                  fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
+                  background: 'rgba(234,255,0,.85)', borderRadius: 20, padding: '3px 10px',
                 }}>
                   GPA: {gpa}
                 </span>
               )}
               {graduationYear !== null && (
                 <span style={{
-                  fontFamily: FF, fontSize: 11, fontWeight: 700, color: '#fff',
-                  background: 'rgba(255,255,255,.18)', borderRadius: 20, padding: '3px 10px',
+                  fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
+                  background: 'rgba(234,255,0,.85)', borderRadius: 20, padding: '3px 10px',
                 }}>
                   Class of {graduationYear}
                 </span>
