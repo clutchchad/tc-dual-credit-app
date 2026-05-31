@@ -12,7 +12,10 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
   // Build summary rows
   const rows = [];
 
-  // Role row — always shown
+  // Role row — always shown, special handling for verified students showing their name
+  const isVerifiedStudent = role === 'student' && isJenzabarVerified;
+  const isVerifiedParent = role === 'parent' && isJenzabarVerified;
+
   rows.push({
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
@@ -21,10 +24,12 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
       </svg>
     ),
     label: 'You are',
-    value: role === 'student' ? 'A Student' : 'A Parent',
+    value: isVerifiedStudent ? `${firstName} ${lastName}` : (role === 'student' ? 'Student' : role === 'parent' ? 'Parent/Guardian' : 'Guest'),
+    sublabel: isVerifiedStudent ? 'Student' : null,
+    school: isVerifiedParent && school ? school.name : null,
     iconBg: BLUE,
     rowBg: C.bg,
-    badge: null,
+    badge: (isVerifiedStudent || isVerifiedParent) ? 'verified' : null,
   });
 
   // Verified student ID row
@@ -124,7 +129,7 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
           {rows.map((row, i) => (
             <div
               key={i}
-              style={{ padding:'15px 18px', borderRadius:18, background:row.rowBg, border:`1.5px solid ${C.border}`, display:'flex', alignItems:'center', gap:13 }}
+              style={{ padding:'15px 18px', borderRadius:18, background:row.rowBg, border:`1.5px solid ${C.border}`, display:'flex', alignItems:'flex-start', gap:13 }}
             >
               <div style={{ width:40, height:40, borderRadius:12, background:row.iconBg, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                 {row.icon}
@@ -134,6 +139,18 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
                   {row.label}
                 </div>
                 <div style={{ fontFamily:FF, fontSize:16, fontWeight:800, color:C.text }}>{row.value}</div>
+                {/* Sublabel for verified students (shows "Student" under their name) */}
+                {row.sublabel && (
+                  <div style={{ fontFamily:FF, fontSize:11, color:C.text3, marginTop:2 }}>
+                    {row.sublabel}
+                  </div>
+                )}
+                {/* School for verified parents */}
+                {row.school && (
+                  <div style={{ fontFamily:FF, fontSize:11, color:C.text3, marginTop:2 }}>
+                    {row.school}
+                  </div>
+                )}
               </div>
               {/* Verified badge */}
               {row.badge === 'verified' && (
