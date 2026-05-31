@@ -260,7 +260,7 @@ function AcdcStrip({ acdc, onNavigate }) {
     }}>
       {/* Photo — taps to ACDC screen */}
       <button onClick={() => onNavigate('acdc')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0 }}>
-        <CoachPhoto photo={acdc.photo} name={acdc.name} size={44} />
+        <CoachPhoto photo={acdc.photo} name={acdc.name} size={58} />
       </button>
 
       {/* Name — taps to ACDC screen */}
