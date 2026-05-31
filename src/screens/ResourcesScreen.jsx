@@ -6,16 +6,16 @@ import { C, FF } from '../tokens';
 
 // type → accent color
 const TYPE_COLORS = {
-  pdf:   '#b91c1c',
-  video: '#6d28d9',
-  guide: '#0d7654',
+  pdf:     '#b91c1c',
+  video:   '#6d28d9',
+  website: '#0d7654',
 };
 
 // type → human-readable pill label
 const TYPE_LABELS = {
-  pdf:   'PDF',
-  video: 'Video',
-  guide: 'Guide',
+  pdf:     'PDF',
+  video:   'Video',
+  website: 'Website',
 };
 
 function ResourceIcon({ type }) {
@@ -44,10 +44,10 @@ function ResourceIcon({ type }) {
 
 // Filter pills: All + the three real types
 const FILTERS = [
-  ['all',   'All'],
-  ['pdf',   'PDF'],
-  ['video', 'Video'],
-  ['guide', 'Guide'],
+  ['all',     'All'],
+  ['pdf',     'PDF'],
+  ['video',   'Video'],
+  ['website', 'Website'],
 ];
 
 export default function ResourcesScreen({ onNavigate, tabs }) {

@@ -368,9 +368,9 @@ function AchievementsPanel({ unlockedIds }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Resources panel — collapsible dropdown, all roles
 // ─────────────────────────────────────────────────────────────────────────────
-const RES_TYPE_COLORS = { pdf: '#b91c1c', video: '#6d28d9', guide: '#0d7654' };
-const RES_TYPE_LABELS = { pdf: 'PDF', video: 'Video', guide: 'Guide' };
-const RES_FILTERS = [['all','All'],['pdf','PDF'],['video','Video'],['guide','Guide']];
+const RES_TYPE_COLORS = { pdf: '#b91c1c', video: '#6d28d9', website: '#0d7654' };
+const RES_TYPE_LABELS = { pdf: 'PDF', video: 'Video', website: 'Website' };
+const RES_FILTERS = [['all','All'],['pdf','PDF'],['video','Video'],['website','Website']];
 
 function ResourcesPanel() {
   const [open, setOpen] = useState(false);
