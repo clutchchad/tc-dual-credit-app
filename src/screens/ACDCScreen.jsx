@@ -60,6 +60,70 @@ function CoachPhoto({ photo, name, size = 96 }) {
   );
 }
 
+// ── OfficeCard ───────────────────────────────────────────────────────────────
+
+function OfficeCard() {
+  return (
+    <Card style={{ padding: '28px 20px 24px', marginBottom: 14, textAlign: 'center' }}>
+      <div style={{
+        width: 56, height: 56, borderRadius: 14,
+        background: 'rgba(6,89,144,.1)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        margin: '0 auto 16px',
+      }}>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+          stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+
+      <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: DARK, marginBottom: 6, letterSpacing: '-0.3px' }}>
+        Contact the DC Office
+      </div>
+
+      <div style={{ height: 1, background: 'rgba(6,89,144,.08)', margin: '16px 0' }} />
+
+      <a
+        href="tel:903-823-3456"
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          textDecoration: 'none', marginBottom: 18,
+        }}
+      >
+        <div style={{
+          width: 40, height: 40, borderRadius: 10,
+          background: 'rgba(6,89,144,.08)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.2" strokeLinecap="round">
+            <path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 0112 18.85a19.5 19.5 0 01-6-6A19.79 19.79 0 012.92 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+          </svg>
+        </div>
+        <span style={{ fontFamily: FF, fontSize: 17, fontWeight: 700, color: BLUE }}>
+          903-823-3456
+        </span>
+      </a>
+
+      <div style={{ background: 'rgba(6,89,144,.05)', borderRadius: 10, padding: '12px 14px', marginBottom: 14 }}>
+        <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: BLUE, marginBottom: 4 }}>
+          Office Hours
+        </div>
+        <div style={{ fontFamily: FF, fontSize: 13, color: DARK, fontWeight: 500 }}>
+          Mon–Thu 8am–5pm
+        </div>
+        <div style={{ fontFamily: FF, fontSize: 13, color: DARK, fontWeight: 500 }}>
+          Fri 8am–4pm
+        </div>
+      </div>
+
+      <p style={{ fontFamily: FF, fontSize: 13, color: '#374151', lineHeight: 1.6, margin: 0 }}>
+        An Academic Coach for Dual Credit will be assigned to assist you.
+      </p>
+    </Card>
+  );
+}
+
 // ── CoachCard ─────────────────────────────────────────────────────────────────
 
 function CoachCard({ acdc, school, grade }) {
@@ -446,6 +510,7 @@ export default function ACDCScreen({ school, grade, onNavigate, tabs }) {
   // Role is not passed as a prop — read it from localStorage
   const role    = useMemo(() => readStored().role || 'guest', []);
   const isGuest = role === 'guest';
+  const isUnassigned = school.unassigned === true;
 
   return (
     <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column' }}>
@@ -454,11 +519,11 @@ export default function ACDCScreen({ school, grade, onNavigate, tabs }) {
       </BlueHeader>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 14px 100px', marginTop: -42 }}>
-        <CoachCard acdc={acdc} school={school} grade={grade} />
+        {isUnassigned ? <OfficeCard /> : <CoachCard acdc={acdc} school={school} grade={grade} />}
         <AboutCard />
 
         {/* Students and parents: reach-out form */}
-        {!isGuest && <MessageForm acdc={acdc} school={school} />}
+        {!isGuest && !isUnassigned && <MessageForm acdc={acdc} school={school} />}
 
         {/* Guests: profile prompt */}
         {isGuest && <GuestPromptCard onNavigate={onNavigate} />}
