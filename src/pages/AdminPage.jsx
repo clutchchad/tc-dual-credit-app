@@ -243,8 +243,8 @@ function SendNotificationTab({ db }) {
                 </div>
               </div>
               <p className="text-xs font-bold leading-relaxed" style={{ color: '#cc0000' }}>
-                Notifications are processed once per day. Scheduled notifications may be
-                delivered up to 24 hours after the selected time.
+                Scheduled notifications must be created at least 24 hours in advance.
+                Delivery occurs within 15 minutes of the scheduled time.
               </p>
             </div>
           )}
