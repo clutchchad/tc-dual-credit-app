@@ -91,13 +91,13 @@ export default function BottomNav({ active, onNavigate, tabs }) {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '5px 0',
-        paddingBottom: 'calc(5px + env(safe-area-inset-bottom, 0px))',
+        padding: '2px 0',
+        paddingBottom: 'calc(2px + env(safe-area-inset-bottom, 0px))',
       }}>
         <img
           src="/tcdclogo2.png"
           alt="TC Dual Credit"
-          style={{ height: 22, width: 'auto', display: 'block', opacity: 0.75 }}
+          style={{ height: 32, width: 'auto', display: 'block', opacity: 0.9 }}
         />
       </div>
 
