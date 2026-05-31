@@ -364,6 +364,105 @@ function AchievementsPanel({ unlockedIds }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Credit hours progress card — students only
+// ─────────────────────────────────────────────────────────────────────────────
+function CreditHoursCard({ earned, pending, total, target }) {
+  const earnedPct  = Math.min((earned  / target) * 100, 100);
+  const pendingPct = Math.min((pending / target) * 100, Math.max(0, 100 - earnedPct));
+
+  const motivation =
+    total >= 60 ? "You did it — Associate's degree complete!" :
+    total >= 45 ? 'Almost there — the finish line is in sight!' :
+    total >= 30 ? "Halfway there — you're ahead of the game!" :
+    total >= 15 ? "Great progress — you're building momentum!" :
+                  "You're just getting started — keep going!";
+
+  return (
+    <div style={{
+      background: '#fff',
+      borderRadius: 20,
+      border: `1px solid ${C.border}`,
+      boxShadow: '0 2px 10px rgba(0,0,0,.05)',
+      padding: '18px 18px 16px',
+      marginBottom: 14,
+    }}>
+      {/* Heading */}
+      <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 900, color: C.text, letterSpacing: '-0.3px' }}>
+        Associate's Degree Progress
+      </div>
+      <div style={{ fontFamily: FF, fontSize: 12, color: C.text3, marginTop: 2, marginBottom: 14 }}>
+        Dual Credit Hours Toward 60
+      </div>
+
+      {/* Progress bar — pending (muted lime) renders first as wider bar, earned (blue) sits on top */}
+      <div style={{
+        position: 'relative', height: 10, borderRadius: 99,
+        background: 'rgba(6,89,144,.08)', overflow: 'hidden', marginBottom: 14,
+      }}>
+        {/* Pending segment — muted lime, earned + pending wide */}
+        <div style={{
+          position: 'absolute', left: 0, top: 0, height: '100%',
+          width: `${earnedPct + pendingPct}%`,
+          background: 'rgba(180,210,40,.50)',
+          borderRadius: 99,
+          transition: 'width .6s ease',
+        }} />
+        {/* Earned segment — Royal Blue, overlays the left portion */}
+        <div style={{
+          position: 'absolute', left: 0, top: 0, height: '100%',
+          width: `${earnedPct}%`,
+          background: BLUE,
+          borderRadius: 99,
+          transition: 'width .6s ease',
+        }} />
+      </div>
+
+      {/* Stat chips */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 13 }}>
+        <div style={{
+          flex: 1, textAlign: 'center',
+          background: 'rgba(6,89,144,.07)', borderRadius: 10, padding: '7px 4px',
+        }}>
+          <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 900, color: BLUE, letterSpacing: '-0.4px' }}>{earned}</div>
+          <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: BLUE, opacity: 0.7, marginTop: 1 }}>Earned</div>
+        </div>
+        <div style={{
+          flex: 1, textAlign: 'center',
+          background: 'rgba(180,210,40,.14)', borderRadius: 10, padding: '7px 4px',
+        }}>
+          <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 900, color: '#5a7a00', letterSpacing: '-0.4px' }}>{pending}</div>
+          <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: '#5a7a00', opacity: 0.75, marginTop: 1 }}>In Progress</div>
+        </div>
+        <div style={{
+          flex: 1, textAlign: 'center',
+          background: 'rgba(0,0,0,.04)', borderRadius: 10, padding: '7px 4px',
+        }}>
+          <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 900, color: C.text2, letterSpacing: '-0.4px' }}>{total} <span style={{ fontSize: 11, fontWeight: 600 }}>of {target}</span></div>
+          <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: C.text3, marginTop: 1 }}>Total</div>
+        </div>
+      </div>
+
+      {/* Motivational line */}
+      <div style={{
+        fontFamily: FF, fontSize: 12.5, fontWeight: 700,
+        color: BLUE, textAlign: 'center',
+        marginBottom: 10,
+      }}>
+        {motivation}
+      </div>
+
+      {/* Disclaimer */}
+      <div style={{
+        fontFamily: FF, fontSize: 10.5, color: C.text3,
+        textAlign: 'center', lineHeight: 1.5,
+      }}>
+        Hours shown are estimates. Verify with your ACDC or myTC portal.
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Guest — minimal profile CTA
 // ─────────────────────────────────────────────────────────────────────────────
 function GuestMoreScreen({ onChangeRole, onNavigate, tabs }) {
@@ -419,11 +518,13 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
     try { return JSON.parse(localStorage.getItem(NOTIF_KEY)) ?? true; } catch { return true; }
   });
 
-  // Load Jenzabar milestones and derive unlocked badge ids — students only
-  const [unlockedIds, setUnlockedIds] = useState(new Set());
+  // Load Jenzabar profile — milestones → badge unlock + credit hours progress — students only
+  const [unlockedIds,  setUnlockedIds]  = useState(new Set());
+  const [creditHours,  setCreditHours]  = useState(null);
   useEffect(() => {
     if (role !== 'student') return;
     getStudentProfile().then(profile => {
+      // Badge unlock
       const ids = new Set();
       const m = profile.milestones || {};
       Object.entries(MILESTONE_BADGE_MAP).forEach(([key, badgeId]) => {
@@ -432,6 +533,14 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
       // TODO: unlock on-a-roll, weekend-warrior, weekend-legend, early-bird
       // via a client-side engagement tracker (localStorage behavior tracking) — not Jenzabar data
       setUnlockedIds(ids);
+
+      // Credit hours progress
+      setCreditHours({
+        earned:  profile.creditHoursEarned         ?? 0,
+        pending: profile.creditHoursPending        ?? 0,
+        total:   profile.creditHoursTotal          ?? 0,
+        target:  profile.associatesDegreeTarget    ?? 60,
+      });
     });
   }, [role]);
 
@@ -457,6 +566,16 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
 
         {/* Achievements — students only */}
         {isStudent && <AchievementsPanel unlockedIds={unlockedIds} />}
+
+        {/* Credit hours progress — students only */}
+        {isStudent && creditHours && (
+          <CreditHoursCard
+            earned={creditHours.earned}
+            pending={creditHours.pending}
+            total={creditHours.total}
+            target={creditHours.target}
+          />
+        )}
 
         {/* Profile card */}
         <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.border}`, boxShadow: '0 2px 10px rgba(0,0,0,.05)', padding: '17px 17px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 14 }}>
