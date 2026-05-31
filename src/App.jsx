@@ -163,7 +163,7 @@ export default function App() {
             lastName={lastName}
             isJenzabarVerified={isJenzabarVerified}
             onConfirm={() => {
-              saveStored({ role, school, grade, studentId, firstName, lastName, isJenzabarVerified });
+              saveStored({ ...getStored(), role, school, grade, studentId, firstName, lastName, isJenzabarVerified });
               go('home');
             }}
             onBack={() => {

@@ -254,7 +254,8 @@ function GuestAcademics({ onNavigate, tabs }) {
 function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
   const stored     = readStored();
   const schoolName = stored.school?.name || profile.highSchool || '';
-  const grade      = stored.grade        || (profile.grade ? `Grade ${profile.grade}` : '');
+  const GRADE_WORD = { 9: 'Freshman', 10: 'Sophomore', 11: 'Junior', 12: 'Senior' };
+  const grade      = stored.grade        || (profile.grade ? GRADE_WORD[profile.grade] || '' : '');
   const firstName  = stored.firstName    || profile.firstName || '';
   const lastName   = stored.lastName     || profile.lastName  || '';
   const studentId  = stored.studentId    || profile.studentId || '';

@@ -575,7 +575,7 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
       {school && (
         <div style={{ background: barColor, padding: '6px 16px', display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontFamily: FF, fontSize: 12.5, fontWeight: 700, color: barTextColor }}>{school.name}</span>
-          {school.id === 'txh' && grade && (
+          {grade && (
             <span style={{ background: 'rgba(255,255,255,.25)', borderRadius: 20, padding: '2px 8px', fontFamily: FF, fontSize: 11, fontWeight: 700, color: '#fff' }}>
               {grade}
             </span>

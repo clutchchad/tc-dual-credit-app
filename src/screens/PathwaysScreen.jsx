@@ -7,7 +7,8 @@ import { C, FF } from '../tokens';
 
 // ── School color bar ──────────────────────────────────────────────────────────
 
-function SchoolColorBar({ school, onBack }) {
+function SchoolColorBar({ school, grade, onBack }) {
+  const textColor = school.textColor || '#ffffff';
   return (
     <div style={{
       backgroundColor: school.color,
@@ -17,20 +18,26 @@ function SchoolColorBar({ school, onBack }) {
       paddingLeft: 14,
       paddingRight: 14,
       flexShrink: 0,
+      gap: 8,
     }}>
       {onBack && (
         <button
           onClick={onBack}
           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 10px 0 0', display: 'flex', alignItems: 'center' }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={school.textColor || '#ffffff'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={textColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
         </button>
       )}
-      <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 700, color: school.textColor || '#ffffff' }}>
+      <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 700, color: textColor }}>
         Pathway Plans at {school.name}
       </span>
+      {grade && (
+        <span style={{ background: 'rgba(255,255,255,.25)', borderRadius: 20, padding: '2px 8px', fontFamily: FF, fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+          {grade}
+        </span>
+      )}
     </div>
   );
 }
@@ -156,6 +163,7 @@ export default function PathwaysScreen({ onNavigate, tabs }) {
     return SCHOOLS.find(s => s.id === schoolId);
   }, [schoolId]);
 
+  const grade = stored.grade || null;
   const isGuest = !school;
   const activeSchool = isGuest ? browsingSchool : school;
 
@@ -168,6 +176,7 @@ export default function PathwaysScreen({ onNavigate, tabs }) {
       {activeSchool && (
         <SchoolColorBar
           school={activeSchool}
+          grade={!isGuest ? grade : null}
           onBack={isGuest && browsingSchool ? () => setBrowsingSchool(null) : null}
         />
       )}
