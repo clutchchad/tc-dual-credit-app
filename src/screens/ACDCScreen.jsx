@@ -347,7 +347,7 @@ export default function ACDCScreen({ school, grade, onNavigate, tabs }) {
   return (
     <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column' }}>
       <BlueHeader style={{ paddingBottom: 36 }}>
-        <PageTitle title="My ACDC" sub="Your Academic Coach for Dual Credit" />
+        <PageTitle title="My ACDC" />
       </BlueHeader>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: sidePad, marginTop: -28 }}>
