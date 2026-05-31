@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import BottomNav from '../components/BottomNav';
 import { getAcdcForSchool } from '../data/acdc';
 import { schools as schoolList } from '../data/schools';
-import { events as eventsData } from '../data/events';
+import { events } from '../data/events';
 import { C, FF } from '../tokens';
 import { loadNotifications, relTime } from '../data/notifications';
 import { getStudentProfile } from '../data/studentProfile';
@@ -12,18 +12,34 @@ const LIME = '#EAFF00';
 const DARK = '#022b52';
 
 /* ── Helpers ── */
+// Expects 'YYYY-MM-DD' — returns days until that date (negative if past)
 function daysUntil(dateStr) {
-  const now = new Date();
-  const parsed = new Date(`${dateStr} ${now.getFullYear()}`);
-  if (isNaN(parsed)) return null;
-  return Math.ceil((parsed - now) / (1000 * 60 * 60 * 24));
+  if (!dateStr) return null;
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const target = new Date(y, m - 1, d);
+  const today  = new Date(); today.setHours(0, 0, 0, 0);
+  return Math.ceil((target - today) / 86_400_000);
 }
 
+// Expects 'YYYY-MM-DD' — returns human-readable short date
 function formatDate(dateStr) {
-  const now = new Date();
-  const parsed = new Date(`${dateStr} ${now.getFullYear()}`);
-  if (isNaN(parsed)) return dateStr;
-  return parsed.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+    weekday: 'short', month: 'short', day: 'numeric',
+  });
+}
+
+// Return the soonest upcoming item of the given type (days >= 0)
+function soonest(type) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  return (
+    events
+      .filter(e => e.type === type)
+      .map(e => ({ ...e, _days: daysUntil(e.date) }))
+      .filter(e => e._days !== null && e._days >= 0)
+      .sort((a, b) => a._days - b._days)[0] || null
+  );
 }
 
 function getGreeting(profile, role) {
@@ -180,8 +196,8 @@ function AcdcStrip({ acdc, onNavigate }) {
 
 /* ── Next Deadline Card ── */
 function NextDeadlineCard({ onNavigate }) {
-  const item = eventsData.filter(e => e.type === 'deadline')[0] || null;
-  const days = item ? item.days : null;
+  const item      = soonest('deadline');
+  const days      = item ? daysUntil(item.date) : null;
   const formatted = item ? formatDate(item.date) : null;
 
   return (
@@ -229,8 +245,8 @@ function NextDeadlineCard({ onNavigate }) {
 
 /* ── Next Event Card ── */
 function NextEventCard({ onNavigate }) {
-  const item = eventsData.filter(e => e.type === 'event')[0] || null;
-  const days = item ? item.days : null;
+  const item      = soonest('event');
+  const days      = item ? daysUntil(item.date) : null;
   const formatted = item ? formatDate(item.date) : null;
 
   return (
