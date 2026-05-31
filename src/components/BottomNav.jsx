@@ -95,7 +95,7 @@ export default function BottomNav({ active, onNavigate, tabs }) {
         paddingBottom: 'calc(5px + env(safe-area-inset-bottom, 0px))',
       }}>
         <img
-          src="/tcdclogo.png"
+          src="/tcdclogo2.png"
           alt="TC Dual Credit"
           style={{ height: 22, width: 'auto', display: 'block', opacity: 0.75 }}
         />
