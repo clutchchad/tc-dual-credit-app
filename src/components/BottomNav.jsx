@@ -85,6 +85,23 @@ export default function BottomNav({ active, onNavigate, tabs }) {
       })}
       </div>
 
+      {/* Logo footer */}
+      <div style={{
+        background: '#fff',
+        borderTop: `1px solid ${C.border}`,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '5px 0',
+        paddingBottom: 'calc(5px + env(safe-area-inset-bottom, 0px))',
+      }}>
+        <img
+          src="/tcdclogo.png"
+          alt="TC Dual Credit"
+          style={{ height: 22, width: 'auto', display: 'block', opacity: 0.75 }}
+        />
+      </div>
+
     </div>
   );
 }
