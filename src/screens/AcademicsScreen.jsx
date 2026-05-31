@@ -561,32 +561,20 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
           padding: '18px 18px 16px',
           marginBottom: 14,
         }}>
-          {/* Top row: name + ID pill */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
-            <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.2, flex: 1, minWidth: 0 }}>
-              {firstName} {lastName}
-            </div>
-            {studentId && (
-              <span style={{
-                fontFamily: 'monospace', fontSize: 11, fontWeight: 700,
-                color: BLUE, letterSpacing: '0.4px',
-                background: 'rgba(234,255,0,.85)', borderRadius: 20,
-                padding: '4px 10px', flexShrink: 0, whiteSpace: 'nowrap',
-              }}>
-                {studentId}
-              </span>
-            )}
+          {/* Name */}
+          <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.2, marginBottom: 4 }}>
+            {firstName} {lastName}
           </div>
 
-          {/* Grade / school line */}
-          {metaLine ? (
-            <div style={{ fontFamily: FF, fontSize: 12.5, color: 'rgba(255,255,255,.65)', marginBottom: 10, lineHeight: 1.3 }}>
-              {metaLine}
+          {/* Student ID — plain white text */}
+          {studentId && (
+            <div style={{ fontFamily: 'monospace', fontSize: 11.5, color: 'rgba(255,255,255,.65)', letterSpacing: '0.4px', marginBottom: 10 }}>
+              {studentId}
             </div>
-          ) : <div style={{ marginBottom: 8 }} />}
+          )}
 
-          {/* GPA + Class of chips */}
-          {(gpa !== null || graduationYear !== null) && (
+          {/* GPA + Grade pills */}
+          {(gpa !== null || metaLine) && (
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {gpa !== null && (
                 <span style={{
@@ -596,12 +584,12 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
                   GPA: {gpa}
                 </span>
               )}
-              {graduationYear !== null && (
+              {metaLine && (
                 <span style={{
                   fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
                   background: 'rgba(234,255,0,.85)', borderRadius: 20, padding: '3px 10px',
                 }}>
-                  Class of {graduationYear}
+                  {metaLine}
                 </span>
               )}
             </div>
