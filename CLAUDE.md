@@ -100,8 +100,8 @@ Drag handle: tiny 2-line visual indicator, upper-right, `pointerEvents: none`.
 
 ---
 
-## What's Not Yet Built (Wishlist)
-- Push notification subscription + send flow (cron endpoint exists, IndexedDB read works)
-- Parent-specific child-progress view (currently mirrors student view)
-- Admin dashboard depth (`AdminPage.jsx` is scaffolded)
-- Pathways feature depth
+## What's Fully Live
+- **Push notifications** — subscription, IndexedDB storage, cron send, and notification history all working
+- **Parent role** — parents see the same screens as students (grades, progress, ACDC, dates); this is intentional — they are viewing their child's data
+- **Pathways** — fully built and live in `PathwaysScreen.jsx`
+- **Admin dashboard** — live at `/admin` via `AdminPage.jsx`
