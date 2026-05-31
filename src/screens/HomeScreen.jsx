@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import BottomNav from '../components/BottomNav';
 import { useIsTablet } from '../hooks/useIsTablet';
 import { getAcdcForSchool } from '../data/acdc';
@@ -10,6 +13,15 @@ import { getStudentProfile } from '../data/studentProfile';
 import { buildSchedulingUrl } from '../data/buildSchedulingUrl';
 
 const BLUE = '#065990';
+const CARDS_KEY = 'tcdc_v1_cards';
+const DEFAULT_CARD_ORDER = ['acdc', 'deadline', 'event', 'notif'];
+function loadCardOrder() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CARDS_KEY));
+    if (Array.isArray(saved) && saved.length === DEFAULT_CARD_ORDER.length) return saved;
+  } catch {}
+  return [...DEFAULT_CARD_ORDER];
+}
 
 const FULL_SCHOOL_NAMES = {
   txh:       'Texas High School',
@@ -122,7 +134,7 @@ function seedRelTime(daysAgo) {
 const CATEGORY_STYLES = {
   'Announcements': { bg: 'rgba(6,89,144,.10)',   color: '#065990' },
   'Announcement':  { bg: 'rgba(6,89,144,.10)',   color: '#065990' },
-  'Reminder':      { bg: 'rgba(249,115,22,.10)', color: '#c2410c' },
+  'Reminder':      { bg: 'rgba(234,255,0,.25)',  color: BLUE      },
   'TC Promise':    { bg: 'rgba(22,163,74,.10)',  color: '#15803d' },
   'Event':         { bg: 'rgba(124,58,237,.10)', color: '#7c3aed' },
 };
@@ -159,56 +171,106 @@ function CoachPhoto({ photo, name, size = 44 }) {
   );
 }
 
-/* ── ACDC Badge Strip ── */
-function AcdcStrip({ acdc, onNavigate }) {
+/* ── Sortable drag-and-drop card wrapper ── */
+function SortableCard({ id, children }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   return (
-    <button
-      onClick={() => onNavigate('acdc')}
+    <div
+      ref={setNodeRef}
       style={{
-        width: '100%', boxSizing: 'border-box',
-        background: '#fff',
-        border: `1px solid ${C.border}`,
-        borderRadius: 16,
-        padding: '10px 14px',
-        display: 'flex', alignItems: 'center', gap: 12,
-        cursor: 'pointer',
-        boxShadow: '0 2px 10px rgba(6,89,144,.08)',
-        textAlign: 'left',
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.45 : 1,
+        position: 'relative',
+        zIndex: isDragging ? 999 : 'auto',
       }}
     >
-      <CoachPhoto photo={acdc.photo} name={acdc.name} size={44} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '1.1px', marginBottom: 1 }}>
-          My ACDC
-        </div>
-        <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, color: C.text, letterSpacing: '-0.2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {acdc.name}
-        </div>
-      </div>
-      <a
-        href={buildSchedulingUrl()}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={e => e.stopPropagation()}
+      {children}
+      {/* Drag handle — subtle grip tab at bottom-center */}
+      <div
+        {...attributes}
+        {...listeners}
         style={{
-          background: LIME,
-          border: 'none',
-          borderRadius: 10,
-          padding: '6px 12px',
-          fontFamily: FF, fontSize: 12, fontWeight: 800, color: BLUE,
-          cursor: 'pointer',
-          textDecoration: 'none',
-          whiteSpace: 'nowrap',
-          flexShrink: 0,
-          display: 'flex', alignItems: 'center', gap: 5,
+          position: 'absolute', bottom: 6, right: 10,
+          width: 26, height: 20, borderRadius: 6,
+          background: 'rgba(6,89,144,.08)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'grab', touchAction: 'none', zIndex: 10,
         }}
       >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round">
-          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+        <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+          {[2, 6, 10].map(cy => [2.5, 7.5].map(cx => (
+            <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="1.2" fill={BLUE} fillOpacity="0.4" />
+          )))}
         </svg>
-        Schedule Advising
-      </a>
-    </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── ACDC Strip — 3 action icons ── */
+function AcdcStrip({ acdc, onNavigate }) {
+  const iconBtn = (content, href, target) => (
+    <a
+      href={href}
+      target={target}
+      rel="noopener noreferrer"
+      style={{ textDecoration: 'none', flexShrink: 0 }}
+    >
+      <div style={{
+        width: 36, height: 36, borderRadius: 10,
+        background: BLUE, border: `2px solid ${LIME}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: `0 0 8px rgba(234,255,0,.35)`,
+      }}>
+        {content}
+      </div>
+    </a>
+  );
+
+  const calIcon   = <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={LIME} strokeWidth="2.3" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>;
+  const phoneIcon = <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={LIME} strokeWidth="2.3" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 0112 18.85a19.5 19.5 0 01-6-6A19.79 19.79 0 012.92 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>;
+  const mailIcon  = (stroke) => <svg width="15" height="13" viewBox="0 0 24 20" fill="none" stroke={stroke} strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>;
+
+  return (
+    <div style={{
+      width: '100%', boxSizing: 'border-box',
+      background: '#fff',
+      border: `1px solid ${C.border}`,
+      borderRadius: 16,
+      padding: '10px 12px',
+      display: 'flex', alignItems: 'center', gap: 10,
+      boxShadow: '0 2px 10px rgba(6,89,144,.08)',
+    }}>
+      {/* Photo — taps to ACDC screen */}
+      <button onClick={() => onNavigate('acdc')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0 }}>
+        <CoachPhoto photo={acdc.photo} name={acdc.name} size={44} />
+      </button>
+
+      {/* Name — taps to ACDC screen */}
+      <button onClick={() => onNavigate('acdc')} style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
+        <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '1.1px', marginBottom: 1 }}>My ACDC</div>
+        <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, color: C.text, letterSpacing: '-0.2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{acdc.name}</div>
+      </button>
+
+      {/* 3 action icons */}
+      <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
+        {iconBtn(calIcon, buildSchedulingUrl(), '_blank')}
+        {iconBtn(phoneIcon, `tel:${acdc.phone}`, undefined)}
+        {acdc.email
+          ? iconBtn(mailIcon(LIME), `mailto:${acdc.email}`, undefined)
+          : (
+            <div style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: 'rgba(6,89,144,.06)', border: `2px solid rgba(6,89,144,.12)`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.38,
+            }}>
+              {mailIcon(`rgba(6,89,144,.5)`)}
+            </div>
+          )
+        }
+      </div>
+    </div>
   );
 }
 
@@ -472,6 +534,28 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
   const [latestNotif, setLatestNotif] = useState(null);
   const [timeline,    setTimeline]    = useState(isParent ? PARENT_SEED_TIMELINE : SEED_TIMELINE);
   const [profile,     setProfile]     = useState(null);
+  const [cardOrder,   setCardOrder]   = useState(loadCardOrder);
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+
+  function handleDragEnd({ active, over }) {
+    if (!over || active.id === over.id) return;
+    setCardOrder(prev => {
+      const next = arrayMove(prev, prev.indexOf(active.id), prev.indexOf(over.id));
+      try { localStorage.setItem(CARDS_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }
+
+  function renderHomeCard(id) {
+    switch (id) {
+      case 'acdc':     return acdc ? <AcdcStrip acdc={acdc} onNavigate={onNavigate} /> : null;
+      case 'deadline': return <NextDeadlineCard onNavigate={onNavigate} />;
+      case 'event':    return <NextEventCard onNavigate={onNavigate} />;
+      case 'notif':    return <RecentNotifCard notif={latestNotif} onNavigate={onNavigate} />;
+      default:         return null;
+    }
+  }
 
   useEffect(() => {
     if (!isGuest) {
@@ -633,16 +717,19 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
     </div>
   );
 
-  /* Mobile: single-col stacked */
+  /* Mobile: draggable single-col */
   const mobileDashboard = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: outerPad }}>
-      {acdc && <AcdcStrip acdc={acdc} onNavigate={onNavigate} />}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <NextDeadlineCard onNavigate={onNavigate} />
-        <NextEventCard onNavigate={onNavigate} />
-      </div>
-      <RecentNotifCard notif={latestNotif} onNavigate={onNavigate} />
-    </div>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={cardOrder} strategy={verticalListSortingStrategy}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: outerPad }}>
+          {cardOrder.map(id => {
+            const content = renderHomeCard(id);
+            if (!content) return null;
+            return <SortableCard key={id} id={id}>{content}</SortableCard>;
+          })}
+        </div>
+      </SortableContext>
+    </DndContext>
   );
 
   return (

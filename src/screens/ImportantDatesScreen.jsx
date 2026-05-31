@@ -44,8 +44,8 @@ function fmtDay(str) {
 // ── Badge config ──────────────────────────────────────────────────────────────
 
 const TYPE_CONFIG = {
-  deadline: { label: 'Deadline', bg: 'rgba(239,68,68,.10)', color: '#b91c1c' },
-  event:    { label: 'Event',    bg: 'rgba(6,89,144,.10)',  color: BLUE      },
+  deadline: { label: 'Deadline', bg: LIME,                color: BLUE },
+  event:    { label: 'Event',    bg: 'rgba(6,89,144,.10)', color: BLUE },
 };
 
 // ── DateCard ─────────────────────────────────────────────────────────────────
@@ -135,6 +135,7 @@ export default function ImportantDatesScreen({ onNavigate, tabs }) {
   const [items, setItems] = useState(() =>
     [...seedEvents].sort((a, b) => (a.date > b.date ? 1 : -1))
   );
+  const [filter, setFilter] = useState('all'); // 'all' | 'event' | 'deadline'
 
   useEffect(() => {
     (async () => {
@@ -171,8 +172,18 @@ export default function ImportantDatesScreen({ onNavigate, tabs }) {
     })();
   }, []);
 
-  // Group by "Mon YYYY"
-  const groups = items.reduce((acc, item) => {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const upcoming  = items.filter(i => { const d = parseDate(i.date); return d && d >= today; });
+  const past      = items.filter(i => { const d = parseDate(i.date); return d && d < today;  });
+  const deadlines = upcoming.filter(i => i.type === 'deadline');
+
+  // Apply filter to displayed items
+  const filteredItems = filter === 'all'      ? items
+                      : filter === 'event'    ? items.filter(i => i.type === 'event')
+                      : items.filter(i => i.type === 'deadline');
+
+  // Re-group based on filtered items
+  const filteredGroups = filteredItems.reduce((acc, item) => {
     const d = parseDate(item.date);
     if (!d) return acc;
     const key = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -180,10 +191,6 @@ export default function ImportantDatesScreen({ onNavigate, tabs }) {
     acc[key].push(item);
     return acc;
   }, {});
-
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const upcoming = items.filter(i => { const d = parseDate(i.date); return d && d >= today; });
-  const past     = items.filter(i => { const d = parseDate(i.date); return d && d < today;  });
 
   return (
     <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column' }}>
@@ -193,35 +200,51 @@ export default function ImportantDatesScreen({ onNavigate, tabs }) {
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 14px 100px', marginTop: -42 }}>
 
-        {/* Quick count chips */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          <div style={{
-            background: '#fff', borderRadius: 12, border: `1px solid ${C.border}`,
-            padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 7,
-          }}>
-            <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 900, color: BLUE, letterSpacing: '-0.5px' }}>{upcoming.length}</span>
-            <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: C.text3 }}>Upcoming</span>
-          </div>
-          <div style={{
-            background: '#fff', borderRadius: 12, border: `1px solid ${C.border}`,
-            padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 7,
-          }}>
-            <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 900, color: '#b91c1c', letterSpacing: '-0.5px' }}>
-              {upcoming.filter(i => i.type === 'deadline').length}
-            </span>
-            <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 600, color: C.text3 }}>Deadlines</span>
-          </div>
+        {/* Filter tabs */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+          {[
+            { id: 'all',      label: 'All',       count: items.length     },
+            { id: 'event',    label: 'Upcoming',  count: upcoming.length  },
+            { id: 'deadline', label: 'Deadlines', count: deadlines.length },
+          ].map(tab => {
+            const active = filter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setFilter(tab.id)}
+                style={{
+                  height: 34, padding: '0 13px', borderRadius: 20, border: 'none',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+                  background: active ? BLUE : '#fff',
+                  boxShadow: active ? 'none' : `0 1px 4px rgba(0,0,0,.07)`,
+                  border: active ? 'none' : `1px solid ${C.border}`,
+                }}
+              >
+                <span style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: active ? '#fff' : C.text3 }}>
+                  {tab.label}
+                </span>
+                <span style={{
+                  fontFamily: FF, fontSize: 10, fontWeight: 800,
+                  color: active ? LIME : BLUE,
+                  background: active ? 'rgba(234,255,0,.18)' : 'rgba(6,89,144,.08)',
+                  borderRadius: 10, padding: '1px 6px',
+                }}>
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Grouped list */}
-        {Object.entries(groups).map(([month, groupItems]) => (
+        {Object.entries(filteredGroups).map(([month, groupItems]) => (
           <div key={month}>
             <MonthHeader label={month} />
             {groupItems.map(item => <DateCard key={item.id} item={item} />)}
           </div>
         ))}
 
-        {items.length === 0 && (
+        {filteredItems.length === 0 && (
           <div style={{ textAlign: 'center', padding: '48px 0' }}>
             <div style={{ fontFamily: FF, fontSize: 14, color: C.text3 }}>No dates on record.</div>
           </div>

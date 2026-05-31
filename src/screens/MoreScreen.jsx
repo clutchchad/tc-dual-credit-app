@@ -529,9 +529,6 @@ function PathwaysButton({ onNavigate, schoolOverride }) {
 
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ fontFamily: FF, fontSize: 10.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '1.4px', marginBottom: 8, paddingLeft: 4 }}>
-        Pathways
-      </div>
       <button
         onClick={() => onNavigate('pathways')}
         style={{
