@@ -56,7 +56,7 @@ function SchoolColorBar({ school, grade, onBack }) {
         </button>
       )}
       <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 700, color: textColor }}>
-        Pathway Plans at {getFullSchoolName(school.id)}{grade ? ` · ${grade}` : ''}
+        Pathway Plans at {getFullSchoolName(school.id)}
       </span>
     </div>
   );
