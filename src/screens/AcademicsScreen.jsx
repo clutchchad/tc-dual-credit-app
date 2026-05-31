@@ -358,9 +358,6 @@ function CompletedCoursesSection({ profile, studentId, firstName, lastName, grad
         </span>
       </button>
 
-      <p style={{ fontFamily: FF, fontSize: 11, color: C.text3, textAlign: 'center', lineHeight: 1.5, margin: '0 0 6px' }}>
-        For official transcripts contact the TC Registrar.
-      </p>
     </div>
   );
 }
@@ -425,7 +422,7 @@ function TranscriptCard() {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 800, color: C.text, letterSpacing: '-0.2px', marginBottom: 4 }}>
-            Request Your Transcript
+            Request Official Transcript
           </div>
           <p style={{ fontFamily: FF, fontSize: 12.5, color: C.text2, lineHeight: 1.55 }}>
             Official transcripts are processed through the TC Registrar's Office.
@@ -460,7 +457,7 @@ function TranscriptCard() {
           <line x1="10" y1="14" x2="21" y2="3"/>
         </svg>
         <span style={{ fontFamily: FF, fontSize: 13.5, fontWeight: 800, color: DARK }}>
-          Request Transcript
+          Request Official Transcript
         </span>
       </button>
 
