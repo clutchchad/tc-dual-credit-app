@@ -3,6 +3,7 @@
 // No component changes needed — only the data source changes.
 
 import { useState, useEffect } from 'react';
+import { jsPDF } from 'jspdf';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
 import BottomNav from '../components/BottomNav';
 import CreditHoursBar from '../components/CreditHoursBar';
@@ -88,7 +89,283 @@ function CourseCard({ course }) {
   );
 }
 
-// ── Section 3: Credit Hours Summary ──────────────────────────────────────────
+// ── Section 3: Completed Courses ─────────────────────────────────────────────
+
+function downloadTranscriptPDF({ firstName, lastName, studentId, school, grade, gpa, transcriptHistory }) {
+  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+  const W = doc.internal.pageSize.getWidth();
+  let y = 56;
+
+  // Header
+  doc.setFillColor(2, 43, 82);
+  doc.rect(0, 0, W, 80, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.setTextColor(234, 255, 0);
+  doc.text('Texarkana College', 40, 36);
+  doc.setFontSize(11);
+  doc.setTextColor(200, 220, 255);
+  doc.text('Dual Credit Unofficial Transcript', 40, 56);
+
+  y = 108;
+
+  // Student info block
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(2, 43, 82);
+  doc.text(`${firstName} ${lastName}`, 40, y);
+  y += 18;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(60, 60, 80);
+  doc.text(`Student ID: ${studentId || '—'}`, 40, y); y += 14;
+  if (school) doc.text(`High School: ${school}`, 40, y), y += 14;
+  if (grade)  doc.text(`Grade Level: ${grade}`, 40, y), y += 14;
+  if (gpa)    doc.text(`Cumulative GPA: ${gpa}`, 40, y), y += 14;
+
+  y += 12;
+  doc.setDrawColor(200, 210, 230);
+  doc.line(40, y, W - 40, y);
+  y += 18;
+
+  // Semesters
+  for (const sem of transcriptHistory) {
+    // Check page overflow
+    if (y > 680) { doc.addPage(); y = 50; }
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(6, 89, 144);
+    doc.text(sem.semester, 40, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(100, 110, 130);
+    doc.text(`${sem.hoursEarned} hrs  ·  GPA ${sem.gpa.toFixed(2)}`, W - 40, y, { align: 'right' });
+    y += 16;
+
+    // Column headers
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(120, 130, 150);
+    doc.text('Course ID', 52, y);
+    doc.text('Course Name', 120, y);
+    doc.text('Hrs', W - 100, y, { align: 'right' });
+    doc.text('Grade', W - 40, y, { align: 'right' });
+    y += 12;
+
+    for (const c of sem.courses) {
+      if (y > 700) { doc.addPage(); y = 50; }
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(30, 40, 60);
+      doc.text(c.courseId, 52, y);
+      doc.text(c.name, 120, y);
+      doc.text(String(c.hours), W - 100, y, { align: 'right' });
+      doc.text(c.grade, W - 40, y, { align: 'right' });
+      y += 14;
+    }
+    y += 10;
+    doc.setDrawColor(220, 225, 235);
+    doc.line(40, y, W - 40, y);
+    y += 14;
+  }
+
+  // Footer
+  const footerY = doc.internal.pageSize.getHeight() - 36;
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(8);
+  doc.setTextColor(140, 150, 165);
+  doc.text(
+    'This is an unofficial transcript for informational purposes only. For official transcripts visit texarkanacollege.edu.',
+    W / 2, footerY, { align: 'center' }
+  );
+
+  doc.save(`TC_Unofficial_Transcript_${lastName || 'Student'}.pdf`);
+}
+
+function SemesterAccordion({ semester }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{
+      background: '#fff', borderRadius: 16,
+      border: `1px solid ${C.border}`,
+      boxShadow: '0 1px 5px rgba(0,0,0,.04)',
+      marginBottom: 8, overflow: 'hidden',
+    }}>
+      {/* Header row — always visible */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', background: 'none', border: 'none', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '13px 15px', textAlign: 'left',
+        }}
+      >
+        <div>
+          <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 3 }}>
+            {semester.semester}
+          </div>
+          <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
+            <span style={{
+              fontFamily: FF, fontSize: 10.5, fontWeight: 700, color: BLUE,
+              background: 'rgba(6,89,144,.09)', borderRadius: 20, padding: '2px 8px',
+            }}>
+              {semester.hoursEarned} hrs
+            </span>
+            <span style={{
+              fontFamily: FF, fontSize: 10.5, fontWeight: 700, color: BLUE,
+              background: 'rgba(6,89,144,.09)', borderRadius: 20, padding: '2px 8px',
+            }}>
+              GPA {semester.gpa.toFixed(2)}
+            </span>
+          </div>
+        </div>
+        <svg
+          width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke={C.text3} strokeWidth="2.2" strokeLinecap="round"
+          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .2s', flexShrink: 0 }}
+        >
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+
+      {/* Expanded course list */}
+      {open && (
+        <div style={{ borderTop: `1px solid ${C.border}`, padding: '4px 15px 12px' }}>
+          {/* Column labels */}
+          <div style={{
+            display: 'flex', alignItems: 'center',
+            padding: '8px 0 6px',
+            borderBottom: `1px solid rgba(0,0,0,.06)`,
+            marginBottom: 4,
+          }}>
+            <span style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.8px', width: 80, flexShrink: 0 }}>ID</span>
+            <span style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.8px', flex: 1 }}>Course</span>
+            <span style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.8px', width: 30, textAlign: 'center' }}>Hrs</span>
+            <span style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.8px', width: 38, textAlign: 'right' }}>Grade</span>
+          </div>
+
+          {semester.courses.map(c => (
+            <div
+              key={c.courseId}
+              style={{ display: 'flex', alignItems: 'center', padding: '9px 0', borderBottom: `1px solid rgba(0,0,0,.04)` }}
+            >
+              <span style={{
+                fontFamily: 'monospace', fontSize: 10.5, color: C.text3,
+                background: 'rgba(0,0,0,.04)', borderRadius: 5, padding: '1px 5px',
+                width: 80, flexShrink: 0, display: 'inline-block',
+              }}>
+                {c.courseId}
+              </span>
+              <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 600, color: C.text, flex: 1, paddingLeft: 6, lineHeight: 1.3 }}>
+                {c.name}
+              </span>
+              <span style={{ fontFamily: FF, fontSize: 12, fontWeight: 600, color: C.text2, width: 30, textAlign: 'center' }}>
+                {c.hours}
+              </span>
+              <span style={{
+                fontFamily: FF, fontSize: 13, fontWeight: 800, color: BLUE,
+                width: 38, textAlign: 'right',
+              }}>
+                {c.grade}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CompletedCoursesSection({ profile, studentId, firstName, lastName, grade }) {
+  const history = profile.transcriptHistory || [];
+  const totalHours = history.reduce((sum, s) => sum + s.hoursEarned, 0);
+  const cumulativeGpa = profile.gpa ?? null;
+
+  const stored = readStored();
+  const schoolObj = stored.school || null;
+  const schoolName = schoolObj?.name || profile.highSchool || null;
+
+  return (
+    <div style={{ marginTop: 14 }}>
+      <SectionHeading label="Completed Courses" />
+
+      {history.length === 0 ? (
+        <p style={{ fontFamily: FF, fontSize: 13, color: C.text3, textAlign: 'center', padding: '16px 0' }}>
+          No completed semesters on record.
+        </p>
+      ) : (
+        history.map(sem => <SemesterAccordion key={sem.semester} semester={sem} />)
+      )}
+
+      {/* Cumulative stats */}
+      <div style={{
+        display: 'flex', gap: 10, marginTop: 4, marginBottom: 14,
+      }}>
+        <div style={{
+          flex: 1, background: '#fff', borderRadius: 14,
+          border: `1px solid ${C.border}`,
+          padding: '11px 14px', textAlign: 'center',
+        }}>
+          <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: BLUE, letterSpacing: '-0.5px' }}>{totalHours}</div>
+          <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: C.text3, marginTop: 2 }}>Total Hours Earned</div>
+        </div>
+        {cumulativeGpa !== null && (
+          <div style={{
+            flex: 1, background: '#fff', borderRadius: 14,
+            border: `1px solid ${C.border}`,
+            padding: '11px 14px', textAlign: 'center',
+          }}>
+            <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: BLUE, letterSpacing: '-0.5px' }}>{cumulativeGpa}</div>
+            <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: C.text3, marginTop: 2 }}>Cumulative GPA</div>
+          </div>
+        )}
+      </div>
+
+      {/* Download button */}
+      <button
+        onClick={() => downloadTranscriptPDF({
+          firstName,
+          lastName,
+          studentId,
+          school: schoolName,
+          grade,
+          gpa: cumulativeGpa,
+          transcriptHistory: history,
+        })}
+        style={{
+          width: '100%', height: 46, borderRadius: 13,
+          background: 'transparent', border: `2px solid ${LIME}`,
+          cursor: 'pointer', boxSizing: 'border-box',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          marginBottom: 8,
+          transition: 'opacity .15s',
+        }}
+        onMouseDown={e  => e.currentTarget.style.opacity = '0.75'}
+        onMouseUp={e    => e.currentTarget.style.opacity = '1'}
+        onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+        onTouchStart={e => e.currentTarget.style.opacity = '0.75'}
+        onTouchEnd={e   => e.currentTarget.style.opacity = '1'}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+          stroke={DARK} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span style={{ fontFamily: FF, fontSize: 13.5, fontWeight: 800, color: DARK }}>
+          Download Unofficial Transcript
+        </span>
+      </button>
+
+      <p style={{ fontFamily: FF, fontSize: 11, color: C.text3, textAlign: 'center', lineHeight: 1.5, margin: '0 0 6px' }}>
+        For official transcripts contact the TC Registrar.
+      </p>
+    </div>
+  );
+}
+
+// ── Section 4: Credit Hours Summary ──────────────────────────────────────────
 
 function CreditHoursSection({ earned, pending, total, target }) {
   return (
@@ -340,7 +617,16 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
           </p>
         </div>
 
-        {/* Section 3 — Credit Hours */}
+        {/* Section 3 — Completed Courses (students + parents only) */}
+        <CompletedCoursesSection
+          profile={profile}
+          studentId={studentId}
+          firstName={firstName}
+          lastName={lastName}
+          grade={grade}
+        />
+
+        {/* Section 4 — Credit Hours */}
         <div style={{ marginTop: 14 }}>
           <SectionHeading label="Credit Hours" />
           <CreditHoursSection
@@ -351,7 +637,7 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
           />
         </div>
 
-        {/* Section 4 — Transcript */}
+        {/* Section 5 — Transcript */}
         <div style={{ marginTop: 14 }}>
           <SectionHeading label="Official Transcript" />
           <TranscriptCard />
