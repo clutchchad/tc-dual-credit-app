@@ -496,7 +496,7 @@ function GuestMoreScreen({ onChangeRole, onNavigate, tabs }) {
   const isTablet = useIsTablet();
   return (
     <div className="tc-screen" style={{ width:'100%', height:'100%', background:C.bg, display:'flex', flexDirection:'column' }}>
-      <div style={{ flex:1, overflowY:'auto', padding: isTablet ? '40px 24px 40px' : '24px 14px 100px', paddingTop:'calc(env(safe-area-inset-top, 0px) + 24px)', position:'relative' }}>
+      <div style={{ flex:1, overflowY:'auto', padding: isTablet ? '40px 24px 40px' : '24px 14px 150px', paddingTop:'calc(env(safe-area-inset-top, 0px) + 24px)', position:'relative' }}>
         {/* Profile CTA card */}
         <div style={{
           width:'100%', background:'#fff', borderRadius:28,
@@ -593,7 +593,7 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
       </BlueHeader>
 
       {/* position:relative so the achievements overlay stacks inside the scroll container */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: isTablet ? '0 24px 40px' : '0 14px 100px', marginTop: -42, position: 'relative' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: isTablet ? '0 24px 40px' : '0 14px 150px', marginTop: -42, position: 'relative' }}>
 
         {/* Achievements — students only */}
         {isStudent && <AchievementsPanel unlockedIds={unlockedIds} />}

@@ -576,7 +576,7 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs, isTablet }) {
         />
       </BlueHeader>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: isTablet ? '14px 24px 40px' : '14px 14px 100px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: isTablet ? '14px 24px 40px' : '14px 14px 150px' }}>
 
         {/* Identity card — name, school/grade, student ID */}
         <div style={{

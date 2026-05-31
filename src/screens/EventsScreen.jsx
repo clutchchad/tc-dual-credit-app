@@ -172,7 +172,7 @@ export default function EventsScreen({ role, school, onNavigate, tabs }) {
 
   const loading = !db || !eventsReady || !deadlinesReady;
 
-  const sidePad  = isTablet ? '14px 24px 40px' : '14px 14px 100px';
+  const sidePad  = isTablet ? '14px 24px 40px' : '14px 14px 150px';
   const gridCols = isTablet ? 'repeat(2, 1fr)' : '1fr';
 
   return (

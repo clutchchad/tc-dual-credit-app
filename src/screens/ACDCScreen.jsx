@@ -311,7 +311,7 @@ export default function ACDCScreen({ school, grade, onNavigate, tabs }) {
   const isTablet     = useIsTablet();
   const acdc         = getAcdcForSchool(school.id, grade);
   const isUnassigned = school.unassigned === true;
-  const sidePad      = isTablet ? '0 24px 40px' : '0 14px 100px';
+  const sidePad      = isTablet ? '0 24px 40px' : '0 14px 150px';
 
   return (
     <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column' }}>

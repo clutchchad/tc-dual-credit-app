@@ -25,20 +25,25 @@ function NavIcon({ id, active }) {
   return icons[id] || null;
 }
 
+const BLUE = '#065990';
+
 export default function BottomNav({ active, onNavigate, tabs }) {
   return (
     <div className="tc-bottom-nav" style={{
       position: 'absolute', bottom: 0, left: 0, right: 0,
-      height: 80,
-      background: 'rgba(255,255,255,0.97)',
-      backdropFilter: 'blur(20px)',
-      borderTop: `1px solid ${C.border}`,
-      display: 'flex',
-      alignItems: 'flex-start',
-      paddingTop: 8,
-      paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      display: 'flex', flexDirection: 'column',
       zIndex: 100,
     }}>
+      {/* Tab bar */}
+      <div style={{
+        height: 80,
+        background: 'rgba(255,255,255,0.97)',
+        backdropFilter: 'blur(20px)',
+        borderTop: `1px solid ${C.border}`,
+        display: 'flex',
+        alignItems: 'flex-start',
+        paddingTop: 8,
+      }}>
       {tabs.map(tab => {
         const on = active === tab.screen;
         return (
@@ -79,6 +84,23 @@ export default function BottomNav({ active, onNavigate, tabs }) {
           </button>
         );
       })}
+      </div>
+
+      {/* Logo footer */}
+      <div style={{
+        background: BLUE,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '10px 0 12px',
+        paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
+      }}>
+        <img
+          src="/tcdclogo.png"
+          alt="TC Dual Credit"
+          style={{ width: 120, display: 'block' }}
+        />
+      </div>
     </div>
   );
 }

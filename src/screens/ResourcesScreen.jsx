@@ -65,7 +65,7 @@ export default function ResourcesScreen({ onNavigate, tabs }) {
   const [filter, setFilter] = useState('all');
   const list = filter === 'all' ? resources : resources.filter(r => r.type === filter);
 
-  const sidePad   = isTablet ? '14px 24px 40px' : '14px 14px 100px';
+  const sidePad   = isTablet ? '14px 24px 40px' : '14px 14px 150px';
   const gridCols  = isTablet ? 'repeat(2, 1fr)' : '1fr';
 
   return (

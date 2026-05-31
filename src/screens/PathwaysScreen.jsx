@@ -71,7 +71,7 @@ function PathwayList({ school, isTablet }) {
     [school.id]
   );
 
-  const sidePad  = isTablet ? '14px 24px 40px' : '14px 14px 80px';
+  const sidePad  = isTablet ? '14px 24px 40px' : '14px 14px 150px';
   const gridCols = isTablet ? 'repeat(2, 1fr)' : '1fr';
 
   return (
@@ -125,7 +125,7 @@ function PathwayList({ school, isTablet }) {
 const BROWSABLE_SCHOOLS = SCHOOLS.filter(s => !s.unassigned);
 
 function SchoolPicker({ onSelect, isTablet }) {
-  const sidePad  = isTablet ? '20px 24px 80px' : '20px 14px 80px';
+  const sidePad  = isTablet ? '20px 24px 80px' : '20px 14px 150px';
   const gridCols = isTablet ? 'repeat(2, 1fr)' : '1fr';
 
   return (

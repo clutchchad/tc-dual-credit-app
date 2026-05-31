@@ -139,7 +139,7 @@ export default function NotificationsScreen({ onNavigate, tabs }) {
         </div>
       </BlueHeader>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: isTablet ? '0 24px 40px' : '0 14px 100px', marginTop: -42, position: 'relative' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: isTablet ? '0 24px 40px' : '0 14px 150px', marginTop: -42, position: 'relative' }}>
 
         {/* Push opt-in card */}
         <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.border}`, boxShadow: '0 2px 10px rgba(0,0,0,.05)', padding: '15px 17px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 12 }}>

@@ -594,7 +594,7 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
   /* ── GUEST home body ── */
   if (isGuest) {
     const pad  = isTablet ? '20px 24px 0' : '12px 14px 0';
-    const pbottom = isTablet ? 32 : 88;
+    const pbottom = isTablet ? 32 : 150;
     return (
       <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column', position: 'relative' }}>
         {renderHeader()}
@@ -614,7 +614,7 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
   }
 
   /* ── STUDENT + PARENT home body (shared structure) ── */
-  const pbottom = isTablet ? 32 : 88;
+  const pbottom = isTablet ? 32 : 150;
   const outerPad = isTablet ? '20px 24px 0' : '12px 14px 0';
 
   /* Tablet: 2-col dashboard grid */
