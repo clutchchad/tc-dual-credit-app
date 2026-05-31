@@ -13,7 +13,7 @@ export default defineConfig({
       includeAssets: ['icon.svg'],
       manifest: {
         name: 'TC Dual Credit',
-        short_name: 'TC DC',
+        short_name: 'TC Dual Credit',
         description: 'Texarkana College Dual Credit Program',
         theme_color: '#065990',
         background_color: '#065990',
