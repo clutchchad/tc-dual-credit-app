@@ -373,24 +373,24 @@ function NextEventCard({ onNavigate }) {
   );
 }
 
-/* ── Compact Announcement Card (2-col grid) ── */
+/* ── Compact Announcement Card ── */
 function CompactAnnouncementCard({ item }) {
   return (
     <div style={{
       background: '#fff', border: `1px solid ${C.border}`,
-      borderRadius: 14, padding: '10px 11px',
+      borderRadius: 14, padding: '12px 14px',
       boxShadow: '0 1px 6px rgba(0,0,0,.04)',
-      flex: 1, minWidth: 0,
+      width: '100%', boxSizing: 'border-box',
     }}>
-      <div style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: BLUE, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 4 }}>
+      <div style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: BLUE, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 5 }}>
         Announcements
       </div>
       {item ? (
         <>
-          <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: C.text, lineHeight: 1.3, marginBottom: 3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+          <div style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: C.text, lineHeight: 1.3, marginBottom: 4 }}>
             {item.title}
           </div>
-          <div style={{ fontFamily: FF, fontSize: 10.5, color: C.text2, lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+          <div style={{ fontFamily: FF, fontSize: 11.5, color: C.text2, lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
             {item.body}
           </div>
         </>
@@ -622,13 +622,7 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
         );
       case 'pair_announce_remind': {
         const latestAnnounce = timeline.find(i => i.category === 'Announcements' || i.category === 'Announcement');
-        const latestRemind   = timeline.find(i => i.category === 'Reminders'     || i.category === 'Reminder');
-        return (
-          <div style={{ display: 'flex', gap: 10 }}>
-            <CompactAnnouncementCard item={latestAnnounce} />
-            <CompactReminderCard item={latestRemind} />
-          </div>
-        );
+        return <CompactAnnouncementCard item={latestAnnounce} fullWidth />;
       }
       default:
         return null;
