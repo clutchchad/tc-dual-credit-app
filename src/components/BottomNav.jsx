@@ -27,7 +27,7 @@ function NavIcon({ id, active }) {
 
 export default function BottomNav({ active, onNavigate, tabs }) {
   return (
-    <div style={{
+    <div className="tc-bottom-nav" style={{
       position: 'absolute', bottom: 0, left: 0, right: 0,
       height: 80,
       background: 'rgba(255,255,255,0.97)',

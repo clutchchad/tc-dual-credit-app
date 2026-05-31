@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { jsPDF } from 'jspdf';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
 import BottomNav from '../components/BottomNav';
+import { useIsTablet } from '../hooks/useIsTablet';
 import CreditHoursBar from '../components/CreditHoursBar';
 import { C, FF } from '../tokens';
 import { getStudentProfile } from '../data/studentProfile';
@@ -530,7 +531,7 @@ function GuestAcademics({ onNavigate, tabs }) {
 
 // ── Main content (student + parent share this) ────────────────────────────────
 
-function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
+function AcademicsContent({ profile, isParent, onNavigate, tabs, isTablet }) {
   const stored    = readStored();
   const GRADE_WORD = { 9: 'Freshman', 10: 'Sophomore', 11: 'Junior', 12: 'Senior' };
   const grade     = stored.grade || (profile.grade ? GRADE_WORD[profile.grade] || '' : '');
@@ -557,7 +558,7 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
         />
       </BlueHeader>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 100px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: isTablet ? '14px 24px 40px' : '14px 14px 100px' }}>
 
         {/* Identity card — name, school/grade, student ID */}
         <div style={{
@@ -634,6 +635,7 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
 // ── Default export ────────────────────────────────────────────────────────────
 
 export default function AcademicsScreen({ role, onNavigate, tabs }) {
+  const isTablet = useIsTablet();
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
@@ -668,6 +670,7 @@ export default function AcademicsScreen({ role, onNavigate, tabs }) {
       isParent={role === 'parent'}
       onNavigate={onNavigate}
       tabs={tabs}
+      isTablet={isTablet}
     />
   );
 }

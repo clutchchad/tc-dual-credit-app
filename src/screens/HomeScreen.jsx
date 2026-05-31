@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import BottomNav from '../components/BottomNav';
+import { useIsTablet } from '../hooks/useIsTablet';
 import { getAcdcForSchool } from '../data/acdc';
 import { schools as schoolList } from '../data/schools';
 import { events } from '../data/events';
@@ -436,11 +437,12 @@ function TimelineCard({ item }) {
 }
 
 /* ── Timeline Section ── */
-function TimelineSection({ items }) {
+function TimelineSection({ items, isTablet }) {
+  const pad = isTablet ? '24px 24px 0' : '20px 14px 0';
   return (
-    <div style={{ padding: '20px 14px 0' }}>
+    <div style={{ padding: pad }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-        <span style={{ fontFamily: FF, fontSize: 16, fontWeight: 900, color: C.text, letterSpacing: '-0.3px' }}>Timeline</span>
+        <span style={{ fontFamily: FF, fontSize: isTablet ? 18 : 16, fontWeight: 900, color: C.text, letterSpacing: '-0.3px' }}>Timeline</span>
         <div style={{ flex: 1, height: 2, borderRadius: 1, background: BLUE, opacity: 0.18 }} />
         <div style={{ width: 28, height: 2, borderRadius: 1, background: BLUE }} />
       </div>
@@ -460,6 +462,7 @@ function getLocalProfile() {
    Main HomeScreen
    ════════════════════════════════════════════════════════ */
 export default function HomeScreen({ role: roleProp, school, grade, onNavigate, tabs }) {
+  const isTablet  = useIsTablet();
   // Use localStorage as ground truth to avoid any state-timing lag on role
   const localProfile = getLocalProfile();
   const role      = roleProp || localProfile.role || 'guest';
@@ -604,22 +607,20 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
 
   /* ── GUEST home body ── */
   if (isGuest) {
+    const pad  = isTablet ? '20px 24px 0' : '12px 14px 0';
+    const pbottom = isTablet ? 32 : 88;
     return (
       <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column', position: 'relative' }}>
         {renderHeader()}
-        <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 88 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 14px 0' }}>
-            {/* Apply banner — prominent at top */}
+        <div style={{ flex: 1, overflowY: 'auto', paddingBottom: pbottom }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: pad }}>
             <GuestApplyBanner />
-
-            {/* Deadline + Event side-by-side */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <NextDeadlineCard onNavigate={onNavigate} />
               <NextEventCard onNavigate={onNavigate} />
             </div>
           </div>
-
-          <TimelineSection items={timeline} />
+          <TimelineSection items={timeline} isTablet={isTablet} />
         </div>
         <BottomNav active="home" onNavigate={onNavigate} tabs={tabs} />
       </div>
@@ -627,28 +628,44 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
   }
 
   /* ── STUDENT + PARENT home body (shared structure) ── */
+  const pbottom = isTablet ? 32 : 88;
+  const outerPad = isTablet ? '20px 24px 0' : '12px 14px 0';
+
+  /* Tablet: 2-col dashboard grid */
+  const tabletDashboard = (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, padding: outerPad }}>
+      {/* Left col: deadline + event */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <NextDeadlineCard onNavigate={onNavigate} />
+        <NextEventCard onNavigate={onNavigate} />
+      </div>
+      {/* Right col: ACDC + notification */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {acdc && <AcdcStrip acdc={acdc} onNavigate={onNavigate} />}
+        <RecentNotifCard notif={latestNotif} onNavigate={onNavigate} />
+      </div>
+    </div>
+  );
+
+  /* Mobile: single-col stacked */
+  const mobileDashboard = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: outerPad }}>
+      {acdc && <AcdcStrip acdc={acdc} onNavigate={onNavigate} />}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <NextDeadlineCard onNavigate={onNavigate} />
+        <NextEventCard onNavigate={onNavigate} />
+      </div>
+      <RecentNotifCard notif={latestNotif} onNavigate={onNavigate} />
+    </div>
+  );
+
   return (
     <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column', position: 'relative' }}>
       {renderHeader()}
 
-      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 88 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 14px 0' }}>
-
-          {/* ACDC strip — if a coach is resolved */}
-          {acdc && <AcdcStrip acdc={acdc} onNavigate={onNavigate} />}
-
-          {/* Deadline + Event side-by-side */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <NextDeadlineCard onNavigate={onNavigate} />
-            <NextEventCard onNavigate={onNavigate} />
-          </div>
-
-          {/* Recent Notification */}
-          <RecentNotifCard notif={latestNotif} onNavigate={onNavigate} />
-
-        </div>
-
-        <TimelineSection items={timeline} />
+      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: pbottom }}>
+        {isTablet ? tabletDashboard : mobileDashboard}
+        <TimelineSection items={timeline} isTablet={isTablet} />
       </div>
 
       <BottomNav active="home" onNavigate={onNavigate} tabs={tabs} />

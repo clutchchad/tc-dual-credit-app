@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { BlueHeader } from '../components/BlueHeader';
 import BottomNav from '../components/BottomNav';
+import { useIsTablet } from '../hooks/useIsTablet';
 import { resources } from '../data/resources';
 import { C, FF } from '../tokens';
 
@@ -60,13 +61,17 @@ const FILTERS = [
 ];
 
 export default function ResourcesScreen({ onNavigate, tabs }) {
+  const isTablet = useIsTablet();
   const [filter, setFilter] = useState('all');
   const list = filter === 'all' ? resources : resources.filter(r => r.type === filter);
+
+  const sidePad   = isTablet ? '14px 24px 40px' : '14px 14px 100px';
+  const gridCols  = isTablet ? 'repeat(2, 1fr)' : '1fr';
 
   return (
     <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column' }}>
       <BlueHeader>
-        <h1 style={{ fontFamily: FF, fontSize: 26, fontWeight: 900, color: '#fff', letterSpacing: '-0.8px', marginBottom: 13 }}>
+        <h1 style={{ fontFamily: FF, fontSize: isTablet ? 30 : 26, fontWeight: 900, color: '#fff', letterSpacing: '-0.8px', marginBottom: 13 }}>
           Resources
         </h1>
         {/* Filter pills */}
@@ -93,7 +98,8 @@ export default function ResourcesScreen({ onNavigate, tabs }) {
         </div>
       </BlueHeader>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 100px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: sidePad }}>
+        <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: isTablet ? 10 : 0 }}>
         {list.map(r => {
           const col      = TYPE_COLORS[r.type] || C.text3;
           const tagLabel = TYPE_LABELS[r.type]  || r.type;
@@ -104,7 +110,7 @@ export default function ResourcesScreen({ onNavigate, tabs }) {
               style={{
                 width: '100%', background: '#fff',
                 border: `1px solid ${C.border}`, borderRadius: 18,
-                padding: '13px 15px', marginBottom: 9,
+                padding: '13px 15px', marginBottom: isTablet ? 0 : 9,
                 cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 13,
                 textAlign: 'left', boxShadow: '0 2px 8px rgba(0,0,0,.04)',
                 transition: 'transform .1s', boxSizing: 'border-box',
@@ -158,6 +164,7 @@ export default function ResourcesScreen({ onNavigate, tabs }) {
             </button>
           );
         })}
+        </div>
       </div>
 
       <BottomNav active="resources" onNavigate={onNavigate} tabs={tabs} />

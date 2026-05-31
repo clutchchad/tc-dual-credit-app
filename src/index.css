@@ -43,6 +43,13 @@ button { -webkit-tap-highlight-color: transparent; font-family: inherit; }
   50%       { opacity: 0.45; transform: scale(0.8); }
 }
 
+/* ── Tablet layout (md: 768px+) ── */
+@media (min-width: 768px) {
+  .tc-bottom-nav {
+    display: none !important;
+  }
+}
+
 /* Drag overlay */
 .drag-item-dragging {
   box-shadow: 0 8px 24px rgba(0,0,0,0.18);

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
 import BottomNav from '../components/BottomNav';
+import { useIsTablet } from '../hooks/useIsTablet';
 import { C, FF } from '../tokens';
 import { loadNotifications, relTime } from '../data/notifications';
 
@@ -57,6 +58,7 @@ async function unsubscribe() {
 
 // ── Component ───────────────────────────────────────────────────────────────
 export default function NotificationsScreen({ onNavigate, tabs }) {
+  const isTablet = useIsTablet();
   const [pushEnabled, setPushEnabled] = useState(false);
   const [toggling,   setToggling]     = useState(false);
   const [notifs,     setNotifs]       = useState([]);
@@ -117,7 +119,7 @@ export default function NotificationsScreen({ onNavigate, tabs }) {
         </div>
       </BlueHeader>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 14px 100px', marginTop: -42, position: 'relative' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: isTablet ? '0 24px 40px' : '0 14px 100px', marginTop: -42, position: 'relative' }}>
 
         {/* Push opt-in card */}
         <div style={{ background: '#fff', borderRadius: 20, border: `1px solid ${C.border}`, boxShadow: '0 2px 10px rgba(0,0,0,.05)', padding: '15px 17px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 12 }}>

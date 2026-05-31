@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import BottomNav from '../components/BottomNav';
 import { BlueHeader } from '../components/BlueHeader';
+import { useIsTablet } from '../hooks/useIsTablet';
 import { PATHWAYS } from '../data/pathways';
 import { SCHOOLS } from '../data/schools';
 import { C, FF } from '../tokens';
@@ -64,19 +65,22 @@ function SchoolColorBar({ school, grade, onBack }) {
 
 // ── Pathway list (scrollable cards) ──────────────────────────────────────────
 
-function PathwayList({ school }) {
+function PathwayList({ school, isTablet }) {
   const pathways = useMemo(
     () => PATHWAYS.filter(p => p.school === school.id),
     [school.id]
   );
 
+  const sidePad  = isTablet ? '14px 24px 40px' : '14px 14px 80px';
+  const gridCols = isTablet ? 'repeat(2, 1fr)' : '1fr';
+
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 80px' }}>
-      <p style={{ fontFamily: FF, fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 14 }}>
+    <div style={{ flex: 1, overflowY: 'auto', padding: sidePad }}>
+      <p style={{ fontFamily: FF, fontSize: isTablet ? 14 : 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 14 }}>
         Tap any pathway to open the full Early Enrollment Pathway Plan.
       </p>
 
-      <div>
+      <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: isTablet ? 10 : 0 }}>
         {pathways.length > 0 ? (
           pathways.map(pathway => {
             const displayName = pathway.name.replace(/^EEPP\s*–\s*/, '');
@@ -86,7 +90,7 @@ function PathwayList({ school }) {
                 onClick={() => window.open(pathway.pdfUrl, '_blank', 'noopener,noreferrer')}
                 style={{
                   width: '100%', background: '#fff', border: `1px solid ${C.border}`,
-                  borderRadius: 12, padding: '16px 14px', marginBottom: 10,
+                  borderRadius: 12, padding: '16px 14px', marginBottom: isTablet ? 0 : 10,
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   cursor: 'pointer', transition: 'box-shadow .15s, transform .15s',
                   boxShadow: '0 1px 3px rgba(0,0,0,.06)',
@@ -97,7 +101,7 @@ function PathwayList({ school }) {
                 onTouchStart={e => { e.currentTarget.style.transform = 'scale(0.98)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,.1)'; }}
                 onTouchEnd={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,.06)'; }}
               >
-                <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 600, color: '#1f2937', textAlign: 'left' }}>
+                <span style={{ fontFamily: FF, fontSize: isTablet ? 16 : 15, fontWeight: 600, color: '#1f2937', textAlign: 'left' }}>
                   {displayName}
                 </span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#065990" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
@@ -120,24 +124,27 @@ function PathwayList({ school }) {
 
 const BROWSABLE_SCHOOLS = SCHOOLS.filter(s => !s.unassigned);
 
-function SchoolPicker({ onSelect }) {
+function SchoolPicker({ onSelect, isTablet }) {
+  const sidePad  = isTablet ? '20px 24px 80px' : '20px 14px 80px';
+  const gridCols = isTablet ? 'repeat(2, 1fr)' : '1fr';
+
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 14px 80px' }}>
-      <h2 style={{ fontFamily: FF, fontSize: 22, fontWeight: 900, color: '#1f2937', marginBottom: 4, letterSpacing: '-0.3px' }}>
+    <div style={{ flex: 1, overflowY: 'auto', padding: sidePad }}>
+      <h2 style={{ fontFamily: FF, fontSize: isTablet ? 26 : 22, fontWeight: 900, color: '#1f2937', marginBottom: 4, letterSpacing: '-0.3px' }}>
         Browse Pathway Plans
       </h2>
-      <p style={{ fontFamily: FF, fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 20 }}>
+      <p style={{ fontFamily: FF, fontSize: isTablet ? 14 : 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 20 }}>
         Select a high school to explore available dual credit pathways.
       </p>
 
-      <div>
+      <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: isTablet ? 10 : 0 }}>
         {BROWSABLE_SCHOOLS.map(school => (
           <button
             key={school.id}
             onClick={() => onSelect(school)}
             style={{
               width: '100%', background: '#fff', border: `1px solid ${C.border}`,
-              borderRadius: 12, padding: '16px 14px', marginBottom: 10,
+              borderRadius: 12, padding: '16px 14px', marginBottom: isTablet ? 0 : 10,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               cursor: 'pointer', transition: 'box-shadow .15s',
               boxShadow: '0 1px 3px rgba(0,0,0,.06)',
@@ -150,7 +157,7 @@ function SchoolPicker({ onSelect }) {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: school.color, flexShrink: 0 }} />
-              <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 600, color: '#1f2937' }}>
+              <span style={{ fontFamily: FF, fontSize: isTablet ? 16 : 15, fontWeight: 600, color: '#1f2937' }}>
                 {school.name}
               </span>
             </div>
@@ -167,6 +174,7 @@ function SchoolPicker({ onSelect }) {
 // ── Main Screen ───────────────────────────────────────────────────────────────
 
 export default function PathwaysScreen({ onNavigate, tabs }) {
+  const isTablet = useIsTablet();
   const [browsingSchool, setBrowsingSchool] = useState(null);
 
   const stored = useMemo(() => {
@@ -203,9 +211,9 @@ export default function PathwaysScreen({ onNavigate, tabs }) {
 
       {/* Main content */}
       {activeSchool ? (
-        <PathwayList school={activeSchool} />
+        <PathwayList school={activeSchool} isTablet={isTablet} />
       ) : (
-        <SchoolPicker onSelect={setBrowsingSchool} />
+        <SchoolPicker onSelect={setBrowsingSchool} isTablet={isTablet} />
       )}
 
       <BottomNav active="pathways" onNavigate={onNavigate} tabs={tabs} />

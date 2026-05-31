@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { recordAppOpen } from './data/engagementTracker';
+import { useIsTablet } from './hooks/useIsTablet';
+import SideNav from './components/SideNav';
 
 import SplashScreen       from './screens/SplashScreen';
 import OnboardRole        from './screens/OnboardRole';
@@ -63,8 +65,14 @@ export default function App() {
     go('onboard_role');
   };
 
+  const isTablet = useIsTablet();
+
   const navProps      = { tabs: NAV_TABS,       onNavigate: go };
   const guestNavProps = { tabs: GUEST_NAV_TABS, onNavigate: go };
+
+  const ONBOARDING_SCREENS = ['splash', 'onboard_role', 'onboard_student_id', 'onboard_school', 'onboard_grade', 'onboard_confirm', 'change_school', 'apply'];
+  const showSideNav = isTablet && !ONBOARDING_SCREENS.includes(screen);
+  const activeTabs  = (!role || role === 'guest') ? GUEST_NAV_TABS : NAV_TABS;
 
   /* Shared OnboardRole renderer — used in two cases */
   const renderOnboardRole = () => (
@@ -281,9 +289,14 @@ export default function App() {
   return (
     <div
       key={animKey}
-      style={{ width: '100%', height: '100%', overflow: 'hidden', position: 'relative' }}
+      style={{ width: '100%', height: '100%', overflow: 'hidden', position: 'relative', display: 'flex' }}
     >
-      {renderScreen()}
+      {showSideNav && (
+        <SideNav active={screen} onNavigate={go} tabs={activeTabs} />
+      )}
+      <div style={{ flex: 1, height: '100%', overflow: 'hidden', position: 'relative' }}>
+        {renderScreen()}
+      </div>
     </div>
   );
 }

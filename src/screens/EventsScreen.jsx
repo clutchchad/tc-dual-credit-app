@@ -3,6 +3,7 @@ import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { useFirestore } from '../hooks/useFirestore';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
 import BottomNav from '../components/BottomNav';
+import { useIsTablet } from '../hooks/useIsTablet';
 import { C, FF } from '../tokens';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -122,6 +123,7 @@ function ItemCard({ item, type }) {
 // ── Main screen ──────────────────────────────────────────────────────────────
 
 export default function EventsScreen({ role, school, onNavigate, tabs }) {
+  const isTablet     = useIsTablet();
   const db           = useFirestore();
   const userSchoolId = school?.id || null;
   const userRole     = role       || null;
@@ -170,6 +172,9 @@ export default function EventsScreen({ role, school, onNavigate, tabs }) {
 
   const loading = !db || !eventsReady || !deadlinesReady;
 
+  const sidePad  = isTablet ? '14px 24px 40px' : '14px 14px 100px';
+  const gridCols = isTablet ? 'repeat(2, 1fr)' : '1fr';
+
   return (
     <div
       className="tc-screen"
@@ -179,10 +184,31 @@ export default function EventsScreen({ role, school, onNavigate, tabs }) {
         <PageTitle title="Events" sub="Deadlines and upcoming events" />
       </BlueHeader>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 100px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: sidePad }}>
         {loading ? (
           <div style={{ textAlign: 'center', paddingTop: 40, fontFamily: FF, fontSize: 13, color: C.text3 }}>
             Loading…
+          </div>
+        ) : isTablet ? (
+          <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: 24, alignItems: 'start' }}>
+            {/* Left col: Events */}
+            <div>
+              <SectionLabel label="Upcoming Events" />
+              {events.length === 0 ? (
+                <EmptyState message="No upcoming events for your school." />
+              ) : (
+                events.map(ev => <ItemCard key={ev.id} item={ev} type="event" />)
+              )}
+            </div>
+            {/* Right col: Deadlines */}
+            <div>
+              <SectionLabel label="Deadlines" />
+              {deadlines.length === 0 ? (
+                <EmptyState message="No upcoming deadlines for your school." />
+              ) : (
+                deadlines.map(dl => <ItemCard key={dl.id} item={dl} type="deadline" />)
+              )}
+            </div>
           </div>
         ) : (
           <>
