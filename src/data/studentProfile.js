@@ -20,13 +20,13 @@ const mockStudentProfile = {
   enrolledInFirstClass: true,
   currentSemester: "Fall 2026",
   currentCourses: [
-    { courseId: "ENGL-1301", name: "Composition I", hours: 3, status: "enrolled", grade: "B+" },
-    { courseId: "HIST-1301", name: "US History I",  hours: 3, status: "enrolled", grade: "A"  },
+    { courseId: "ENGL-1301", name: "Composition I", hours: 3, status: "enrolled", grade: "B+", numericGrade: 88 },
+    { courseId: "HIST-1301", name: "US History I",  hours: 3, status: "enrolled", grade: "A",  numericGrade: 95 },
   ],
 
-  creditHoursEarned: 24,
+  creditHoursEarned: 25,
   creditHoursPending: 6,
-  creditHoursTotal: 30,
+  creditHoursTotal: 31,
   associatesDegreeTarget: 60,
 
   milestones: {
@@ -54,8 +54,8 @@ const mockStudentProfile = {
     {
       semester: 'Fall 2024',
       courses: [
-        { courseId: 'ENGL-1301', name: 'Composition I',  hours: 3, grade: 'B+', points: 9.9  },
-        { courseId: 'HIST-1301', name: 'US History I',   hours: 3, grade: 'A',  points: 12.0 },
+        { courseId: 'ENGL-1301', name: 'Composition I',  hours: 3, grade: 'B+', numericGrade: 88, points: 9.9  },
+        { courseId: 'HIST-1301', name: 'US History I',   hours: 3, grade: 'A',  numericGrade: 95, points: 12.0 },
       ],
       gpa: 3.83,
       hoursEarned: 6,
@@ -63,9 +63,9 @@ const mockStudentProfile = {
     {
       semester: 'Spring 2025',
       courses: [
-        { courseId: 'ENGL-1302', name: 'Composition II',             hours: 3, grade: 'A',  points: 12.0 },
-        { courseId: 'PSYC-2301', name: 'Introduction to Psychology', hours: 3, grade: 'B',  points: 9.0  },
-        { courseId: 'MATH-1314', name: 'College Algebra',            hours: 3, grade: 'B+', points: 9.9  },
+        { courseId: 'ENGL-1302', name: 'Composition II',             hours: 3, grade: 'A',  numericGrade: 95, points: 12.0 },
+        { courseId: 'PSYC-2301', name: 'Introduction to Psychology', hours: 3, grade: 'B',  numericGrade: 83, points: 9.0  },
+        { courseId: 'MATH-1314', name: 'College Algebra',            hours: 3, grade: 'B+', numericGrade: 88, points: 9.9  },
       ],
       gpa: 3.63,
       hoursEarned: 9,
@@ -73,9 +73,9 @@ const mockStudentProfile = {
     {
       semester: 'Fall 2025',
       courses: [
-        { courseId: 'HIST-1302', name: 'US History II',        hours: 3, grade: 'A',  points: 12.0 },
-        { courseId: 'SPCH-1315', name: 'Public Speaking',      hours: 3, grade: 'A-', points: 11.1 },
-        { courseId: 'BIOL-1406', name: 'Environmental Biology',hours: 4, grade: 'B+', points: 13.2 },
+        { courseId: 'HIST-1302', name: 'US History II',        hours: 3, grade: 'A',  numericGrade: 95, points: 12.0 },
+        { courseId: 'SPCH-1315', name: 'Public Speaking',      hours: 3, grade: 'A-', numericGrade: 92, points: 11.1 },
+        { courseId: 'BIOL-1406', name: 'Environmental Biology',hours: 4, grade: 'B+', numericGrade: 88, points: 13.2 },
       ],
       gpa: 3.80,
       hoursEarned: 10,

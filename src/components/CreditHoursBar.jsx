@@ -30,11 +30,11 @@ export default function CreditHoursBar({ earned, pending, total, target = 60 }) 
         position: 'relative', height: 10, borderRadius: 99,
         background: 'rgba(6,89,144,.08)', overflow: 'hidden', marginBottom: 14,
       }}>
-        {/* Pending segment — muted lime, earned + pending wide */}
+        {/* Pending segment — Electric Lime, earned + pending wide */}
         <div style={{
           position: 'absolute', left: 0, top: 0, height: '100%',
           width: `${earnedPct + pendingPct}%`,
-          background: 'rgba(180,210,40,.50)',
+          background: '#EAFF00',
           borderRadius: 99,
           transition: 'width .6s ease',
         }} />

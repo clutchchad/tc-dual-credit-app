@@ -46,13 +46,18 @@ function CourseCard({ course }) {
     }}>
       {/* Grade — prominent left accent */}
       <div style={{
-        width: 48, height: 48, borderRadius: 13, flexShrink: 0,
+        width: 54, height: 48, borderRadius: 13, flexShrink: 0,
         background: 'rgba(6,89,144,.08)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1,
       }}>
-        <span style={{ fontFamily: FF, fontSize: 19, fontWeight: 900, color: BLUE, letterSpacing: '-0.5px' }}>
+        <span style={{ fontFamily: FF, fontSize: 17, fontWeight: 900, color: BLUE, letterSpacing: '-0.5px', lineHeight: 1 }}>
           {course.grade || '—'}
         </span>
+        {course.numericGrade != null && (
+          <span style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: BLUE, opacity: 0.65, lineHeight: 1 }}>
+            {course.numericGrade}
+          </span>
+        )}
       </div>
 
       {/* Course info */}
@@ -242,7 +247,7 @@ function SemesterAccordion({ semester }) {
             <span style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.8px', width: 80, flexShrink: 0 }}>ID</span>
             <span style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.8px', flex: 1 }}>Course</span>
             <span style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.8px', width: 30, textAlign: 'center' }}>Hrs</span>
-            <span style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.8px', width: 38, textAlign: 'right' }}>Grade</span>
+            <span style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.8px', width: 50, textAlign: 'right' }}>Grade</span>
           </div>
 
           {semester.courses.map(c => (
@@ -264,10 +269,10 @@ function SemesterAccordion({ semester }) {
                 {c.hours}
               </span>
               <span style={{
-                fontFamily: FF, fontSize: 13, fontWeight: 800, color: BLUE,
-                width: 38, textAlign: 'right',
+                fontFamily: FF, fontSize: 12, fontWeight: 800, color: BLUE,
+                width: 50, textAlign: 'right',
               }}>
-                {c.grade}
+                {c.grade}{c.numericGrade != null ? ` / ${c.numericGrade}` : ''}
               </span>
             </div>
           ))}
@@ -298,28 +303,28 @@ function CompletedCoursesSection({ profile, studentId, firstName, lastName, grad
         history.map(sem => <SemesterAccordion key={sem.semester} semester={sem} />)
       )}
 
-      {/* Cumulative stats */}
+      {/* Cumulative stats — GPA first, Hours Earned second */}
       <div style={{
         display: 'flex', gap: 10, marginTop: 4, marginBottom: 14,
       }}>
-        <div style={{
-          flex: 1, background: '#fff', borderRadius: 14,
-          border: `1px solid ${C.border}`,
-          padding: '11px 14px', textAlign: 'center',
-        }}>
-          <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: BLUE, letterSpacing: '-0.5px' }}>{totalHours}</div>
-          <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: C.text3, marginTop: 2 }}>Total Hours Earned</div>
-        </div>
         {cumulativeGpa !== null && (
           <div style={{
             flex: 1, background: '#fff', borderRadius: 14,
-            border: `1px solid ${C.border}`,
+            border: `2px solid ${BLUE}`,
             padding: '11px 14px', textAlign: 'center',
           }}>
             <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: BLUE, letterSpacing: '-0.5px' }}>{cumulativeGpa}</div>
-            <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: C.text3, marginTop: 2 }}>Cumulative GPA</div>
+            <div style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE, marginTop: 2 }}>Cumulative GPA</div>
           </div>
         )}
+        <div style={{
+          flex: 1, background: '#fff', borderRadius: 14,
+          border: `2px solid ${BLUE}`,
+          padding: '11px 14px', textAlign: 'center',
+        }}>
+          <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: BLUE, letterSpacing: '-0.5px' }}>{totalHours}</div>
+          <div style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE, marginTop: 2 }}>Total Hours Earned</div>
+        </div>
       </div>
 
       {/* Download button */}
@@ -377,11 +382,11 @@ function CreditHoursSection({ earned, pending, total, target }) {
       <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
         <div style={{ flex: 1, textAlign: 'center', background: 'rgba(6,89,144,.07)', borderRadius: 10, padding: '8px 4px' }}>
           <div style={{ fontFamily: FF, fontSize: 18, fontWeight: 900, color: BLUE, letterSpacing: '-0.5px' }}>{earned}</div>
-          <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: BLUE, opacity: 0.7, marginTop: 1 }}>Earned</div>
+          <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: BLUE, opacity: 0.7, marginTop: 1 }}>Hours Earned</div>
         </div>
-        <div style={{ flex: 1, textAlign: 'center', background: 'rgba(180,210,40,.14)', borderRadius: 10, padding: '8px 4px' }}>
-          <div style={{ fontFamily: FF, fontSize: 18, fontWeight: 900, color: '#5a7a00', letterSpacing: '-0.5px' }}>{pending}</div>
-          <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: '#5a7a00', opacity: 0.75, marginTop: 1 }}>In Progress</div>
+        <div style={{ flex: 1, textAlign: 'center', background: 'rgba(234,255,0,.25)', borderRadius: 10, padding: '8px 4px' }}>
+          <div style={{ fontFamily: FF, fontSize: 18, fontWeight: 900, color: BLUE, letterSpacing: '-0.5px' }}>{pending}</div>
+          <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 600, color: BLUE, opacity: 0.75, marginTop: 1 }}>In Progress</div>
         </div>
         <div style={{ flex: 1, textAlign: 'center', background: 'rgba(0,0,0,.04)', borderRadius: 10, padding: '8px 4px' }}>
           <div style={{ fontFamily: FF, fontSize: 18, fontWeight: 900, color: C.text2, letterSpacing: '-0.5px' }}>
@@ -573,32 +578,22 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
             </div>
           )}
 
-          {/* GPA + Grade pills */}
-          {(gpa !== null || metaLine) && (
+          {/* Grade pill */}
+          {metaLine && (
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {gpa !== null && (
-                <span style={{
-                  fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
-                  background: 'rgba(234,255,0,.85)', borderRadius: 20, padding: '3px 10px',
-                }}>
-                  GPA: {gpa}
-                </span>
-              )}
-              {metaLine && (
-                <span style={{
-                  fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
-                  background: 'rgba(234,255,0,.85)', borderRadius: 20, padding: '3px 10px',
-                }}>
-                  {metaLine}
-                </span>
-              )}
+              <span style={{
+                fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
+                background: 'rgba(234,255,0,.85)', borderRadius: 20, padding: '3px 10px',
+              }}>
+                {metaLine}
+              </span>
             </div>
           )}
         </div>
 
         {/* Section 2 — Credit Hours */}
         <div style={{ marginTop: 14 }}>
-          <SectionHeading label="Credit Hours" />
+          <SectionHeading label="Program Progress" />
           <CreditHoursSection
             earned={creditHours.earned}
             pending={creditHours.pending}
@@ -613,9 +608,6 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
           {(profile.currentCourses || []).map(c => (
             <CourseCard key={c.courseId} course={c} />
           ))}
-          <p style={{ fontFamily: FF, fontSize: 11, color: C.text3, textAlign: 'center', marginTop: 4, lineHeight: 1.5 }}>
-            Grades shown are estimates. Verify at myTC portal.
-          </p>
         </div>
 
         {/* Section 4 — Completed Courses (students + parents only) */}
