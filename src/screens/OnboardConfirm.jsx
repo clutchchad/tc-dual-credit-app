@@ -77,7 +77,8 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
     });
   }
 
-  const showApplyLink = role === 'student' && !isJenzabarVerified;
+  // Show apply card for guests and anyone not yet verified (unverified students/parents)
+  const showApplyCard = role === 'guest' || !isJenzabarVerified;
 
   return (
     <div
@@ -155,26 +156,43 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
           <span style={{ fontFamily:FF, fontSize:16, fontWeight:800, color:DARK }}>Get Started</span>
         </button>
 
-        {/* Apply for Dual Credit — unverified students only */}
-        {showApplyLink && (
-          <a
-            href="https://txkcol.edu/applydc"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'block', width: '100%', boxSizing: 'border-box',
-              height: 50, borderRadius: 16,
-              border: `2px solid ${LIME}`,
-              background: 'transparent',
-              marginBottom: 12,
-              textDecoration: 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <span style={{ fontFamily:FF, fontSize:15, fontWeight:800, color:DARK }}>
-              Apply for Dual Credit
-            </span>
-          </a>
+        {/* Apply for Dual Credit card — guests and unverified users */}
+        {showApplyCard && (
+          <div style={{
+            width: '100%', boxSizing: 'border-box',
+            border: `1.5px solid ${C.border}`,
+            borderRadius: 18, padding: '18px 18px 16px',
+            marginBottom: 12, background: C.bg,
+          }}>
+            <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, color: DARK, marginBottom: 4 }}>
+              Not enrolled in Dual Credit yet?
+            </div>
+            <p style={{ fontFamily: FF, fontSize: 13, color: C.text2, lineHeight: 1.55, marginBottom: 14 }}>
+              Start your application — it only takes a few minutes.
+            </p>
+            <button
+              onClick={() => window.open('https://txkcol.edu/applydc', '_blank', 'noopener,noreferrer')}
+              style={{
+                width: '100%', height: 46,
+                background: 'transparent',
+                border: `2px solid ${LIME}`,
+                borderRadius: 13,
+                cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+              }}
+            >
+              {/* External link icon */}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke={DARK} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              <span style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, color: DARK }}>
+                Apply Now
+              </span>
+            </button>
+          </div>
         )}
 
         <button onClick={onBack} style={{ background:'none', border:'none', cursor:'pointer', padding:'8px 0' }}>
