@@ -162,15 +162,6 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
                   </div>
                 )}
               </div>
-              {/* Verified badge */}
-              {row.badge === 'verified' && (
-                <div style={{ display:'flex', alignItems:'center', gap:4, background:'rgba(22,163,74,.1)', borderRadius:20, padding:'4px 10px', flexShrink:0 }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#15803d" strokeWidth="2.5" strokeLinecap="round">
-                    <path d="M20 6L9 17l-5-5"/>
-                  </svg>
-                  <span style={{ fontFamily:FF, fontSize:10.5, fontWeight:700, color:'#15803d' }}>Verified</span>
-                </div>
-              )}
             </div>
           ))}
         </div>

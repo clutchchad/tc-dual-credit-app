@@ -283,6 +283,44 @@ function SemesterAccordion({ semester }) {
   );
 }
 
+function AcademicHistoryAccordion({ history }) {
+  const [open, setOpen] = useState(false);
+  const sorted = [...history].reverse();
+  return (
+    <div style={{
+      background: '#fff', borderRadius: 16,
+      border: `1px solid ${C.border}`,
+      boxShadow: '0 1px 5px rgba(0,0,0,.04)',
+      marginBottom: 8, overflow: 'hidden',
+    }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', background: 'none', border: 'none', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '13px 15px', textAlign: 'left',
+        }}
+      >
+        <span style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: C.text }}>
+          Academic History
+        </span>
+        <svg
+          width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke={C.text3} strokeWidth="2.2" strokeLinecap="round"
+          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .2s', flexShrink: 0 }}
+        >
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+      {open && (
+        <div style={{ borderTop: `1px solid ${C.border}`, padding: '10px 10px 4px' }}>
+          {sorted.map(sem => <SemesterAccordion key={sem.semester} semester={sem} />)}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CompletedCoursesSection({ profile, studentId, firstName, lastName, grade }) {
   const history = profile.transcriptHistory || [];
   const totalHours = history.reduce((sum, s) => sum + s.hoursEarned, 0);
@@ -294,14 +332,14 @@ function CompletedCoursesSection({ profile, studentId, firstName, lastName, grad
 
   return (
     <div style={{ marginTop: 14 }}>
-      <SectionHeading label="Completed Courses" />
+      <SectionHeading label="Academics" />
 
       {history.length === 0 ? (
         <p style={{ fontFamily: FF, fontSize: 13, color: C.text3, textAlign: 'center', padding: '16px 0' }}>
           No completed semesters on record.
         </p>
       ) : (
-        history.map(sem => <SemesterAccordion key={sem.semester} semester={sem} />)
+        <AcademicHistoryAccordion history={history} />
       )}
 
       {/* Cumulative stats — GPA first, Hours Earned second */}
@@ -414,28 +452,6 @@ function TranscriptCard() {
       padding: '18px 18px 16px',
       marginBottom: 10,
     }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 14 }}>
-        {/* Document icon */}
-        <div style={{
-          width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-          background: 'linear-gradient(135deg,#022b52,#065990)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={LIME} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-            <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
-          </svg>
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 800, color: C.text, letterSpacing: '-0.2px', marginBottom: 4 }}>
-            Request Official Transcript
-          </div>
-          <p style={{ fontFamily: FF, fontSize: 12.5, color: C.text2, lineHeight: 1.55 }}>
-            Official transcripts are processed through the TC Registrar's Office.
-          </p>
-        </div>
-      </div>
-
       {/* Request button — lime outlined */}
       <button
         onClick={() => window.open(
@@ -467,6 +483,9 @@ function TranscriptCard() {
         </span>
       </button>
 
+      <p style={{ fontFamily: FF, fontSize: 12.5, color: C.text2, lineHeight: 1.55, marginBottom: 8 }}>
+        Official transcripts are processed through the TC Registrar's Office.
+      </p>
       <p style={{ fontFamily: FF, fontSize: 11, color: C.text3, textAlign: 'center', lineHeight: 1.5, marginBottom: 6 }}>
         Search for Texarkana College when prompted to select your school.
       </p>
@@ -622,7 +641,6 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs, isTablet }) {
 
         {/* Section 5 — Transcript */}
         <div style={{ marginTop: 14 }}>
-          <SectionHeading label="Official Transcript" />
           <TranscriptCard />
         </div>
       </div>
