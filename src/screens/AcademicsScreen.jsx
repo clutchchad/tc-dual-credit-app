@@ -248,7 +248,7 @@ function GuestAcademics({ onNavigate, tabs }) {
 
 // ── Main content (student + parent share this) ────────────────────────────────
 
-function AcademicsContent({ profile, isParent, onBack, onNavigate, tabs }) {
+function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
   const stored     = readStored();
   const schoolName = stored.school?.name || profile.highSchool || '';
   const grade      = stored.grade        || (profile.grade ? `Grade ${profile.grade}` : '');
@@ -270,7 +270,6 @@ function AcademicsContent({ profile, isParent, onBack, onNavigate, tabs }) {
       <BlueHeader>
         <PageTitle
           title={isParent ? "Student's Academics" : 'Academics'}
-          onBack={onBack}
         />
       </BlueHeader>
 
@@ -374,7 +373,6 @@ export default function AcademicsScreen({ role, onNavigate, tabs }) {
     <AcademicsContent
       profile={profile}
       isParent={role === 'parent'}
-      onBack={() => onNavigate('home')}
       onNavigate={onNavigate}
       tabs={tabs}
     />
