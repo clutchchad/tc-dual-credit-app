@@ -260,6 +260,8 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
   const studentId = stored.studentId || profile.studentId || '';
 
   const metaLine = grade || '';
+  const gpa            = profile.gpa            ?? null;
+  const graduationYear = profile.graduationYear ?? null;
 
   const creditHours = {
     earned:  profile.creditHoursEarned      ?? 0,
@@ -296,6 +298,26 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs }) {
                 {metaLine}
               </div>
             ) : null}
+            {(gpa !== null || graduationYear !== null) && (
+              <div style={{ display: 'flex', gap: 6, marginTop: 7, flexWrap: 'wrap' }}>
+                {gpa !== null && (
+                  <span style={{
+                    fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
+                    background: 'rgba(6,89,144,.09)', borderRadius: 20, padding: '3px 9px',
+                  }}>
+                    GPA: {gpa}
+                  </span>
+                )}
+                {graduationYear !== null && (
+                  <span style={{
+                    fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
+                    background: 'rgba(6,89,144,.09)', borderRadius: 20, padding: '3px 9px',
+                  }}>
+                    Class of {graduationYear}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
           {studentId ? (
             <span style={{

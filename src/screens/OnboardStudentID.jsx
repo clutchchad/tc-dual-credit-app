@@ -98,7 +98,7 @@ export default function OnboardStudentID({ role, onVerified, onSkip, onBack }) {
           type="tel"
           inputMode="numeric"
           pattern="[0-9]*"
-          placeholder="e.g. 123456"
+          placeholder="Enter your TC student ID"
           maxLength={10}
           value={value}
           onChange={handleInput}

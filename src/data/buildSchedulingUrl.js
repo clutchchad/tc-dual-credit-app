@@ -17,16 +17,16 @@ const SCHOOL_MAP = {
   rw:    'Redwater High School',
   txh:   'Texas High School',
   pg:    'Pleasant Grove High School',
-  bl:    'Bloomberg High School',   // HubSpot internal has "Bloomberg" typo — intentional
-  av:    'Avery High School',
-  dk:    'DeKalb High School',
+  bloomburg: 'Bloomberg High School',   // HubSpot internal has "Bloomberg" typo — intentional
+  avery:     'Avery High School',
+  dekalb:    'DeKalb High School',
   maud:  'Maud High School',
   prem:  'Premiere High School',    // HubSpot internal has "Premiere" typo — intentional
   nb:    'New Boston High School',
-  jb:    'James Bowie High School',
-  atl:   'Atlanta High School',
-  qc:    'Queen City High School',
-  mc:    'McLeod High School',
+  simms:  'James Bowie High School',
+  atlanta: 'Atlanta High School',
+  qc:      'Queen City High School',
+  mcleod:  'McLeod High School',
   lk:    'Linden-Kildare High School',
 };
 

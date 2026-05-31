@@ -34,7 +34,7 @@ const mockStudentProfile = {
     enrolledInFirstClass: true,
     reached12Hours: true,
     reached15Hours: true,
-    reached30Hours: false,
+    reached30Hours: true,
     reached45Hours: false,
     onTrackForAssociates: false,
     tcPromiseEligible: false,
@@ -47,6 +47,17 @@ const mockStudentProfile = {
 
   tcPromiseEligible: false,
   tcPromiseStatus: null,
+
+  phone: '800-551-8900',
+  address: {
+    street: '1 Main St',
+    city: 'Texarkana',
+    state: 'TX',
+    zip: '75503',
+  },
+  dateOfBirth: '10/10/2010',
+  gpa: 3.99,
+  graduationYear: '2028',
 };
 
 export const getStudentProfile = async () => {
