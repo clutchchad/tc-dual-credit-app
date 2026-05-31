@@ -234,15 +234,32 @@ function CoachCard({ acdc, school, grade }) {
 // ── AboutCard ─────────────────────────────────────────────────────────────────
 
 function AboutCard() {
+  const bullets = [
+    'Course selection and eligibility',
+    'Registration and payment deadlines',
+    'TSI prep and testing',
+    'College applications and goal setting',
+    'Financial assistance options',
+  ];
+
   return (
-    <Card style={{ padding: '16px 18px', marginBottom: 14 }}>
-      <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, color: DARK, marginBottom: 7 }}>
+    <Card style={{ padding: '20px 18px 22px', marginBottom: 14 }}>
+      <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 800, color: DARK, marginBottom: 10 }}>
         About Your ACDC
       </div>
-      <p style={{ fontFamily: FF, fontSize: 13, color: '#374151', lineHeight: 1.68, margin: 0 }}>
-        Your Academic Coach for Dual Credit is your dedicated guide through the entire dual credit journey —
-        from course selection and registration to TSI prep and everything in between.
-        They're here to make the experience smooth and successful for you and your family.
+      <p style={{ fontFamily: FF, fontSize: 13, color: '#374151', lineHeight: 1.65, margin: '0 0 12px' }}>
+        Academic Coaches for Dual Credit (ACDCs) serve as the connection between you, your high school,
+        and Texarkana College. Your ACDC can help you with:
+      </p>
+      <ul style={{ margin: '0 0 12px', paddingLeft: 20 }}>
+        {bullets.map(b => (
+          <li key={b} style={{ fontFamily: FF, fontSize: 13, color: '#374151', lineHeight: 1.65, marginBottom: 4 }}>
+            {b}
+          </li>
+        ))}
+      </ul>
+      <p style={{ fontFamily: FF, fontSize: 13, color: '#374151', lineHeight: 1.65, margin: 0, fontWeight: 600 }}>
+        Your ACDC is on your campus and in your corner all semester long.
       </p>
     </Card>
   );
