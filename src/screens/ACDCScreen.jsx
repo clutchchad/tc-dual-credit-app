@@ -145,10 +145,7 @@ function OfficeCard() {
 // ── CoachCard ─────────────────────────────────────────────────────────────────
 
 function CoachCard({ acdc, school, grade, isTablet }) {
-  const contextLine = (() => {
-    const fullName = getFullSchoolName(school.id);
-    return grade ? `${fullName} · ${grade}` : fullName;
-  })();
+  const contextLine = getFullSchoolName(school.id);
 
   const gradeLabel = (() => {
     if (!acdc.txhGrades?.length) return null;
@@ -173,17 +170,6 @@ function CoachCard({ acdc, school, grade, isTablet }) {
             <div style={{ fontFamily: FF, fontSize: 12, color: '#6b7280', marginTop: 3 }}>
               {contextLine}
             </div>
-            {gradeLabel && (
-              <div style={{
-                display: 'inline-block', marginTop: 10,
-                padding: '4px 12px', borderRadius: 20,
-                background: 'rgba(6,89,144,.08)',
-                fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
-                letterSpacing: '0.4px',
-              }}>
-                {gradeLabel}
-              </div>
-            )}
             <div style={{ height: 1, background: 'rgba(6,89,144,.08)', margin: '16px 0 14px' }} />
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
               <a
@@ -202,7 +188,7 @@ function CoachCard({ acdc, school, grade, isTablet }) {
                   onClick={() => window.open(buildSchedulingUrl(), '_blank', 'noopener,noreferrer')}
                   style={{
                     height: 44, padding: '0 20px',
-                    background: 'transparent', border: `2px solid ${BLUE}`, borderRadius: 12,
+                    background: LIME, border: `2px solid ${BLUE}`, borderRadius: 12,
                     cursor: 'pointer',
                     display: 'flex', alignItems: 'center', gap: 8,
                   }}
@@ -224,52 +210,40 @@ function CoachCard({ acdc, school, grade, isTablet }) {
 
   /* Original vertical / mobile layout */
   return (
-    <Card style={{ padding: '28px 20px 24px', marginBottom: 14, textAlign: 'center' }}>
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
-        <CoachPhoto photo={acdc.photo} name={acdc.name} size={96} />
+    <Card style={{ padding: '16px 16px 16px', marginBottom: 10, textAlign: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
+        <CoachPhoto photo={acdc.photo} name={acdc.name} size={72} />
       </div>
 
-      <div style={{ fontFamily: FF, fontSize: 22, fontWeight: 900, color: DARK, letterSpacing: '-0.5px', lineHeight: 1.15 }}>
+      <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: DARK, letterSpacing: '-0.5px', lineHeight: 1.15 }}>
         {acdc.name}
       </div>
-      <div style={{ fontFamily: FF, fontSize: 13, color: BLUE, fontWeight: 700, marginTop: 4 }}>
+      <div style={{ fontFamily: FF, fontSize: 12.5, color: BLUE, fontWeight: 700, marginTop: 3 }}>
         Academic Coach for Dual Credit
       </div>
-      <div style={{ fontFamily: FF, fontSize: 12, color: '#6b7280', marginTop: 3 }}>
+      <div style={{ fontFamily: FF, fontSize: 11.5, color: '#6b7280', marginTop: 2 }}>
         {contextLine}
       </div>
 
-      {gradeLabel && (
-        <div style={{
-          display: 'inline-block', marginTop: 10,
-          padding: '4px 12px', borderRadius: 20,
-          background: 'rgba(6,89,144,.08)',
-          fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
-          letterSpacing: '0.4px',
-        }}>
-          {gradeLabel}
-        </div>
-      )}
-
-      <div style={{ height: 1, background: 'rgba(6,89,144,.08)', margin: '20px 0 18px' }} />
+      <div style={{ height: 1, background: 'rgba(6,89,144,.08)', margin: '12px 0 10px' }} />
 
       <a
         href={`tel:${acdc.phone}`}
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          textDecoration: 'none', marginBottom: 14,
+          textDecoration: 'none', marginBottom: 10,
         }}
       >
         <div style={{
-          width: 34, height: 34, borderRadius: 10,
+          width: 32, height: 32, borderRadius: 9,
           background: 'rgba(6,89,144,.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.2" strokeLinecap="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.2" strokeLinecap="round">
             <path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 0112 18.85a19.5 19.5 0 01-6-6A19.79 19.79 0 012.92 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
           </svg>
         </div>
-        <span style={{ fontFamily: FF, fontSize: 16, fontWeight: 700, color: BLUE }}>
+        <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 700, color: BLUE }}>
           {acdc.phone}
         </span>
       </a>
@@ -278,17 +252,17 @@ function CoachCard({ acdc, school, grade, isTablet }) {
         <button
           onClick={() => window.open(buildSchedulingUrl(), '_blank', 'noopener,noreferrer')}
           style={{
-            width: '100%', height: 52,
-            background: 'transparent',
-            border: `2px solid ${BLUE}`, borderRadius: 14,
+            width: '100%', height: 44,
+            background: LIME,
+            border: `2px solid ${BLUE}`, borderRadius: 12,
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
           }}
         >
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round">
             <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
           </svg>
-          <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 900, color: BLUE, letterSpacing: '-0.2px' }}>
+          <span style={{ fontFamily: FF, fontSize: 14, fontWeight: 900, color: BLUE, letterSpacing: '-0.2px' }}>
             Schedule Advising
           </span>
         </button>
@@ -347,7 +321,6 @@ export default function ACDCScreen({ school, grade, onNavigate, tabs }) {
 
       <div style={{ flex: 1, overflowY: 'auto', padding: sidePad, marginTop: -42 }}>
         {isUnassigned ? <OfficeCard /> : <CoachCard acdc={acdc} school={school} grade={grade} isTablet={isTablet} />}
-        <AboutCard />
       </div>
 
       <BottomNav active="acdc" onNavigate={onNavigate} tabs={tabs} />

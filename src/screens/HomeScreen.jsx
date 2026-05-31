@@ -191,7 +191,7 @@ function AcdcStrip({ acdc, onNavigate }) {
         rel="noopener noreferrer"
         onClick={e => e.stopPropagation()}
         style={{
-          background: 'transparent',
+          background: LIME,
           border: `1.5px solid ${BLUE}`,
           borderRadius: 10,
           padding: '6px 12px',
