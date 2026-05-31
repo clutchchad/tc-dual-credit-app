@@ -378,7 +378,7 @@ function CompletedCoursesSection({ profile, studentId, firstName, lastName, grad
         })}
         style={{
           width: '100%', height: 46, borderRadius: 13,
-          background: 'transparent', border: `2px solid ${LIME}`,
+          background: 'transparent', border: `2px solid ${BLUE}`,
           cursor: 'pointer', boxSizing: 'border-box',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           marginBottom: 8,
