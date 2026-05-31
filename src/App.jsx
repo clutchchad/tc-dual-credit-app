@@ -157,6 +157,7 @@ export default function App() {
             grade={grade}
             studentId={studentId}
             firstName={firstName}
+            lastName={lastName}
             isJenzabarVerified={isJenzabarVerified}
             onConfirm={() => {
               saveStored({ role, school, grade, studentId, firstName, lastName, isJenzabarVerified });

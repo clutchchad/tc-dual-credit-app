@@ -5,7 +5,7 @@ const LIME = '#EAFF00';
 const BLUE = '#065990';
 const DARK = '#022b52';
 
-export default function OnboardConfirm({ role, school, grade, studentId, firstName, isJenzabarVerified, onConfirm, onBack }) {
+export default function OnboardConfirm({ role, school, grade, studentId, firstName, lastName, isJenzabarVerified, onConfirm, onBack }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => { setTimeout(() => setVisible(true), 100); }, []);
 

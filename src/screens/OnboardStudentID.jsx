@@ -32,26 +32,31 @@ export default function OnboardStudentID({ role, onVerified, onSkip, onBack }) {
     setError('');
     setLoading(true);
 
-    // Simulate network delay
-    await new Promise(r => setTimeout(r, 650));
+    try {
+      // Simulate network delay
+      await new Promise(r => setTimeout(r, 650));
 
-    if (value === MOCK_ID) {
-      const profile = await getStudentProfile();
-      // Find the school object by name match
-      const schoolObj = schoolList.find(s => s.name === profile.highSchool)
-                     || schoolList.find(s => s.id === 'txh');
-      const gradeVal = GRADE_MAP[profile.grade] || null;
+      if (value === MOCK_ID) {
+        const profile = await getStudentProfile();
+        // Find the school object by name match
+        const schoolObj = schoolList.find(s => s.name === profile.highSchool)
+                       || schoolList.find(s => s.id === 'txh');
+        const gradeVal = GRADE_MAP[profile.grade] || null;
 
-      onVerified({
-        schoolObj,
-        gradeVal,
-        studentIdVal: value,
-        firstNameVal: isParent ? null : profile.firstName,
-        lastNameVal:  isParent ? null : profile.lastName,
-      });
-    } else {
+        onVerified({
+          schoolObj,
+          gradeVal,
+          studentIdVal: value,
+          firstNameVal: isParent ? null : profile.firstName,
+          lastNameVal:  isParent ? null : profile.lastName,
+        });
+      } else {
+        setLoading(false);
+        setError("Student ID not found. You can skip and enter your school manually.");
+      }
+    } catch {
       setLoading(false);
-      setError("Student ID not found. You can skip and enter your school manually.");
+      setError("Something went wrong. Please try again.");
     }
   };
 
