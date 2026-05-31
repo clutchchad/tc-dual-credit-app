@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import BottomNav from '../components/BottomNav';
-import { BlueHeader, PageTitle } from '../components/BlueHeader';
 import { PATHWAYS } from '../data/pathways';
 import { SCHOOLS } from '../data/schools';
 import { C, FF } from '../tokens';
@@ -73,7 +72,7 @@ function PathwayList({ school }) {
                 <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 600, color: '#1f2937', textAlign: 'left' }}>
                   {displayName}
                 </span>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EAFF00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#065990" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                   <polyline points="9 18 15 12 9 6"/>
                 </svg>
               </button>
@@ -161,11 +160,6 @@ export default function PathwaysScreen({ onNavigate, tabs }) {
 
   return (
     <div className="tc-screen" style={{ width: '100%', height: '100%', background: C.bg, display: 'flex', flexDirection: 'column' }}>
-      {/* Standard blue header — always Royal Blue */}
-      <BlueHeader>
-        <PageTitle title="Pathways" />
-      </BlueHeader>
-
       {/* School color bar — shown when a school is active */}
       {activeSchool && (
         <SchoolColorBar
