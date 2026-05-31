@@ -146,7 +146,7 @@ export const resources = [
   },
   {
     id: 'financial-planning',
-    type: 'website',
+    type: 'info',
     title: 'Financial Planning',
     desc: 'Understand your payment options and financial planning resources for dual credit.',
     url: 'https://dualcredit.texarkanacollege.edu/resources-for-students-parents/financial-planning/',
