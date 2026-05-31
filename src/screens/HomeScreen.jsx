@@ -14,7 +14,7 @@ import { buildSchedulingUrl } from '../data/buildSchedulingUrl';
 
 const BLUE = '#065990';
 const CARDS_KEY = 'tcdc_v1_cards';
-const DEFAULT_CARD_ORDER = ['acdc', 'pair_deadline_event', 'pair_announce_remind'];
+const DEFAULT_CARD_ORDER = ['acdc', 'pair_all_four'];
 function loadCardOrder() {
   try {
     const saved = JSON.parse(localStorage.getItem(CARDS_KEY));
@@ -286,8 +286,8 @@ function NextDeadlineCard({ onNavigate }) {
   const formatted = item ? formatDate(item.date) : null;
 
   return (
-    <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 3px 14px rgba(6,89,144,.15)' }}>
-      <div style={{ background: BLUE, padding: '13px 15px 11px', position: 'relative' }}>
+    <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 3px 14px rgba(6,89,144,.15)', display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ background: BLUE, padding: '13px 15px 11px', position: 'relative', flex: 1 }}>
         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: LIME }} />
         <div style={{ paddingLeft: 8 }}>
           <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: 'rgba(234,255,0,.85)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 6 }}>
@@ -319,7 +319,7 @@ function NextDeadlineCard({ onNavigate }) {
       </div>
       <button
         onClick={() => onNavigate('events')}
-        style={{ width: '100%', background: '#fff', border: 'none', padding: '7px 15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+        style={{ width: '100%', background: '#fff', border: 'none', padding: '7px 15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}
       >
         <span style={{ fontFamily: FF, fontSize: 11, color: C.text2, fontWeight: 500 }}>View all deadlines</span>
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
@@ -335,8 +335,8 @@ function NextEventCard({ onNavigate }) {
   const formatted = item ? formatDate(item.date) : null;
 
   return (
-    <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 3px 14px rgba(234,255,0,.25)' }}>
-      <div style={{ background: LIME, padding: '13px 15px 11px', position: 'relative' }}>
+    <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 3px 14px rgba(234,255,0,.25)', display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ background: LIME, padding: '13px 15px 11px', position: 'relative', flex: 1 }}>
         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: BLUE }} />
         <div style={{ paddingLeft: 8 }}>
           <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: BLUE, textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 6, opacity: 0.7 }}>
@@ -368,7 +368,7 @@ function NextEventCard({ onNavigate }) {
       </div>
       <button
         onClick={() => onNavigate('events')}
-        style={{ width: '100%', background: '#fff', border: 'none', padding: '7px 15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+        style={{ width: '100%', background: '#fff', border: 'none', padding: '7px 15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}
       >
         <span style={{ fontFamily: FF, fontSize: 11, color: C.text2, fontWeight: 500 }}>View all events</span>
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
@@ -377,100 +377,85 @@ function NextEventCard({ onNavigate }) {
   );
 }
 
-/* ── Compact Announcement Card ── */
-function CompactAnnouncementCard({ item }) {
+/* ── Announcement Card (Event color scheme: Lime bg, Blue accent) ── */
+function AnnouncementCard({ item, onNavigate }) {
   return (
     <div style={{
-      background: '#fff', border: `1px solid ${C.border}`,
-      borderRadius: 14, padding: '12px 14px',
-      boxShadow: '0 1px 6px rgba(0,0,0,.04)',
-      flex: 1, minWidth: 0, boxSizing: 'border-box',
+      borderRadius: 16, overflow: 'hidden',
+      boxShadow: '0 3px 14px rgba(234,255,0,.25)',
+      display: 'flex', flexDirection: 'column', height: '100%',
     }}>
-      <div style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: BLUE, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 5 }}>
-        Announcements
-      </div>
-      {item ? (
-        <>
-          <div style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: C.text, lineHeight: 1.3, marginBottom: 4 }}>
-            {item.title}
+      <div style={{ background: LIME, padding: '13px 15px 11px', position: 'relative', flex: 1 }}>
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: BLUE }} />
+        <div style={{ paddingLeft: 8 }}>
+          <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: BLUE, textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 6, opacity: 0.7 }}>
+            Announcements
           </div>
-          <div style={{ fontFamily: FF, fontSize: 11.5, color: C.text2, lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
-            {item.body}
-          </div>
-        </>
-      ) : (
-        <div style={{ fontFamily: FF, fontSize: 11, color: C.text3, fontStyle: 'italic' }}>No announcements</div>
-      )}
-    </div>
-  );
-}
-
-/* ── Compact Reminder Card (2-col grid) ── */
-function CompactReminderCard({ item }) {
-  return (
-    <div style={{
-      background: '#fff', border: `1px solid ${C.border}`,
-      borderRadius: 14, padding: '10px 11px',
-      boxShadow: '0 1px 6px rgba(0,0,0,.04)',
-      flex: 1, minWidth: 0,
-    }}>
-      <div style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: LIME, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 4 }}>
-        Reminders
-      </div>
-      {item ? (
-        <>
-          <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: C.text, lineHeight: 1.3, marginBottom: 3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-            {item.title}
-          </div>
-          <div style={{ fontFamily: FF, fontSize: 10.5, color: C.text2, lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-            {item.body}
-          </div>
-        </>
-      ) : (
-        <div style={{ fontFamily: FF, fontSize: 11, color: C.text3, fontStyle: 'italic' }}>No reminders</div>
-      )}
-    </div>
-  );
-}
-
-/* ── Compact Notification Card (2-col grid) ── */
-function CompactNotifCard({ notif, onNavigate }) {
-  return (
-    <button
-      onClick={() => onNavigate('notifications')}
-      style={{
-        flex: 1, minWidth: 0, boxSizing: 'border-box',
-        background: '#fff', border: `1px solid ${C.border}`,
-        borderRadius: 14, padding: '12px 11px',
-        boxShadow: '0 1px 6px rgba(0,0,0,.04)',
-        cursor: 'pointer', textAlign: 'left',
-        display: 'flex', flexDirection: 'column', gap: 0,
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
-        <div style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: BLUE, textTransform: 'uppercase', letterSpacing: '1px' }}>
-          Notifications
-        </div>
-        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={C.text3} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
-      </div>
-      {notif ? (
-        <>
-          <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: C.text, lineHeight: 1.3, marginBottom: 3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-            {notif.title}
-          </div>
-          <div style={{ fontFamily: FF, fontSize: 10.5, color: C.text2, lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-            {notif.body}
-          </div>
-          {notif.timestamp && (
-            <div style={{ fontFamily: FF, fontSize: 10, color: C.text3, marginTop: 4 }}>
-              {relTime(notif.timestamp)}
+          {item ? (
+            <div>
+              <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 800, color: DARK, letterSpacing: '-0.3px', lineHeight: 1.25, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                {item.title}
+              </div>
+              <div style={{ fontFamily: FF, fontSize: 11, color: 'rgba(2,43,82,.55)', marginTop: 3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                {item.body}
+              </div>
+            </div>
+          ) : (
+            <div style={{ fontFamily: FF, fontSize: 13, color: 'rgba(2,43,82,.45)', fontStyle: 'italic' }}>
+              No announcements
             </div>
           )}
-        </>
-      ) : (
-        <div style={{ fontFamily: FF, fontSize: 11, color: C.text3, fontStyle: 'italic' }}>No notifications yet</div>
-      )}
-    </button>
+        </div>
+      </div>
+      <button
+        onClick={() => onNavigate('notifications')}
+        style={{ width: '100%', background: '#fff', border: 'none', padding: '7px 15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}
+      >
+        <span style={{ fontFamily: FF, fontSize: 11, color: C.text2, fontWeight: 500 }}>View all announcements</span>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+  );
+}
+
+/* ── Last Notification Card (Deadline color scheme: Blue bg, Lime accent) ── */
+function LastNotifCard({ notif, onNavigate }) {
+  return (
+    <div style={{
+      borderRadius: 16, overflow: 'hidden',
+      boxShadow: '0 3px 14px rgba(6,89,144,.15)',
+      display: 'flex', flexDirection: 'column', height: '100%',
+    }}>
+      <div style={{ background: BLUE, padding: '13px 15px 11px', position: 'relative', flex: 1 }}>
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: LIME }} />
+        <div style={{ paddingLeft: 8 }}>
+          <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: 'rgba(234,255,0,.85)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 6 }}>
+            Last Notification
+          </div>
+          {notif ? (
+            <div>
+              <div style={{ fontFamily: FF, fontSize: 15, fontWeight: 800, color: '#fff', letterSpacing: '-0.3px', lineHeight: 1.25, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                {notif.title}
+              </div>
+              <div style={{ fontFamily: FF, fontSize: 11, color: 'rgba(255,255,255,.5)', marginTop: 3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                {notif.body}
+              </div>
+            </div>
+          ) : (
+            <div style={{ fontFamily: FF, fontSize: 13, color: 'rgba(255,255,255,.45)', fontStyle: 'italic' }}>
+              No notifications yet
+            </div>
+          )}
+        </div>
+      </div>
+      <button
+        onClick={() => onNavigate('notifications')}
+        style={{ width: '100%', background: '#fff', border: 'none', padding: '7px 15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}
+      >
+        <span style={{ fontFamily: FF, fontSize: 11, color: C.text2, fontWeight: 500 }}>View all notifications</span>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
   );
 }
 
@@ -658,19 +643,14 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
     switch (id) {
       case 'acdc':
         return acdc ? <AcdcStrip acdc={acdc} onNavigate={onNavigate} /> : null;
-      case 'pair_deadline_event':
-        return (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <NextDeadlineCard onNavigate={onNavigate} />
-            <NextEventCard onNavigate={onNavigate} />
-          </div>
-        );
-      case 'pair_announce_remind': {
+      case 'pair_all_four': {
         const latestAnnounce = timeline.find(i => i.category === 'Announcements' || i.category === 'Announcement');
         return (
-          <div style={{ display: 'flex', gap: 10 }}>
-            <CompactAnnouncementCard item={latestAnnounce} />
-            <CompactNotifCard notif={latestNotif} onNavigate={onNavigate} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: 'auto auto', gap: 10, alignItems: 'stretch' }}>
+            <NextDeadlineCard onNavigate={onNavigate} />
+            <NextEventCard onNavigate={onNavigate} />
+            <AnnouncementCard item={latestAnnounce} onNavigate={onNavigate} />
+            <LastNotifCard notif={latestNotif} onNavigate={onNavigate} />
           </div>
         );
       }
