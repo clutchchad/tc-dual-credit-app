@@ -159,7 +159,7 @@ function TranscriptCard() {
       {/* Request button — lime outlined */}
       <button
         onClick={() => window.open(
-          'https://www.texarkanacollege.edu/academics/registrar/request-transcript/',
+          'https://tsorder.studentclearinghouse.org/school/select',
           '_blank', 'noopener,noreferrer'
         )}
         style={{
@@ -187,6 +187,9 @@ function TranscriptCard() {
         </span>
       </button>
 
+      <p style={{ fontFamily: FF, fontSize: 11, color: C.text3, textAlign: 'center', lineHeight: 1.5, marginBottom: 6 }}>
+        Search for Texarkana College when prompted to select your school.
+      </p>
       <p style={{ fontFamily: FF, fontSize: 11, color: C.text3, textAlign: 'center', lineHeight: 1.5 }}>
         Transcript requests may take 3–5 business days.
       </p>
