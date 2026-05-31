@@ -26,9 +26,6 @@ function PathwayList({ school, onBack }) {
             </svg>
           </button>
         )}
-        <span style={{ fontFamily: FF, fontSize: 18, fontWeight: 800, color: school.textColor || '#ffffff' }}>
-          {school.name}
-        </span>
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 80px' }}>
@@ -37,7 +34,7 @@ function PathwayList({ school, onBack }) {
             Pathway Plans at {school.name}
           </h2>
           <p style={{ fontFamily: FF, fontSize: 13, color: '#6b7280', lineHeight: 1.6 }}>
-            Tap any pathway to open the full Early Enrollment Pathway Plan PDF.
+            Tap any pathway to open the full Early Enrollment Pathway Plan.
           </p>
         </div>
 
