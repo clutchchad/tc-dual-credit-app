@@ -378,7 +378,7 @@ function CompletedCoursesSection({ profile, studentId, firstName, lastName, grad
         })}
         style={{
           width: '100%', height: 46, borderRadius: 13,
-          background: 'transparent', border: `2px solid ${BLUE}`,
+          background: LIME, border: 'none',
           cursor: 'pointer', boxSizing: 'border-box',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           marginBottom: 8,
@@ -391,12 +391,12 @@ function CompletedCoursesSection({ profile, studentId, firstName, lastName, grad
         onTouchEnd={e   => e.currentTarget.style.opacity = '1'}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-          stroke={DARK} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          stroke={BLUE} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
           <polyline points="7 10 12 15 17 10"/>
           <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
-        <span style={{ fontFamily: FF, fontSize: 13.5, fontWeight: 800, color: DARK }}>
+        <span style={{ fontFamily: FF, fontSize: 13.5, fontWeight: 800, color: BLUE }}>
           Download Unofficial Transcript
         </span>
       </button>
