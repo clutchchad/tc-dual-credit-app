@@ -14,7 +14,10 @@ export default function PathwaysScreen({ onNavigate, tabs }) {
     catch { return {}; }
   }, []);
 
-  const schoolId = stored.school || null;
+  const rawSchool = stored.school || null;
+  const schoolId = rawSchool
+    ? (typeof rawSchool === 'object' ? rawSchool.id : rawSchool)
+    : null;
   const school = useMemo(() => {
     if (!schoolId) return null;
     return SCHOOLS.find(s => s.id === schoolId);
