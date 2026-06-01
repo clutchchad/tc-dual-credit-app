@@ -99,39 +99,223 @@ const DUMMY_EVENTS = [
   { id: 'e3', date: 'Aug 18',  title: 'Fall Semester Kickoff'            },
 ];
 
+// ── Sent-notifications dummy data ────────────────────────────────────────────
+
+const SENT_NOTIFS = [
+  {
+    id: 'n1',
+    message: 'Fall 2026 dual credit registration is now open. Log in to the TC portal to confirm your course selections.',
+    school: 'Texas High School',
+    audience: 'Students',
+    sentAt: 'Today, 9:02 AM',
+  },
+  {
+    id: 'n2',
+    message: 'Reminder: TSI Assessment results must be submitted by June 20. Contact your ACDC if you have questions.',
+    school: 'Pleasant Grove High School',
+    audience: 'Students',
+    sentAt: 'Yesterday, 3:45 PM',
+  },
+  {
+    id: 'n3',
+    message: 'Your student has upcoming dual credit deadlines this month. Please review the Important Dates section in the app.',
+    school: 'Texas High School',
+    audience: 'Parents',
+    sentAt: 'Jun 28, 11:00 AM',
+  },
+  {
+    id: 'n4',
+    message: 'Textbook waiver requests for TC Promise students are due by June 30. Students should visit the Financial Aid office.',
+    school: 'Liberty-Eylau High School',
+    audience: 'All',
+    sentAt: 'Jun 27, 8:30 AM',
+  },
+  {
+    id: 'n5',
+    message: 'ACDC Summer Training session scheduled for July 8. All counselors should confirm attendance by July 1.',
+    school: 'All Schools',
+    audience: 'All',
+    sentAt: 'Jun 25, 2:15 PM',
+  },
+  {
+    id: 'n6',
+    message: 'Fall 2026 dual credit application deadline is June 30. Ensure all students have completed their applications.',
+    school: 'New Boston High School',
+    audience: 'Students',
+    sentAt: 'Jun 24, 10:00 AM',
+  },
+  {
+    id: 'n7',
+    message: 'Partner School Orientation is scheduled for August 5. Details will be shared one week before the event.',
+    school: 'All Schools',
+    audience: 'All',
+    sentAt: 'Jun 22, 9:00 AM',
+  },
+];
+
+const AUDIENCE_STYLE = {
+  'Students': { bg: 'rgba(6,89,144,.10)',  color: BLUE },
+  'Parents':  { bg: 'rgba(234,255,0,.35)', color: DARK },
+  'All':      { bg: 'rgba(6,89,144,.07)',  color: DARK },
+};
+
+// ── Sent-notifications history sheet ─────────────────────────────────────────
+
+function NotifsHistorySheet({ onClose }) {
+  return (
+    /* Overlay — tap outside to close */
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0,
+        background: 'rgba(0,0,0,.45)',
+        zIndex: 300,
+        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+      }}
+    >
+      {/* Sheet — stop propagation so tapping inside doesn't close */}
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: '#fff',
+          borderRadius: '22px 22px 0 0',
+          boxShadow: '0 -8px 40px rgba(0,0,0,.18)',
+          display: 'flex', flexDirection: 'column',
+          maxHeight: '82vh',
+        }}
+      >
+        {/* Drag handle */}
+        <div style={{
+          width: 40, height: 4, borderRadius: 2,
+          background: C.border, margin: '14px auto 0',
+          flexShrink: 0,
+        }} />
+
+        {/* Header row */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '16px 20px 12px',
+          flexShrink: 0,
+          borderBottom: `1px solid ${C.border}`,
+        }}>
+          <div>
+            <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: C.text3,
+              textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 2 }}>
+              Last Notifications Sent
+            </div>
+            <div style={{ fontFamily: FF, fontSize: 16, fontWeight: 900, color: DARK,
+              letterSpacing: '-0.3px' }}>
+              Sent History
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: C.bg, border: `1px solid ${C.border}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', flexShrink: 0,
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+              stroke={C.text3} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* Scrollable list */}
+        <div style={{
+          overflowY: 'auto',
+          padding: '8px 16px',
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
+        }}>
+          {SENT_NOTIFS.map((n, i) => {
+            const aud = AUDIENCE_STYLE[n.audience] || AUDIENCE_STYLE['All'];
+            return (
+              <div
+                key={n.id}
+                style={{
+                  padding: '14px 0',
+                  borderBottom: i < SENT_NOTIFS.length - 1 ? `1px solid ${C.border}` : 'none',
+                }}
+              >
+                {/* Top row: school + time */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, gap: 8 }}>
+                  <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                    {n.school}
+                  </span>
+                  <span style={{ fontFamily: FF, fontSize: 10.5, color: C.text3, flexShrink: 0 }}>
+                    {n.sentAt}
+                  </span>
+                </div>
+                {/* Message */}
+                <div style={{ fontFamily: FF, fontSize: 13, color: C.text, lineHeight: 1.5, marginBottom: 8 }}>
+                  {n.message}
+                </div>
+                {/* Audience chip */}
+                <span style={{
+                  fontFamily: FF, fontSize: 10, fontWeight: 700,
+                  background: aud.bg, color: aud.color,
+                  borderRadius: 20, padding: '3px 9px', letterSpacing: '0.3px',
+                }}>
+                  {n.audience}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Notifications Sent Card ───────────────────────────────────────────────────
 
 function NotifsSentCard() {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Card style={{ padding: '18px 16px', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 14 }}>
-      {/* Green checkmark circle */}
-      <div style={{
-        width: 48, height: 48, borderRadius: 14, flexShrink: 0,
-        background: 'rgba(22,163,74,.10)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-          stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20 6L9 17l-5-5"/>
-        </svg>
-      </div>
-      {/* Count + label */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: C.text3,
-          textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 2 }}>
-          Last Push
-        </div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-          <span style={{ fontFamily: FF, fontSize: 26, fontWeight: 900, color: '#16a34a',
-            letterSpacing: '-1px', lineHeight: 1 }}>
-            142
-          </span>
-          <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 600, color: C.text2 }}>
-            notifications sent successfully
-          </span>
-        </div>
-      </div>
-    </Card>
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        style={{
+          width: '100%', background: 'none', border: 'none', cursor: 'pointer',
+          padding: 0, marginBottom: 12, textAlign: 'left',
+        }}
+      >
+        <Card style={{ padding: '18px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
+          {/* Green checkmark circle */}
+          <div style={{
+            width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+            background: 'rgba(22,163,74,.10)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+              stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6L9 17l-5-5"/>
+            </svg>
+          </div>
+          {/* Label + chevron */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: C.text3,
+              textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 3 }}>
+              Last Notifications Sent
+            </div>
+            <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: DARK }}>
+              View sent history
+            </div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke={C.text3} strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </Card>
+      </button>
+
+      {open && <NotifsHistorySheet onClose={() => setOpen(false)} />}
+    </>
   );
 }
 
