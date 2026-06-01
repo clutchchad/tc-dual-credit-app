@@ -67,7 +67,7 @@ function useWeather(schoolId) {
       + `&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m`
       + `&hourly=temperature_2m,weathercode,precipitation_probability`
       + `&temperature_unit=fahrenheit&wind_speed_unit=mph`
-      + `&timezone=America%2FChicago&forecast_days=1`;
+      + `&timezone=America%2FChicago&forecast_days=2`;
 
     let cancelled = false;
     setLoading(true);
