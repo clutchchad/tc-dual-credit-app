@@ -3,13 +3,11 @@ import { FF } from '../tokens';
 
 export default function SplashScreen({ onComplete }) {
   const [visible, setVisible] = useState(false);
-  const [done,    setDone]    = useState(false);
 
   useEffect(() => {
     const t1 = setTimeout(() => setVisible(true), 80);
-    const t2 = setTimeout(() => setDone(true), 2500);
-    const t3 = setTimeout(onComplete, 2900);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    const t2 = setTimeout(onComplete, 2900);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
   return (
@@ -58,23 +56,6 @@ export default function SplashScreen({ onComplete }) {
         Earn college credits while in high school.
       </p>
 
-      {/* Loading dots */}
-      <div style={{ display: 'flex', gap: 8, opacity: visible ? 1 : 0, transition: 'opacity .6s .7s' }}>
-        {[0, 1, 2].map(i => (
-          <div
-            key={i}
-            style={{
-              width: 8, height: 8, borderRadius: '50%',
-              background: '#EAFF00',
-              animation:  done ? 'none' : `tcPulse 1.6s ${i * 0.22}s infinite`,
-              opacity:    done ? 1 : undefined,
-              transform:  done ? 'scale(1)' : undefined,
-              transition: done ? 'opacity .2s, transform .2s' : undefined,
-              boxShadow:  done ? '0 0 8px rgba(234,255,0,.9), 0 0 20px rgba(234,255,0,.4)' : undefined,
-            }}
-          />
-        ))}
-      </div>
     </div>
   );
 }
