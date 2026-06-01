@@ -89,6 +89,7 @@ export default function App() {
         saveStored({ role: 'guest' });
         go('home');
       }}
+      onAdminTap={() => go('acdc_login')}
     />
   );
 
@@ -98,7 +99,6 @@ export default function App() {
       case 'splash':
         return (
           <SplashScreen
-            onAdminTap={() => go('acdc_login')}
             onComplete={() => {
               recordAppOpen();
               const s = getStored();

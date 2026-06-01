@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { C, FF } from '../tokens';
 
-export default function OnboardRole({ onSelect, onGuestSelect }) {
+export default function OnboardRole({ onSelect, onGuestSelect, onAdminTap }) {
   const [picked, setPicked] = useState(null);
   const choose = (r) => { setPicked(r); setTimeout(() => onSelect(r), 180); };
 
@@ -44,7 +44,7 @@ export default function OnboardRole({ onSelect, onGuestSelect }) {
   return (
     <div className="tc-screen" style={{ width:'100%', height:'100%', background:'#fff', display:'flex', flexDirection:'column', paddingTop:'env(safe-area-inset-top, 0px)' }}>
       <div style={{ flex:1, overflow:'auto', display:'flex', flexDirection:'column', alignItems:'center' }}>
-      <div style={{ width:'100%', maxWidth:480, padding:'20px 22px 40px' }}>
+      <div style={{ width:'100%', maxWidth:480, padding:'20px 22px 0' }}>
         <div style={{ fontFamily:FF, fontSize:12, fontWeight:700, color:C.blue, textTransform:'uppercase', letterSpacing:'1.8px', marginBottom:10 }}>Step 1 of 3</div>
         <h1 style={{ fontFamily:FF, fontSize:30, fontWeight:900, color:C.text, letterSpacing:'-1px', lineHeight:1.1, marginBottom:6 }}>Who are you?</h1>
         <p style={{ fontFamily:FF, fontSize:14, color:C.text2, marginBottom:30 }}>We'll personalize your experience.</p>
@@ -84,7 +84,36 @@ export default function OnboardRole({ onSelect, onGuestSelect }) {
             </span>
           </button>
         </div>
+
+        {/* Admin link — sits just above the footer */}
+        <div style={{ textAlign:'center', marginTop:24, paddingBottom:16 }}>
+          <button
+            onClick={() => onAdminTap?.()}
+            style={{ background:'none', border:'none', cursor:'pointer', padding:'6px 12px' }}
+          >
+            <span style={{ fontFamily:FF, fontSize:12, fontWeight:600, color:C.text3, opacity:0.6, letterSpacing:'0.5px' }}>
+              Admin
+            </span>
+          </button>
+        </div>
       </div>
+      </div>
+
+      {/* Standard blue logo footer — matches BottomNav footer */}
+      <div style={{
+        background: '#065990',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '2px 0',
+        paddingBottom: 'calc(2px + env(safe-area-inset-bottom, 0px))',
+        flexShrink: 0,
+      }}>
+        <img
+          src="/tcdclogo2.png"
+          alt="TC Dual Credit"
+          style={{ height:32, width:'auto', display:'block', opacity:0.9 }}
+        />
       </div>
     </div>
   );
