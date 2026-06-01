@@ -242,7 +242,7 @@ export default function AcdcProfileTab({ acdc }) {
       }}>
 
         {/* Photo */}
-        <CoachPhoto photo={acdc?.photo || '/fakeacdc.png'} name={acdc?.name} size={100} />
+        <CoachPhoto photo={acdc?.photo || '/fakeacdc.png'} name={acdc?.name} size={120} />
 
         {/* Name */}
         <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: DARK,
