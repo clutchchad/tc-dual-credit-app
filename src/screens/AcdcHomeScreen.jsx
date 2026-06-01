@@ -12,6 +12,7 @@ import BottomNav from '../components/BottomNav';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
 import AcdcProfileTab   from './AcdcProfileTab';
 import AcdcResourcesTab from './AcdcResourcesTab';
+import AcdcMoreTab      from './AcdcMoreTab';
 
 const BLUE = '#065990';
 const LIME = '#EAFF00';
@@ -213,7 +214,7 @@ export default function AcdcHomeScreen({ acdc, onSignOut }) {
       case 'resources':
         return <AcdcResourcesTab />;
       case 'more':
-        return <TabPlaceholder title="More" icon={TAB_ICONS.more} />;
+        return <AcdcMoreTab onSignOut={onSignOut} />;
       default:
         return <TabHome acdc={acdc} onSignOut={onSignOut} />;
     }
