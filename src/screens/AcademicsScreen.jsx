@@ -321,14 +321,14 @@ function AcademicHistoryAccordion({ history }) {
   );
 }
 
-function CompletedCoursesSection({ profile, studentId, firstName, lastName, grade }) {
+function CompletedCoursesSection({ profile, studentId, firstName, lastName, grade, schoolNameOverride }) {
   const history = profile.transcriptHistory || [];
   const totalHours = history.reduce((sum, s) => sum + s.hoursEarned, 0);
   const cumulativeGpa = profile.gpa ?? null;
 
   const stored = readStored();
   const schoolObj = stored.school || null;
-  const schoolName = schoolObj?.name || profile.highSchool || null;
+  const schoolName = schoolNameOverride || schoolObj?.name || profile.highSchool || null;
 
   return (
     <div style={{ marginTop: 14 }}>
@@ -673,6 +673,101 @@ function AcademicsContent({ profile, isParent, onNavigate, tabs, isTablet }) {
       </div>
 
       <BottomNav active="academics" onNavigate={onNavigate} tabs={tabs} />
+    </div>
+  );
+}
+
+// ── AcademicsBody — exported for ACDC lookup tab ─────────────────────────────
+// Renders the full academic progress content for a given profile.
+// Takes all display data as props — no localStorage reads, no nav wrapper.
+
+export function AcademicsBody({ profile, firstName, lastName, studentId, grade, schoolName, schoolColor, schoolText }) {
+  const GRADE_WORD = { 9: 'Freshman', 10: 'Sophomore', 11: 'Junior', 12: 'Senior' };
+  const resolvedGrade  = grade      || (profile.grade ? GRADE_WORD[profile.grade] || '' : '');
+  const resolvedFirst  = firstName  || profile.firstName || '';
+  const resolvedLast   = lastName   || profile.lastName  || '';
+  const resolvedId     = studentId  || profile.studentId || '';
+  const resolvedSchool = schoolName || profile.highSchool || null;
+  const resolvedColor  = schoolColor || BLUE;
+  const resolvedText   = schoolText  || '#fff';
+
+  const creditHours = {
+    earned:  profile.creditHoursEarned      ?? 0,
+    pending: profile.creditHoursPending     ?? 0,
+    total:   profile.creditHoursTotal       ?? 0,
+    target:  profile.associatesDegreeTarget ?? 60,
+  };
+
+  return (
+    <div>
+      {/* Identity card */}
+      <div style={{
+        background: BLUE, borderRadius: 20,
+        boxShadow: '0 4px 18px rgba(6,89,144,.30)',
+        padding: '18px 18px 16px',
+        marginBottom: 14,
+      }}>
+        <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.2, marginBottom: 4 }}>
+          {resolvedFirst} {resolvedLast}
+        </div>
+        {resolvedId && (
+          <div style={{ fontFamily: 'monospace', fontSize: 11.5, fontWeight: 700, color: 'rgba(255,255,255,.75)', letterSpacing: '0.4px', marginBottom: 10 }}>
+            {resolvedId}
+          </div>
+        )}
+        {(resolvedGrade || resolvedSchool) && (
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {resolvedGrade && resolvedSchool ? (
+              <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: resolvedText, background: resolvedColor, borderRadius: 20, padding: '3px 10px' }}>
+                {resolvedSchool} · {resolvedGrade}
+              </span>
+            ) : resolvedGrade ? (
+              <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE, background: 'rgba(234,255,0,.85)', borderRadius: 20, padding: '3px 10px' }}>
+                {resolvedGrade}
+              </span>
+            ) : (
+              <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: resolvedText, background: resolvedColor, borderRadius: 20, padding: '3px 10px' }}>
+                {resolvedSchool}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Program Progress */}
+      <div style={{ marginTop: 14 }}>
+        <SectionHeading label="Program Progress" />
+        <CreditHoursSection
+          earned={creditHours.earned}
+          pending={creditHours.pending}
+          total={creditHours.total}
+          target={creditHours.target}
+        />
+      </div>
+
+      {/* Current Courses */}
+      <div style={{ marginTop: 14 }}>
+        <SectionHeading label="Current Courses" />
+        {(profile.currentCourses || []).length > 0
+          ? (profile.currentCourses).map(c => <CourseCard key={c.courseId} course={c} />)
+          : <p style={{ fontFamily: FF, fontSize: 13, color: C.text3, textAlign: 'center', padding: '12px 0' }}>No current courses on record.</p>
+        }
+      </div>
+
+      {/* Completed Courses + GPA stats + transcript download */}
+      <CompletedCoursesSection
+        profile={profile}
+        studentId={resolvedId}
+        firstName={resolvedFirst}
+        lastName={resolvedLast}
+        grade={resolvedGrade}
+        schoolNameOverride={resolvedSchool}
+      />
+
+      {/* Official Transcript */}
+      <div style={{ marginTop: 14 }}>
+        <TranscriptCard />
+      </div>
     </div>
   );
 }

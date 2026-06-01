@@ -176,3 +176,9 @@ const mockProfiles = {
 export const getStudentProfile = async (tcId = '123456') => {
   return mockProfiles[String(tcId)] || alexSosa;
 };
+
+// ACDC lookup — returns the profile for a given TC ID, or null if not found.
+// Unlike getStudentProfile, this does NOT fall back to alexSosa for unknown IDs.
+export const lookupStudentById = (tcId) => {
+  return mockProfiles[String(tcId)] || null;
+};

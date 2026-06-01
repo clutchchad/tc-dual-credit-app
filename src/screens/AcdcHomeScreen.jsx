@@ -14,6 +14,7 @@ import Card from '../components/Card';
 import AcdcProfileTab, { QrPlaceholder } from './AcdcProfileTab';
 import AcdcResourcesTab from './AcdcResourcesTab';
 import AcdcMoreTab      from './AcdcMoreTab';
+import AcdcLookupTab    from './AcdcLookupTab';
 
 const BLUE = '#065990';
 const LIME = '#EAFF00';
@@ -460,7 +461,7 @@ export default function AcdcHomeScreen({ acdc, onSignOut }) {
       case 'profile':
         return <AcdcProfileTab acdc={acdc} />;
       case 'lookup':
-        return <TabPlaceholder title="Student Look Up" icon={TAB_ICONS.lookup} />;
+        return <AcdcLookupTab />;
       case 'resources':
         return <AcdcResourcesTab />;
       case 'more':
