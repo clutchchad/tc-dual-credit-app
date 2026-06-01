@@ -143,25 +143,22 @@ function SchoolPicker({ onSelect, isTablet }) {
             key={school.id}
             onClick={() => onSelect(school)}
             style={{
-              width: '100%', background: '#fff', border: `1px solid ${C.border}`,
+              width: '100%', background: school.color, border: `1px solid ${school.color}`,
               borderRadius: 12, padding: '16px 14px', marginBottom: isTablet ? 0 : 10,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               cursor: 'pointer', transition: 'box-shadow .15s',
-              boxShadow: '0 1px 3px rgba(0,0,0,.06)',
+              boxShadow: '0 1px 3px rgba(0,0,0,.12)',
             }}
-            onMouseDown={e => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,.1)'; }}
-            onMouseUp={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,.06)'; }}
-            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,.06)'; }}
-            onTouchStart={e => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,.1)'; }}
-            onTouchEnd={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,.06)'; }}
+            onMouseDown={e => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,.22)'; }}
+            onMouseUp={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,.12)'; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,.12)'; }}
+            onTouchStart={e => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,.22)'; }}
+            onTouchEnd={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,.12)'; }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: school.color, flexShrink: 0 }} />
-              <span style={{ fontFamily: FF, fontSize: isTablet ? 16 : 15, fontWeight: 600, color: '#1f2937' }}>
-                {school.name}
-              </span>
-            </div>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EAFF00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <span style={{ fontFamily: FF, fontSize: isTablet ? 16 : 15, fontWeight: 600, color: school.textColor }}>
+              {school.name}
+            </span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={school.textColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
               <polyline points="9 18 15 12 9 6"/>
             </svg>
           </button>
