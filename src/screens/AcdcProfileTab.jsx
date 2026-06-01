@@ -235,9 +235,9 @@ export default function AcdcProfileTab({ acdc }) {
       <div style={{
         flex: 1, overflow: 'hidden',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        padding: '0 20px 0',
+        padding: '13px 20px 0',
         paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
-        marginTop: -6,
+        marginTop: 0,
         textAlign: 'center',
       }}>
 
