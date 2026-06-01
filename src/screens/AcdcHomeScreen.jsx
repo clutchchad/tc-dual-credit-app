@@ -385,29 +385,6 @@ function AnnouncementsCard() {
   );
 }
 
-// ── QR Code card (home-sized) ─────────────────────────────────────────────────
-
-function HomeQrCard() {
-  return (
-    <Card style={{ padding: '16px 16px 18px', marginBottom: 12, textAlign: 'center' }}>
-      <div style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: BLUE,
-        textTransform: 'uppercase', letterSpacing: '1.1px', marginBottom: 3 }}>
-        Your Contact QR
-      </div>
-      <div style={{ fontFamily: FF, fontSize: 11, color: C.text3, marginBottom: 14, lineHeight: 1.5 }}>
-        Students can scan this to apply for Dual Credit
-      </div>
-      <div style={{
-        display: 'inline-flex', borderRadius: 10, overflow: 'hidden',
-        boxShadow: '0 2px 12px rgba(0,0,0,.08)',
-        border: `1.5px solid ${C.border}`,
-      }}>
-        <QrPlaceholder size={180} />
-      </div>
-    </Card>
-  );
-}
-
 // ── Accordion section (Deadlines / Events) ────────────────────────────────────
 
 function AccordionSection({ title, icon, items, accentColor = BLUE }) {
@@ -520,7 +497,6 @@ function TabHome({ acdc, onSignOut }) {
 
         <NotifsSentCard />
         <AnnouncementsCard />
-        <HomeQrCard />
 
         <AccordionSection
           title="Deadlines"
