@@ -235,14 +235,14 @@ export default function AcdcProfileTab({ acdc }) {
       <div style={{
         flex: 1, overflow: 'hidden',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        padding: '20px 20px 0',
+        padding: '32px 20px 0',
         paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
-        marginTop: -24,
+        marginTop: 0,
         textAlign: 'center',
       }}>
 
         {/* Photo */}
-        <CoachPhoto photo={acdc?.photo || '/fakeacdc.png'} name={acdc?.name} size={80} />
+        <CoachPhoto photo={acdc?.photo || '/fakeacdc.png'} name={acdc?.name} size={100} />
 
         {/* Name */}
         <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: DARK,
