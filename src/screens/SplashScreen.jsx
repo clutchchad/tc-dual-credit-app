@@ -36,16 +36,16 @@ export default function SplashScreen({ onComplete }) {
         transition: 'all .8s cubic-bezier(.34,1.56,.64,1)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 44,
       }}>
-        <div style={{
-          width: 90, height: 90, borderRadius: 26,
-          background: 'rgba(255,255,255,.1)', backdropFilter: 'blur(20px)',
-          border: '1.5px solid rgba(255,255,255,.18)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          marginBottom: 26,
-          boxShadow: '0 12px 40px rgba(0,0,0,.3),0 0 60px rgba(234,255,0,.08)',
-        }}>
-          <span style={{ fontFamily: FF, fontSize: 38, fontWeight: 900, color: '#fff', letterSpacing: '-2px' }}>TC</span>
-        </div>
+        <img
+          src="/tcdclogo2.png"
+          alt="TC Dual Credit"
+          style={{
+            width: 120, height: 120,
+            objectFit: 'contain',
+            marginBottom: 26,
+            filter: 'drop-shadow(0 12px 40px rgba(0,0,0,.35)) drop-shadow(0 0 40px rgba(234,255,0,.12))',
+          }}
+        />
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.5)', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: 10 }}>
             Texarkana College
