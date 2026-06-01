@@ -242,7 +242,7 @@ export default function AcdcProfileTab({ acdc }) {
       }}>
 
         {/* Photo */}
-        <CoachPhoto photo={acdc?.photo || '/fakeacdc.png'} name={acdc?.name} size={120} />
+        <CoachPhoto photo={acdc?.photo || '/fakeacdc.png'} name={acdc?.name} size={148} />
 
         {/* Name */}
         <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: DARK,
@@ -275,12 +275,12 @@ export default function AcdcProfileTab({ acdc }) {
         {/* Divider */}
         <div style={{ width: '100%', height: 1, background: C.border, marginBottom: 14 }} />
 
-        {/* Share buttons */}
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* Share buttons — all sized to fit "Send Appointment Form" */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
           {SHARE_ITEMS.map(item => (
             <button key={item.id} onClick={() => setActiveItem(item)}
               style={{
-                width: '100%', height: 42, borderRadius: 12, border: `1.5px solid ${C.border}`,
+                width: 264, height: 42, borderRadius: 12, border: `1.5px solid ${C.border}`,
                 background: '#fff', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 boxShadow: '0 1px 4px rgba(0,0,0,.06)', transition: 'box-shadow .12s',
