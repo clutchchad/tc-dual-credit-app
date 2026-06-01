@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { C, FF } from '../tokens';
 import BottomNav from '../components/BottomNav';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
+import AcdcProfileTab from './AcdcProfileTab';
 
 const BLUE = '#065990';
 const LIME = '#EAFF00';
@@ -205,7 +206,7 @@ export default function AcdcHomeScreen({ acdc, onSignOut }) {
       case 'home':
         return <TabHome acdc={acdc} onSignOut={onSignOut} />;
       case 'profile':
-        return <TabPlaceholder title="Profile" icon={TAB_ICONS.profile} />;
+        return <AcdcProfileTab acdc={acdc} />;
       case 'lookup':
         return <TabPlaceholder title="Student Look Up" icon={TAB_ICONS.lookup} />;
       case 'resources':
