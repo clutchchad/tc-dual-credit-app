@@ -4,7 +4,8 @@
 // The shape of mockStudentProfile defines the data contract — do not change field names.
 // App engagement data (streaks, weekend opens) stays in localStorage — never in this file.
 
-const mockStudentProfile = {
+// ── Alex Sosa (demo student, TC ID 123456) ────────────────────────────────────
+const alexSosa = {
   firstName: "Alex",
   lastName: "Sosa",
   studentId: null,
@@ -94,6 +95,84 @@ const mockStudentProfile = {
   graduationYear: '2028',
 };
 
-export const getStudentProfile = async () => {
-  return mockStudentProfile;
+// ── Frank Lopez (demo student, TC ID 654321) ──────────────────────────────────
+const frankLopez = {
+  firstName: 'Frank',
+  lastName: 'Lopez',
+  studentId: '654321',
+  email: 'frank.lopez@email.com',
+  tcEmail: 'f.lopez654321@tc.edu',
+  parentEmail: 'mlopez@email.com',
+  highSchool: 'Pleasant Grove High School',
+  grade: 9,
+  role: 'student',
+
+  enrollmentStatus: 'active',
+  applicationSubmitted: true,
+  enrolledInFirstClass: true,
+  currentSemester: 'Spring 2026',
+  currentCourses: [
+    { courseId: 'MATH-1314', name: 'College Algebra',       hours: 3, status: 'enrolled', grade: 'B-', numericGrade: 81 },
+    { courseId: 'BIOL-1406', name: 'Environmental Biology', hours: 4, status: 'enrolled', grade: 'C+', numericGrade: 78 },
+  ],
+
+  creditHoursEarned: 6,
+  creditHoursPending: 7,
+  creditHoursTotal: 13,
+  associatesDegreeTarget: 60,
+
+  milestones: {
+    applicationSubmitted: true,
+    enrolledInFirstClass: true,
+    reached12Hours: false,
+    reached15Hours: false,
+    reached30Hours: false,
+    reached45Hours: false,
+    onTrackForAssociates: false,
+    tcPromiseEligible: false,
+  },
+
+  transferIntentDeclared: false,
+  transferTarget: null,
+  graduationSemester: null,
+  articulationReminderSent: false,
+
+  tcPromiseEligible: false,
+  tcPromiseStatus: null,
+
+  pathway: 'Health Sciences',
+  pathwayStatus: 'On Track',
+
+  transcriptHistory: [
+    {
+      semester: 'Fall 2025',
+      courses: [
+        { courseId: 'ENGL-1301', name: 'Composition I',  hours: 3, grade: 'B',  numericGrade: 83, points: 9.0 },
+        { courseId: 'HIST-1301', name: 'US History I',   hours: 3, grade: 'C+', numericGrade: 78, points: 6.9 },
+      ],
+      gpa: 2.65,
+      hoursEarned: 6,
+    },
+  ],
+
+  phone: '903-555-0182',
+  address: {
+    street: '412 Meadow Creek Dr',
+    city: 'Texarkana',
+    state: 'TX',
+    zip: '75501',
+  },
+  dateOfBirth: '09/14/2011',
+  gpa: 2.7,
+  graduationYear: '2029',
+};
+
+// ── Lookup map — keyed by TC ID (string) ─────────────────────────────────────
+const mockProfiles = {
+  '123456': alexSosa,
+  '654321': frankLopez,
+};
+
+export const getStudentProfile = async (tcId = '123456') => {
+  return mockProfiles[String(tcId)] || alexSosa;
 };

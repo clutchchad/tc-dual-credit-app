@@ -685,7 +685,8 @@ export default function AcademicsScreen({ role, onNavigate, tabs }) {
 
   useEffect(() => {
     if (role === 'guest') return;
-    getStudentProfile().then(setProfile);
+    const { studentId } = readStored();
+    getStudentProfile(studentId).then(setProfile);
   }, [role]);
 
   if (role === 'guest') {

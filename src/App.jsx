@@ -143,6 +143,22 @@ export default function App() {
               });
               go('onboard_confirm');
             }}
+            onAcdcVerified={({ tcIdVal, firstNameVal, lastNameVal }) => {
+              setRole('acdc');
+              setStudentId(tcIdVal);
+              setFirstName(firstNameVal);
+              setLastName(lastNameVal);
+              setIsJenzabarVerified(true);
+              saveStored({
+                ...getStored(),
+                role: 'acdc',
+                studentId: tcIdVal,
+                firstName: firstNameVal,
+                lastName: lastNameVal,
+                isJenzabarVerified: true,
+              });
+              go('onboard_confirm');
+            }}
             onSkip={() => go('onboard_school')}
             onBack={() => go('onboard_role')}
           />
@@ -216,6 +232,9 @@ export default function App() {
         const resolvedRole = role || liveStored.role;
         if (resolvedRole === 'guest') {
           return <HomeScreen role="guest" school={null} grade={null} {...guestNavProps} />;
+        }
+        if (resolvedRole === 'acdc') {
+          return <HomeScreen role="acdc" school={null} grade={null} {...guestNavProps} />;
         }
         return resolvedRole && school ? (
           <HomeScreen role={resolvedRole} school={school} grade={grade} {...navProps} />

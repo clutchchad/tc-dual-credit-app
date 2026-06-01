@@ -15,6 +15,15 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
   // Role row — always shown, special handling for verified students showing their name
   const isVerifiedStudent = role === 'student' && isJenzabarVerified;
   const isVerifiedParent = role === 'parent' && isJenzabarVerified;
+  const isVerifiedAcdc = role === 'acdc' && isJenzabarVerified;
+
+  const roleLabel = (() => {
+    if (isVerifiedStudent || isVerifiedAcdc) return `${firstName} ${lastName}`;
+    if (role === 'student')  return 'Student';
+    if (role === 'parent')   return 'Parent/Guardian';
+    if (role === 'acdc')     return 'Academic Coach for Dual Credit';
+    return 'Guest';
+  })();
 
   rows.push({
     icon: (
@@ -24,11 +33,11 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
       </svg>
     ),
     label: 'You are',
-    value: isVerifiedStudent ? `${firstName} ${lastName}` : (role === 'student' ? 'Student' : role === 'parent' ? 'Parent/Guardian' : 'Guest'),
-    sublabel: isVerifiedStudent ? 'Student' : null,
+    value: roleLabel,
+    sublabel: isVerifiedAcdc ? 'Academic Coach for Dual Credit' : isVerifiedStudent ? 'Student' : null,
     iconBg: BLUE,
     rowBg: C.bg,
-    badge: isVerifiedStudent ? 'verified' : null,
+    badge: (isVerifiedStudent || isVerifiedAcdc) ? 'verified' : null,
   });
 
   // Verified parent — separate Student row for the student's name
@@ -99,7 +108,7 @@ export default function OnboardConfirm({ role, school, grade, studentId, firstNa
   }
 
   // Show apply card for guests and anyone not yet verified (unverified students/parents)
-  const showApplyCard = role === 'guest' || !isJenzabarVerified;
+  const showApplyCard = role === 'guest' || (!isJenzabarVerified && role !== 'acdc');
 
   return (
     <div

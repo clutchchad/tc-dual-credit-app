@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { C, FF } from '../tokens';
 import { getStudentProfile } from '../data/studentProfile';
+import { getAcdcByTcId } from '../data/acdc';
 import { schools as schoolList } from '../data/schools';
 
-const MOCK_ID = '123456';
+const KNOWN_STUDENT_IDS = ['123456', '654321'];
 
 const GRADE_MAP = { 9: 'Freshman', 10: 'Sophomore', 11: 'Junior', 12: 'Senior' };
 
-export default function OnboardStudentID({ role, onVerified, onSkip, onBack }) {
+export default function OnboardStudentID({ role, onVerified, onAcdcVerified, onSkip, onBack }) {
   const [value,   setValue]   = useState('');
   const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,8 +33,21 @@ export default function OnboardStudentID({ role, onVerified, onSkip, onBack }) {
       // Simulate network delay
       await new Promise(r => setTimeout(r, 650));
 
-      if (value === MOCK_ID) {
-        const profile = await getStudentProfile();
+      // Check ACDC staff IDs first
+      const acdcProfile = getAcdcByTcId(value);
+      if (acdcProfile) {
+        const [firstNameVal, ...rest] = acdcProfile.name.split(' ');
+        onAcdcVerified?.({
+          acdcProfile,
+          tcIdVal: value,
+          firstNameVal,
+          lastNameVal: rest.join(' '),
+        });
+        return;
+      }
+
+      if (KNOWN_STUDENT_IDS.includes(value)) {
+        const profile = await getStudentProfile(value);
         // Find the school object by name match
         const schoolObj = schoolList.find(s => s.name === profile.highSchool)
                        || schoolList.find(s => s.id === 'txh');

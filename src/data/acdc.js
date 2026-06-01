@@ -7,6 +7,8 @@
  *   9th & 10th  → Brooke Barrett
  *   11th        → Mckenzee Harmon
  *   12th        → Kate Page
+ *
+ * Dummy demo account: Abigail Beecher (tcId: '4321')
  */
 
 const SCHEDULING_URL = 'https://share.hsforms.com/2IWy_TsLAQeu7ZOr9qVzCOgxach';
@@ -60,7 +62,27 @@ export const acdcContacts = [
     schools: ['atlanta', 'qc', 'mcleod', 'lk'],
     txhGrades: [],
   },
+  // ── Dummy demo account ───────────────────────────────────────────────────────
+  {
+    id: 'abeecher',
+    tcId: '4321',
+    name: 'Abigail Beecher',
+    phone: '903-823-3106',
+    email: 'a.beecher@tc.edu',
+    photo: '/abigail-beecher.png',
+    schedulingUrl: SCHEDULING_URL,
+    schools: [],
+    txhGrades: [],
+  },
 ];
+
+/**
+ * Look up an ACDC profile by TC staff ID.
+ * Used during onboarding when the entered TC ID belongs to an ACDC, not a student.
+ */
+export function getAcdcByTcId(tcId) {
+  return acdcContacts.find(c => c.tcId === String(tcId)) || null;
+}
 
 /**
  * Look up the ACDC coach for a given school id and optional grade.
