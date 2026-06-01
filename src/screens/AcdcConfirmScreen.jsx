@@ -152,7 +152,7 @@ export default function AcdcConfirmScreen({ acdc, onConfirm, onBack }) {
 
         {/* Profile photo — centered, sits between heading and rows */}
         <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'center' }}>
-          <AcdcPhoto photo={acdc.photo} name={acdc.name} size={100} />
+          <AcdcPhoto photo={acdc.photo} name={acdc.name} size={148} />
         </div>
 
         {/* Summary rows */}
