@@ -33,7 +33,7 @@ export default function SplashScreen({ onComplete }) {
         display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 40,
       }}>
         <img
-          src="/tcdclogo.png?v=4"
+          src="/tcdclogo2.png"
           alt="TC Dual Credit"
           style={{
             width: '65vw',
