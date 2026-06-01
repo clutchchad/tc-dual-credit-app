@@ -1,14 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FF } from '../tokens';
 
-export default function SplashScreen({ onComplete }) {
+export default function SplashScreen({ onComplete, onAdminTap }) {
   const [visible, setVisible] = useState(false);
+  const autoTimer = useRef(null);
 
   useEffect(() => {
     const t1 = setTimeout(() => setVisible(true), 80);
-    const t2 = setTimeout(onComplete, 2900);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    autoTimer.current = setTimeout(onComplete, 2900);
+    return () => { clearTimeout(t1); clearTimeout(autoTimer.current); };
   }, []);
+
+  const handleAdminTap = () => {
+    clearTimeout(autoTimer.current);
+    onAdminTap?.();
+  };
 
   return (
     <div
@@ -55,6 +61,21 @@ export default function SplashScreen({ onComplete }) {
       }}>
         Earn college credits while in high school.
       </p>
+
+      {/* Admin / ACDC portal link — bottom of splash */}
+      <button
+        onClick={handleAdminTap}
+        style={{
+          position: 'absolute', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)',
+          background: 'none', border: 'none', cursor: 'pointer', padding: '8px 16px',
+          opacity: visible ? 0.55 : 0,
+          transition: 'opacity .8s .4s ease',
+        }}
+      >
+        <span style={{ fontFamily: FF, fontSize: 12, fontWeight: 600, color: '#fff', letterSpacing: '0.5px' }}>
+          Admin
+        </span>
+      </button>
 
     </div>
   );

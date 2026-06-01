@@ -69,7 +69,7 @@ export const acdcContacts = [
     name: 'Abigail Beecher',
     phone: '903-823-3106',
     email: 'a.beecher@tc.edu',
-    photo: '/abigail-beecher.png',
+    photo: '/fakeacdc.png',
     schedulingUrl: SCHEDULING_URL,
     schools: [],
     txhGrades: [],

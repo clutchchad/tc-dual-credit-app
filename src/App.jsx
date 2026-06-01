@@ -19,6 +19,9 @@ import ApplyScreen          from './screens/ApplyScreen';
 import NotificationsScreen  from './screens/NotificationsScreen';
 import AcademicsScreen      from './screens/AcademicsScreen';
 import ImportantDatesScreen from './screens/ImportantDatesScreen';
+import AcdcLoginScreen    from './screens/AcdcLoginScreen';
+import AcdcConfirmScreen  from './screens/AcdcConfirmScreen';
+import AcdcHomeScreen     from './screens/AcdcHomeScreen';
 
 const STORAGE_KEY = 'tcdc_v1';
 
@@ -55,6 +58,7 @@ export default function App() {
   const [firstName,          setFirstName]          = useState(stored.firstName          || null);
   const [lastName,           setLastName]           = useState(stored.lastName           || null);
   const [isJenzabarVerified, setIsJenzabarVerified] = useState(stored.isJenzabarVerified || false);
+  const [acdcProfile,        setAcdcProfile]        = useState(stored.acdcProfile        || null);
   const [animKey,            setAnimKey]            = useState(0);
 
   const go = (s) => { setAnimKey(k => k + 1); setScreen(s); };
@@ -62,7 +66,8 @@ export default function App() {
   const reset = () => {
     localStorage.removeItem(STORAGE_KEY);
     setRole(null); setSchool(null); setGrade(null);
-    setStudentId(null); setFirstName(null); setLastName(null); setIsJenzabarVerified(false);
+    setStudentId(null); setFirstName(null); setLastName(null);
+    setIsJenzabarVerified(false); setAcdcProfile(null);
     go('onboard_role');
   };
 
@@ -92,25 +97,33 @@ export default function App() {
 
       case 'splash':
         return (
-          <SplashScreen onComplete={() => {
-            recordAppOpen();
-            const s = getStored();
-            if (s.role === 'guest') {
-              setRole('guest');
-              go('home');
-            } else if (s.role && s.school) {
-              setRole(s.role);
-              setSchool(s.school);
-              setGrade(s.grade              || null);
-              setStudentId(s.studentId      || null);
-              setFirstName(s.firstName      || null);
-              setLastName(s.lastName        || null);
-              setIsJenzabarVerified(s.isJenzabarVerified || false);
-              go('home');
-            } else {
-              go('onboard_role');
-            }
-          }} />
+          <SplashScreen
+            onAdminTap={() => go('acdc_login')}
+            onComplete={() => {
+              recordAppOpen();
+              const s = getStored();
+              if (s.role === 'acdc' && s.acdcProfile) {
+                // Returning ACDC — restore profile and land directly in the portal
+                setRole('acdc');
+                setAcdcProfile(s.acdcProfile);
+                go('acdc_home');
+              } else if (s.role === 'guest') {
+                setRole('guest');
+                go('home');
+              } else if (s.role && s.school) {
+                setRole(s.role);
+                setSchool(s.school);
+                setGrade(s.grade              || null);
+                setStudentId(s.studentId      || null);
+                setFirstName(s.firstName      || null);
+                setLastName(s.lastName        || null);
+                setIsJenzabarVerified(s.isJenzabarVerified || false);
+                go('home');
+              } else {
+                go('onboard_role');
+              }
+            }}
+          />
         );
 
       case 'onboard_role':
@@ -226,15 +239,51 @@ export default function App() {
           />
         ) : null;
 
+      // ── ACDC portal flow ──────────────────────────────────────────────────────
+      case 'acdc_login':
+        return (
+          <AcdcLoginScreen
+            onVerified={(profile) => {
+              setAcdcProfile(profile);
+              go('acdc_confirm');
+            }}
+            onBack={() => go('splash')}
+          />
+        );
+
+      case 'acdc_confirm':
+        return acdcProfile ? (
+          <AcdcConfirmScreen
+            acdc={acdcProfile}
+            onConfirm={() => {
+              setRole('acdc');
+              saveStored({ ...getStored(), role: 'acdc', acdcProfile });
+              go('acdc_home');
+            }}
+            onBack={() => go('acdc_login')}
+          />
+        ) : null;
+
+      case 'acdc_home':
+        return (
+          <AcdcHomeScreen
+            acdc={acdcProfile || getStored().acdcProfile}
+            onSignOut={() => {
+              localStorage.removeItem(STORAGE_KEY);
+              setRole(null); setAcdcProfile(null);
+              go('splash');
+            }}
+          />
+        );
+
       case 'home': {
         // Use localStorage as ground truth — avoids any React state batching lag
         const liveStored = getStored();
         const resolvedRole = role || liveStored.role;
+        // ACDCs have their own portal — redirect if they somehow land here
+        if (resolvedRole === 'acdc') go('acdc_home');
         if (resolvedRole === 'guest') {
           return <HomeScreen role="guest" school={null} grade={null} {...guestNavProps} />;
-        }
-        if (resolvedRole === 'acdc') {
-          return <HomeScreen role="acdc" school={null} grade={null} {...guestNavProps} />;
         }
         return resolvedRole && school ? (
           <HomeScreen role={resolvedRole} school={school} grade={grade} {...navProps} />
