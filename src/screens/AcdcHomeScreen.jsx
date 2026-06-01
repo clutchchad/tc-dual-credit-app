@@ -314,8 +314,6 @@ function AccordionSection({ title, icon, items, accentColor = BLUE }) {
 
 // ── Tab: Home ─────────────────────────────────────────────────────────────────
 function TabHome({ acdc, onSignOut }) {
-  const firstName = acdc?.name?.split(' ')[0] ?? 'Coach';
-
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Blue gradient header */}
@@ -325,27 +323,8 @@ function TabHome({ acdc, onSignOut }) {
         paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)',
         flexShrink: 0,
       }}>
-        {/* Top row: avatar + sign-out */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <AcdcAvatar photo={acdc?.photo} name={acdc?.name ?? ''} size={48} />
-          <button
-            onClick={onSignOut}
-            style={{
-              background: 'rgba(255,255,255,.12)', border: 'none',
-              borderRadius: 10, padding: '7px 14px', cursor: 'pointer',
-            }}
-          >
-            <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,.85)' }}>
-              Sign Out
-            </span>
-          </button>
-        </div>
-
-        <div style={{ fontFamily: FF, fontSize: 13, fontWeight: 600, color: LIME, letterSpacing: '0.5px', marginBottom: 4 }}>
-          ACDC PORTAL
-        </div>
         <div style={{ fontFamily: FF, fontSize: 28, fontWeight: 900, color: '#fff', letterSpacing: '-0.8px', lineHeight: 1.15 }}>
-          Hello, {firstName}
+          {acdc?.name ?? 'Abigail Beecher'}
         </div>
         <div style={{ fontFamily: FF, fontSize: 14, color: 'rgba(255,255,255,.65)', marginTop: 4 }}>
           Academic Coach for Dual Credit
