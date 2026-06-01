@@ -23,7 +23,7 @@ function NavIcon({ id, active }) {
     resources: <svg {...base}><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>,
     dates:     <svg {...base}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>,
     // ACDC-portal-specific icons
-    profile:   <svg {...base}><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M16 11.5c1.5.5 2.5 1.5 2.5 1.5"/></svg>,
+    profile:   <svg {...base}><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="11" r="2.2"/><path d="M4 18c0-2 1.8-3.2 4-3.2s4 1.2 4 3.2"/><path d="M14 9h4M14 13h3"/></svg>,
     lookup:    <svg {...base}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M11 8a3 3 0 013 3"/></svg>,
   };
   return icons[id] || null;

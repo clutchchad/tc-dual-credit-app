@@ -270,7 +270,7 @@ export default function AcdcProfileTab({ acdc }) {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
       <BlueHeader style={{ paddingBottom: 36 }}>
-        <PageTitle title="Profile" />
+        <PageTitle title="Contact Card" />
       </BlueHeader>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 14px 100px', marginTop: -28 }}>

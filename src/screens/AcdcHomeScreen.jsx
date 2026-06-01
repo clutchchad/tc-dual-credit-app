@@ -23,7 +23,7 @@ const DARK = '#022b52';
 // ── ACDC tab definitions ──────────────────────────────────────────────────────
 const ACDC_TABS = [
   { id: 'home',      label: 'Home',            screen: 'home'      },
-  { id: 'profile',   label: 'Profile',         screen: 'profile'   },
+  { id: 'profile',   label: 'Contact Card',    screen: 'profile'   },
   { id: 'lookup',    label: 'Student Look Up', screen: 'lookup'    },
   { id: 'resources', label: 'Resources',       screen: 'resources' },
   { id: 'more',      label: 'More',            screen: 'more'      },
