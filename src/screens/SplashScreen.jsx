@@ -7,8 +7,6 @@ export default function SplashScreen({ onComplete }) {
 
   useEffect(() => {
     const t1 = setTimeout(() => setVisible(true), 80);
-    // Stop the pulse animation and fully light up the dots 400 ms before leaving —
-    // this gives a clear "loaded" moment instead of cutting away mid-pulse.
     const t2 = setTimeout(() => setDone(true), 2500);
     const t3 = setTimeout(onComplete, 2900);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
@@ -29,43 +27,21 @@ export default function SplashScreen({ onComplete }) {
       <div style={{ position:'absolute', width:380, height:380, borderRadius:'50%', background:'radial-gradient(circle,rgba(234,255,0,.12) 0%,transparent 70%)', top:'5%', left:'50%', transform:'translateX(-50%)', pointerEvents:'none' }} />
       <div style={{ position:'absolute', width:300, height:300, borderRadius:'50%', background:'radial-gradient(circle,rgba(6,89,144,.7) 0%,transparent 70%)', bottom:'-8%', right:'-15%', pointerEvents:'none' }} />
 
-      {/* Logo */}
+      {/* Main logo — dominant center element */}
       <div style={{
         opacity: visible ? 1 : 0,
         transform: visible ? 'translateY(0)' : 'translateY(32px)',
         transition: 'all .8s cubic-bezier(.34,1.56,.64,1)',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 44,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 40,
       }}>
         <img
-          src="/tcdclogo2.png"
+          src="/tcdclogo.png?v=4"
           alt="TC Dual Credit"
           style={{
-            width: 120, height: 120,
+            width: '65vw',
+            maxWidth: 320,
             objectFit: 'contain',
-            marginBottom: 26,
-            filter: 'drop-shadow(0 12px 40px rgba(0,0,0,.35)) drop-shadow(0 0 40px rgba(234,255,0,.12))',
-          }}
-        />
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.5)', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: 10 }}>
-            Texarkana College
-          </div>
-          <div style={{ fontFamily: FF, fontSize: 34, fontWeight: 900, color: '#fff', letterSpacing: '-1.2px', lineHeight: 1.05 }}>Dual Credit</div>
-          <div style={{ marginTop: 8, display: 'inline-block', background: '#EAFF00', borderRadius: 7, padding: '3px 12px' }}>
-            <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 800, color: '#022b52', letterSpacing: '2.5px', textTransform: 'uppercase' }}>Program</span>
-          </div>
-        </div>
-
-        {/* TC Dual Credit logo */}
-        <img
-          src="/tcdclogo.png?v=4"
-          alt="TC Dual Credit Logo"
-          style={{
-            width: 180,
-            marginTop: 28,
-            objectFit: 'contain',
-            opacity: 0.92,
-            filter: 'drop-shadow(0 4px 16px rgba(0,0,0,.3))',
+            filter: 'drop-shadow(0 8px 32px rgba(0,0,0,.4)) drop-shadow(0 0 60px rgba(234,255,0,.10))',
           }}
         />
       </div>
@@ -82,7 +58,7 @@ export default function SplashScreen({ onComplete }) {
         Earn college credits while in high school.
       </p>
 
-      {/* Loading dots — neon lime, pulse while loading, fully lit when done */}
+      {/* Loading dots */}
       <div style={{ display: 'flex', gap: 8, opacity: visible ? 1 : 0, transition: 'opacity .6s .7s' }}>
         {[0, 1, 2].map(i => (
           <div
@@ -90,7 +66,6 @@ export default function SplashScreen({ onComplete }) {
             style={{
               width: 8, height: 8, borderRadius: '50%',
               background: '#EAFF00',
-              // When done: stop animating, snap to full opacity + scale + glow
               animation:  done ? 'none' : `tcPulse 1.6s ${i * 0.22}s infinite`,
               opacity:    done ? 1 : undefined,
               transform:  done ? 'scale(1)' : undefined,
