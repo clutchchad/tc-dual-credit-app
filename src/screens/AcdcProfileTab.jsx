@@ -80,7 +80,7 @@ function makeQrGrid() {
 // Pre-compute once at module level — never re-runs on render
 const QR_GRID = makeQrGrid();
 
-function QrPlaceholder({ size = 224 }) {
+export function QrPlaceholder({ size = 224 }) {
   const N   = 21;
   const pad = 16; // quiet-zone pixels
   const mod = (size - pad * 2) / N;

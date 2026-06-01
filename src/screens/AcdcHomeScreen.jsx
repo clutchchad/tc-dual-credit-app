@@ -10,7 +10,8 @@ import { useState } from 'react';
 import { C, FF } from '../tokens';
 import BottomNav from '../components/BottomNav';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
-import AcdcProfileTab   from './AcdcProfileTab';
+import Card from '../components/Card';
+import AcdcProfileTab, { QrPlaceholder } from './AcdcProfileTab';
 import AcdcResourcesTab from './AcdcResourcesTab';
 import AcdcMoreTab      from './AcdcMoreTab';
 
@@ -66,12 +67,256 @@ function AcdcAvatar({ photo, name, size = 48 }) {
   );
 }
 
+// ── Dummy data ────────────────────────────────────────────────────────────────
+
+const DUMMY_ANNOUNCEMENTS = [
+  {
+    id: 'a1',
+    category: 'Announcements',
+    title: 'Fall 2026 Dual Credit Registration Now Open',
+    body: 'Registration for Fall 2026 dual credit courses is now open. Reach out to students at your school to confirm they are enrolled on time. Check the TC portal for seat availability.',
+    timeLabel: 'Today',
+  },
+  {
+    id: 'a2',
+    category: 'Reminders',
+    title: 'Textbook Waiver Deadline Approaching',
+    body: 'Students receiving TC Promise awards should submit their textbook waiver requests before the end of the month. Direct them to the Financial Aid office if they have questions.',
+    timeLabel: '2d ago',
+  },
+];
+
+const DUMMY_DEADLINES = [
+  { id: 'd1', date: 'Jun 20',  title: 'TSI Assessment Completion'        },
+  { id: 'd2', date: 'Jun 30',  title: 'Dual Credit Application Deadline' },
+  { id: 'd3', date: 'Jul 15',  title: 'Fall 2026 Enrollment Deadline'    },
+];
+
+const DUMMY_EVENTS = [
+  { id: 'e1', date: 'Jul 8',   title: 'ACDC Summer Training'             },
+  { id: 'e2', date: 'Aug 5',   title: 'Partner School Orientation'       },
+  { id: 'e3', date: 'Aug 18',  title: 'Fall Semester Kickoff'            },
+];
+
+// ── Notifications Sent Card ───────────────────────────────────────────────────
+
+function NotifsSentCard() {
+  return (
+    <Card style={{ padding: '18px 16px', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 14 }}>
+      {/* Green checkmark circle */}
+      <div style={{
+        width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+        background: 'rgba(22,163,74,.10)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+          stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 6L9 17l-5-5"/>
+        </svg>
+      </div>
+      {/* Count + label */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: C.text3,
+          textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 2 }}>
+          Last Push
+        </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+          <span style={{ fontFamily: FF, fontSize: 26, fontWeight: 900, color: '#16a34a',
+            letterSpacing: '-1px', lineHeight: 1 }}>
+            142
+          </span>
+          <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 600, color: C.text2 }}>
+            notifications sent successfully
+          </span>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// ── Announcement item row ─────────────────────────────────────────────────────
+
+const CATEGORY_STYLES = {
+  'Announcements': { bg: 'rgba(6,89,144,.10)', color: BLUE },
+  'Reminders':     { bg: 'rgba(234,255,0,.30)', color: DARK },
+};
+
+function AnnouncementItem({ item }) {
+  const [expanded, setExpanded] = useState(false);
+  const catStyle = CATEGORY_STYLES[item.category] || CATEGORY_STYLES['Announcements'];
+
+  return (
+    <div style={{
+      borderBottom: `1px solid ${C.border}`,
+      padding: '13px 0',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <span style={{
+          fontFamily: FF, fontSize: 10, fontWeight: 700,
+          color: catStyle.color, background: catStyle.bg,
+          borderRadius: 20, padding: '3px 9px', letterSpacing: '0.3px',
+        }}>
+          {item.category}
+        </span>
+        <span style={{ fontFamily: FF, fontSize: 10.5, color: C.text3 }}>{item.timeLabel}</span>
+      </div>
+      <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, color: C.text,
+        letterSpacing: '-0.2px', lineHeight: 1.3, marginBottom: 4 }}>
+        {item.title}
+      </div>
+      <div style={{
+        fontFamily: FF, fontSize: 12.5, color: C.text2, lineHeight: 1.55,
+        overflow: expanded ? 'visible' : 'hidden',
+        display: expanded ? 'block' : '-webkit-box',
+        WebkitLineClamp: expanded ? undefined : 2,
+        WebkitBoxOrient: 'vertical',
+      }}>
+        {item.body}
+      </div>
+      {!expanded && item.body.length > 100 && (
+        <button
+          onClick={() => setExpanded(true)}
+          style={{ background: 'none', border: 'none', padding: '4px 0 0', cursor: 'pointer',
+            fontFamily: FF, fontSize: 12, fontWeight: 700, color: BLUE }}
+        >
+          Read more
+        </button>
+      )}
+    </div>
+  );
+}
+
+function AnnouncementsCard() {
+  return (
+    <Card style={{ padding: '16px 16px 4px', marginBottom: 12 }}>
+      <div style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: BLUE,
+        textTransform: 'uppercase', letterSpacing: '1.1px', marginBottom: 2 }}>
+        Announcements
+      </div>
+      {DUMMY_ANNOUNCEMENTS.map(item => (
+        <AnnouncementItem key={item.id} item={item} />
+      ))}
+    </Card>
+  );
+}
+
+// ── QR Code card (home-sized) ─────────────────────────────────────────────────
+
+function HomeQrCard() {
+  return (
+    <Card style={{ padding: '16px 16px 18px', marginBottom: 12, textAlign: 'center' }}>
+      <div style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: BLUE,
+        textTransform: 'uppercase', letterSpacing: '1.1px', marginBottom: 3 }}>
+        Your Contact QR
+      </div>
+      <div style={{ fontFamily: FF, fontSize: 11, color: C.text3, marginBottom: 14, lineHeight: 1.5 }}>
+        Students can scan this to apply for Dual Credit
+      </div>
+      <div style={{
+        display: 'inline-flex', borderRadius: 10, overflow: 'hidden',
+        boxShadow: '0 2px 12px rgba(0,0,0,.08)',
+        border: `1.5px solid ${C.border}`,
+      }}>
+        <QrPlaceholder size={180} />
+      </div>
+    </Card>
+  );
+}
+
+// ── Accordion section (Deadlines / Events) ────────────────────────────────────
+
+function AccordionSection({ title, icon, items, accentColor = BLUE }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Card style={{ marginBottom: 12, overflow: 'hidden' }}>
+      {/* Header row — always visible, tap to toggle */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', background: 'none', border: 'none', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '15px 16px',
+          textAlign: 'left',
+        }}
+      >
+        {/* Icon bubble */}
+        <div style={{
+          width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+          background: 'rgba(6,89,144,.08)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          {icon}
+        </div>
+
+        {/* Title + count */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, color: DARK,
+            letterSpacing: '-0.2px' }}>
+            {title}
+          </span>
+          <span style={{
+            fontFamily: FF, fontSize: 10, fontWeight: 800,
+            color: BLUE, background: 'rgba(6,89,144,.10)',
+            borderRadius: 10, padding: '2px 7px',
+          }}>
+            {items.length}
+          </span>
+        </div>
+
+        {/* Chevron — rotates when open */}
+        <svg
+          width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke={C.text3} strokeWidth="2.5" strokeLinecap="round"
+          style={{ flexShrink: 0, transition: 'transform .22s ease', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
+        >
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+
+      {/* Collapsible content */}
+      {open && (
+        <div style={{ borderTop: `1px solid ${C.border}`, padding: '4px 16px 12px' }}>
+          {items.map((item, i) => (
+            <div
+              key={item.id}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '10px 0',
+                borderBottom: i < items.length - 1 ? `1px solid ${C.border}` : 'none',
+              }}
+            >
+              {/* Date pill */}
+              <div style={{
+                flexShrink: 0,
+                background: BLUE, borderRadius: 10,
+                padding: '5px 10px',
+                minWidth: 52, textAlign: 'center',
+              }}>
+                <span style={{ fontFamily: FF, fontSize: 12, fontWeight: 800, color: '#fff',
+                  letterSpacing: '-0.2px' }}>
+                  {item.date}
+                </span>
+              </div>
+              {/* Title */}
+              <span style={{ fontFamily: FF, fontSize: 13.5, fontWeight: 700, color: C.text,
+                flex: 1, lineHeight: 1.3 }}>
+                {item.title}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 // ── Tab: Home ─────────────────────────────────────────────────────────────────
 function TabHome({ acdc, onSignOut }) {
   const firstName = acdc?.name?.split(' ')[0] ?? 'Coach';
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Blue gradient header */}
       <div style={{
         background: `linear-gradient(160deg, ${DARK} 0%, ${BLUE} 100%)`,
@@ -106,32 +351,37 @@ function TabHome({ acdc, onSignOut }) {
         </div>
       </div>
 
-      {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px 100px', marginTop: -16 }}>
-        <div style={{
-          background: '#fff', borderRadius: 20,
-          border: `1px solid ${C.border}`,
-          boxShadow: '0 2px 16px rgba(0,0,0,.06)',
-          padding: '28px 22px', textAlign: 'center',
-        }}>
-          <div style={{
-            width: 64, height: 64, borderRadius: 18,
-            background: 'rgba(6,89,144,.08)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 18px',
-          }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9L12 2l9 7v11a1 1 0 01-1 1H4a1 1 0 01-1-1z"/>
-              <path d="M9 22V12h6v10"/>
+      {/* Scrollable content — overlaps header with negative margin */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 14px 100px', marginTop: -16 }}>
+
+        <NotifsSentCard />
+        <AnnouncementsCard />
+        <HomeQrCard />
+
+        <AccordionSection
+          title="Deadlines"
+          items={DUMMY_DEADLINES}
+          icon={
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+              stroke={BLUE} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <path d="M16 2v4M8 2v4M3 10h18"/>
+              <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
             </svg>
-          </div>
-          <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: DARK, letterSpacing: '-0.4px', marginBottom: 8 }}>
-            Dashboard Coming Soon
-          </div>
-          <p style={{ fontFamily: FF, fontSize: 14, color: C.text2, lineHeight: 1.6, margin: 0 }}>
-            Your full ACDC dashboard — student look-up, enrollment status, and updates — is being built and will appear here.
-          </p>
-        </div>
+          }
+        />
+
+        <AccordionSection
+          title="Events"
+          items={DUMMY_EVENTS}
+          icon={
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+              stroke={BLUE} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          }
+        />
       </div>
     </div>
   );
