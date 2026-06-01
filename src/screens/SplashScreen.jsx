@@ -55,6 +55,19 @@ export default function SplashScreen({ onComplete }) {
             <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 800, color: '#022b52', letterSpacing: '2.5px', textTransform: 'uppercase' }}>Program</span>
           </div>
         </div>
+
+        {/* TC Dual Credit logo */}
+        <img
+          src="/tcdclogo.png?v=4"
+          alt="TC Dual Credit Logo"
+          style={{
+            width: 180,
+            marginTop: 28,
+            objectFit: 'contain',
+            opacity: 0.92,
+            filter: 'drop-shadow(0 4px 16px rgba(0,0,0,.3))',
+          }}
+        />
       </div>
 
       {/* Tagline */}
