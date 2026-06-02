@@ -71,7 +71,7 @@ export const acdcContacts = [
     email: 'a.beecher@tc.edu',
     photo: '/fakeacdc.png',
     schedulingUrl: SCHEDULING_URL,
-    schools: [],
+    schools: ['qc', 'pg', 'le', 'simms'],
     txhGrades: [],
   },
 ];
