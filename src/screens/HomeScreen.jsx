@@ -9,7 +9,6 @@ import { schools as schoolList } from '../data/schools';
 import { events } from '../data/events';
 import { C, FF } from '../tokens';
 import { loadNotifications, relTime } from '../data/notifications';
-import { getStudentProfile } from '../data/studentProfile';
 import { buildSchedulingUrl } from '../data/buildSchedulingUrl';
 import {
   DEFAULT_COORDS,
@@ -87,11 +86,10 @@ function soonest(type) {
   );
 }
 
-function getGreeting(profile, role) {
+function getGreeting(firstName, role) {
   if (role === 'guest') return 'Welcome to TC Dual Credit';
-  const name = profile?.firstName;
-  if (role === 'parent') return name ? `Hey, ${name}!` : 'Hey, Parent!';
-  if (name) return `Hey, ${name}!`;
+  if (role === 'parent') return firstName ? `Hey, ${firstName}!` : 'Hey, Parent!';
+  if (firstName) return `Hey, ${firstName}!`;
   return 'Hey, Student!';
 }
 
@@ -142,7 +140,6 @@ const CATEGORY_STYLES = {
   'Announcement':  { bg: 'rgba(6,89,144,.10)',   color: '#065990' },
   'Reminder':      { bg: 'transparent',          color: LIME      },
   'Reminders':     { bg: 'transparent',          color: LIME      },
-  'TC Promise':    { bg: 'rgba(22,163,74,.10)',  color: '#15803d' },
   'Event':         { bg: 'rgba(124,58,237,.10)', color: '#7c3aed' },
 };
 
@@ -634,7 +631,6 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
 
   const [latestNotif,   setLatestNotif]   = useState(null);
   const [timeline,      setTimeline]      = useState(isParent ? PARENT_SEED_TIMELINE : SEED_TIMELINE);
-  const [profile,       setProfile]       = useState(null);
   const [cardOrder,     setCardOrder]     = useState(loadCardOrder);
   const [forecastOpen,  setForecastOpen]  = useState(false);
 
@@ -697,9 +693,6 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
     if (!isGuest) {
       loadNotifications().then(ns => setLatestNotif(ns[0] ?? null));
     }
-    if (isStudent) {
-      getStudentProfile().then(p => setProfile(p));
-    }
 
     /* Try Firestore for timeline — filter by active, role, and school */
     (async () => {
@@ -741,7 +734,7 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
     })();
   }, []);
 
-  const greeting = getGreeting(profile, role);
+  const greeting = getGreeting(storedFirstName, role);
   const { weather: weatherData, loading: weatherLoading } = useWeather(weatherCoords);
 
   /* ── Shared header ── */

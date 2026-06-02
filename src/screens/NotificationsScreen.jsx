@@ -64,7 +64,6 @@ const FILTER_PILLS = [
   { id: 'Announcements', label: 'Announcements' },
   { id: 'Reminder',      label: 'Reminders'     },
   { id: 'Event',         label: 'Events'         },
-  { id: 'TC Promise',    label: 'TC Promise'     },
 ];
 
 // ── Component ───────────────────────────────────────────────────────────────

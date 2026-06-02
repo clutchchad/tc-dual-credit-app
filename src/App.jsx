@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { recordAppOpen } from './data/engagementTracker';
 import { useIsTablet } from './hooks/useIsTablet';
 import SideNav from './components/SideNav';
 
@@ -17,7 +16,6 @@ import MoreScreen           from './screens/MoreScreen';
 import PathwaysScreen       from './screens/PathwaysScreen';
 import ApplyScreen          from './screens/ApplyScreen';
 import NotificationsScreen  from './screens/NotificationsScreen';
-import AcademicsScreen      from './screens/AcademicsScreen';
 import ImportantDatesScreen from './screens/ImportantDatesScreen';
 import AcdcLoginScreen    from './screens/AcdcLoginScreen';
 import AcdcConfirmScreen  from './screens/AcdcConfirmScreen';
@@ -26,11 +24,10 @@ import AcdcHomeScreen     from './screens/AcdcHomeScreen';
 const STORAGE_KEY = 'tcdc_v1';
 
 const NAV_TABS = [
-  { id: 'home',      label: 'Home',             screen: 'home'      },
-  { id: 'acdc',      label: 'My ACDC',          screen: 'acdc'      },
-  { id: 'academics', label: 'Academic Progress', screen: 'academics' },
-  { id: 'dates',     label: 'Important Dates',  screen: 'dates'     },
-  { id: 'more',      label: 'More',             screen: 'more'      },
+  { id: 'home',  label: 'Home',  screen: 'home'  },
+  { id: 'acdc',  label: 'My ACDC', screen: 'acdc' },
+  { id: 'dates', label: 'Important Dates', screen: 'dates' },
+  { id: 'more',  label: 'More',  screen: 'more'  },
 ];
 
 const GUEST_NAV_TABS = [
@@ -100,7 +97,6 @@ export default function App() {
         return (
           <SplashScreen
             onComplete={() => {
-              recordAppOpen();
               const s = getStored();
               if (s.role === 'acdc' && s.acdcProfile) {
                 // Returning ACDC — restore profile and land directly in the portal
@@ -330,17 +326,6 @@ export default function App() {
 
       case 'notifications':
         return <NotificationsScreen {...navProps} />;
-
-      case 'academics': {
-        const isGuest = (role || 'guest') === 'guest';
-        return (
-          <AcademicsScreen
-            role={role || 'guest'}
-            onNavigate={go}
-            tabs={isGuest ? GUEST_NAV_TABS : NAV_TABS}
-          />
-        );
-      }
 
       case 'pathways': {
         const isGuest = (role || 'guest') === 'guest';

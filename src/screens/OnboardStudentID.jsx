@@ -1,12 +1,6 @@
 import { useState } from 'react';
 import { C, FF } from '../tokens';
-import { getStudentProfile } from '../data/studentProfile';
 import { getAcdcByTcId } from '../data/acdc';
-import { schools as schoolList } from '../data/schools';
-
-const KNOWN_STUDENT_IDS = ['123456', '654321'];
-
-const GRADE_MAP = { 9: 'Freshman', 10: 'Sophomore', 11: 'Junior', 12: 'Senior' };
 
 export default function OnboardStudentID({ role, onVerified, onAcdcVerified, onSkip, onBack }) {
   const [value,   setValue]   = useState('');
@@ -46,27 +40,9 @@ export default function OnboardStudentID({ role, onVerified, onAcdcVerified, onS
         return;
       }
 
-      if (KNOWN_STUDENT_IDS.includes(value)) {
-        const profile = await getStudentProfile(value);
-        // Find the school object by name match
-        const schoolObj = schoolList.find(s => s.name === profile.highSchool)
-                       || schoolList.find(s => s.id === 'txh');
-        const gradeVal = GRADE_MAP[profile.grade] || null;
-
-        onVerified({
-          schoolObj,
-          gradeVal,
-          studentIdVal: value,
-          firstNameVal:    profile.firstName,
-          lastNameVal:     profile.lastName,
-          emailVal:        isParent ? null              : (profile.email     || null),
-          parentEmailVal:  isParent ? profile.parentEmail : null,
-          tcEmailVal:      profile.tcEmail || null,
-        });
-      } else {
-        setLoading(false);
-        setError("Student ID not found. You can skip and enter your school manually.");
-      }
+      // No live Jenzabar connection yet — direct all users to manual school entry
+      setLoading(false);
+      setError("Student ID not found. You can skip and enter your school manually.");
     } catch {
       setLoading(false);
       setError("Something went wrong. Please try again.");

@@ -14,7 +14,6 @@ import Card from '../components/Card';
 import AcdcProfileTab, { QrPlaceholder } from './AcdcProfileTab';
 import AcdcResourcesTab from './AcdcResourcesTab';
 import AcdcMoreTab      from './AcdcMoreTab';
-import AcdcLookupTab    from './AcdcLookupTab';
 import {
   DEFAULT_COORDS,
   useWeather,
@@ -28,11 +27,10 @@ const DARK = '#022b52';
 
 // ── ACDC tab definitions ──────────────────────────────────────────────────────
 const ACDC_TABS = [
-  { id: 'home',      label: 'Home',            screen: 'home'      },
-  { id: 'profile',   label: 'Contact Card',    screen: 'profile'   },
-  { id: 'lookup',    label: 'Student Look Up', screen: 'lookup'    },
-  { id: 'resources', label: 'Resources',       screen: 'resources' },
-  { id: 'more',      label: 'More',            screen: 'more'      },
+  { id: 'home',      label: 'Home',         screen: 'home'      },
+  { id: 'profile',   label: 'Contact Card', screen: 'profile'   },
+  { id: 'resources', label: 'Resources',    screen: 'resources' },
+  { id: 'more',      label: 'More',         screen: 'more'      },
 ];
 
 // ── Shared avatar (photo → initials fallback) ────────────────────────────────
@@ -84,13 +82,6 @@ const DUMMY_ANNOUNCEMENTS = [
     body: 'Registration for Fall 2026 dual credit courses is now open. Reach out to students at your school to confirm they are enrolled on time. Check the TC portal for seat availability.',
     timeLabel: 'Today',
   },
-  {
-    id: 'a2',
-    category: 'Reminders',
-    title: 'Textbook Waiver Deadline Approaching',
-    body: 'Students receiving TC Promise awards should submit their textbook waiver requests before the end of the month. Direct them to the Financial Aid office if they have questions.',
-    timeLabel: '2d ago',
-  },
 ];
 
 const DUMMY_DEADLINES = [
@@ -128,13 +119,6 @@ const SENT_NOTIFS = [
     school: 'Texas High School',
     audience: 'Parents',
     sentAt: 'Jun 28, 11:00 AM',
-  },
-  {
-    id: 'n4',
-    message: 'Textbook waiver requests for TC Promise students are due by June 30. Students should visit the Financial Aid office.',
-    school: 'Liberty-Eylau High School',
-    audience: 'All',
-    sentAt: 'Jun 27, 8:30 AM',
   },
   {
     id: 'n5',
@@ -633,8 +617,6 @@ export default function AcdcHomeScreen({ acdc, onSignOut }) {
         return <TabHome acdc={acdc} onSignOut={onSignOut} />;
       case 'profile':
         return <AcdcProfileTab acdc={acdc} />;
-      case 'lookup':
-        return <AcdcLookupTab />;
       case 'resources':
         return <AcdcResourcesTab />;
       case 'more':
