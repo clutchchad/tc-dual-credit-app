@@ -17,6 +17,7 @@ import PathwaysScreen       from './screens/PathwaysScreen';
 import ApplyScreen          from './screens/ApplyScreen';
 import NotificationsScreen  from './screens/NotificationsScreen';
 import ImportantDatesScreen from './screens/ImportantDatesScreen';
+import TransferPathwayScreen from './screens/TransferPathwayScreen';
 import AcdcLoginScreen    from './screens/AcdcLoginScreen';
 import AcdcConfirmScreen  from './screens/AcdcConfirmScreen';
 import AcdcHomeScreen     from './screens/AcdcHomeScreen';
@@ -24,16 +25,16 @@ import AcdcHomeScreen     from './screens/AcdcHomeScreen';
 const STORAGE_KEY = 'tcdc_v1';
 
 const NAV_TABS = [
-  { id: 'home',  label: 'Home',  screen: 'home'  },
-  { id: 'acdc',  label: 'My ACDC', screen: 'acdc' },
-  { id: 'dates', label: 'Important Dates', screen: 'dates' },
-  { id: 'more',  label: 'More',  screen: 'more'  },
+  { id: 'home',     label: 'Home',            screen: 'home'     },
+  { id: 'acdc',     label: 'My ACDC',         screen: 'acdc'     },
+  { id: 'transfer', label: 'Transfer',        screen: 'transfer' },
+  { id: 'more',     label: 'More',            screen: 'more'     },
 ];
 
 const GUEST_NAV_TABS = [
   { id: 'home',      label: 'Home',            screen: 'home'      },
   { id: 'dates',     label: 'Important Dates', screen: 'dates'     },
-  { id: 'resources', label: 'Resources',       screen: 'resources' },
+  { id: 'transfer',  label: 'Transfer',        screen: 'transfer'  },
   { id: 'more',      label: 'More',      screen: 'more'      },
 ];
 
@@ -339,6 +340,11 @@ export default function App() {
 
       case 'apply':
         return <ApplyScreen onNavigate={go} />;
+
+      case 'transfer': {
+        const isGuest = (role || 'guest') === 'guest';
+        return <TransferPathwayScreen {...(isGuest ? guestNavProps : navProps)} />;
+      }
 
       default:
         return <SplashScreen onComplete={() => go('onboard_role')} />;
