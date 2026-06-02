@@ -253,30 +253,6 @@ function GuestMoreScreen({ onChangeRole, onNavigate, tabs }) {
         {/* Pathways — guest gets generic blue button */}
         <PathwaysButton onNavigate={onNavigate} schoolOverride={null} />
 
-        {/* ACDC Staff Portal */}
-        <button
-          onClick={() => onNavigate('acdc_portal')}
-          style={{
-            width: '100%', background: '#fff', border: `1px solid ${C.border}`,
-            borderRadius: 14, padding: '13px 15px', marginBottom: 14,
-            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
-            textAlign: 'left', boxSizing: 'border-box',
-            boxShadow: '0 2px 8px rgba(0,0,0,.04)',
-          }}
-        >
-          <div style={{ width: 34, height: 34, borderRadius: 10, background: `${BLUE}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="8" r="4"/>
-              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-            </svg>
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: C.text }}>ACDC Staff Portal</div>
-            <div style={{ fontFamily: FF, fontSize: 12, color: C.text3, marginTop: 1 }}>For Academic Coaches — look up your profile & toolkit</div>
-          </div>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={C.text3} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-
         {/* Have Questions? Reach Out */}
         <button
           onClick={() => onNavigate('outreach')}
@@ -334,30 +310,6 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
 
         {/* Pathways — school-colored button */}
         <PathwaysButton onNavigate={onNavigate} schoolOverride={school} />
-
-        {/* ACDC Staff Portal */}
-        <button
-          onClick={() => onNavigate('acdc_portal')}
-          style={{
-            width: '100%', background: '#fff', border: `1px solid ${C.border}`,
-            borderRadius: 14, padding: '13px 15px', marginBottom: 10,
-            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
-            textAlign: 'left', boxSizing: 'border-box',
-            boxShadow: '0 2px 8px rgba(0,0,0,.04)',
-          }}
-        >
-          <div style={{ width: 34, height: 34, borderRadius: 10, background: `${BLUE}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="8" r="4"/>
-              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-            </svg>
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: C.text }}>ACDC Staff Portal</div>
-            <div style={{ fontFamily: FF, fontSize: 12, color: C.text3, marginTop: 1 }}>For Academic Coaches — look up your profile & toolkit</div>
-          </div>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={C.text3} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
 
         {/* Have Questions? Reach Out */}
         <button

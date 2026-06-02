@@ -4,7 +4,7 @@ import SideNav from './components/SideNav';
 
 import SplashScreen       from './screens/SplashScreen';
 import OnboardRole        from './screens/OnboardRole';
-import OnboardStudentID   from './screens/OnboardStudentID';
+import PathwaysChooserScreen from './screens/PathwaysChooserScreen';
 import OnboardSchool      from './screens/OnboardSchool';
 import OnboardGrade       from './screens/OnboardGrade';
 import OnboardConfirm     from './screens/OnboardConfirm';
@@ -29,17 +29,19 @@ import AcdcHomeScreen     from './screens/AcdcHomeScreen';
 const STORAGE_KEY = 'tcdc_v1';
 
 const NAV_TABS = [
-  { id: 'home',     label: 'Home',            screen: 'home'     },
-  { id: 'acdc',     label: 'My ACDC',         screen: 'acdc'     },
-  { id: 'transfer', label: 'Transfer',        screen: 'transfer' },
-  { id: 'more',     label: 'More',            screen: 'more'     },
+  { id: 'home',      label: 'Home',      screen: 'home'             },
+  { id: 'acdc',      label: 'My ACDC',   screen: 'acdc'             },
+  { id: 'pathways',  label: 'Pathways',  screen: 'pathways_chooser' },
+  { id: 'resources', label: 'Resources', screen: 'resources'        },
+  { id: 'more',      label: 'More',      screen: 'more'             },
 ];
 
 const GUEST_NAV_TABS = [
-  { id: 'home',      label: 'Home',            screen: 'home'      },
-  { id: 'dates',     label: 'Important Dates', screen: 'dates'     },
-  { id: 'transfer',  label: 'Transfer',        screen: 'transfer'  },
-  { id: 'more',      label: 'More',      screen: 'more'      },
+  { id: 'home',      label: 'Home',      screen: 'home'             },
+  { id: 'acdc',      label: 'My ACDC',   screen: 'acdc'             },
+  { id: 'pathways',  label: 'Pathways',  screen: 'pathways_chooser' },
+  { id: 'resources', label: 'Resources', screen: 'resources'        },
+  { id: 'more',      label: 'More',      screen: 'more'             },
 ];
 
 function getStored() {
@@ -79,20 +81,20 @@ export default function App() {
   const navProps      = { tabs: NAV_TABS,       onNavigate: go };
   const guestNavProps = { tabs: GUEST_NAV_TABS, onNavigate: go };
 
-  const ONBOARDING_SCREENS = ['splash', 'onboard_role', 'onboard_student_id', 'onboard_school', 'onboard_grade', 'onboard_confirm', 'change_school', 'apply'];
+  const ONBOARDING_SCREENS = ['splash', 'onboard_role', 'onboard_school', 'onboard_grade', 'onboard_confirm', 'change_school', 'apply'];
   const showSideNav = isTablet && !ONBOARDING_SCREENS.includes(screen);
   const activeTabs  = (!role || role === 'guest') ? GUEST_NAV_TABS : NAV_TABS;
 
   /* Shared OnboardRole renderer — used in two cases */
   const renderOnboardRole = () => (
     <OnboardRole
-      onSelect={r => { setRole(r); go('onboard_student_id'); }}
+      onSelect={r => { setRole(r); go('onboard_school'); }}
       onGuestSelect={() => {
         setRole('guest');
         saveStored({ role: 'guest' });
         go('home');
       }}
-      onAdminTap={() => go('acdc_login')}
+      onAdminTap={() => go('acdc_portal')}
     />
   );
 
@@ -131,54 +133,6 @@ export default function App() {
       case 'onboard_role':
         return renderOnboardRole();
 
-      case 'onboard_student_id':
-        return (
-          <OnboardStudentID
-            role={role}
-            onVerified={({ schoolObj, gradeVal, studentIdVal, firstNameVal, lastNameVal, emailVal, parentEmailVal, tcEmailVal }) => {
-              setSchool(schoolObj);
-              setGrade(gradeVal);
-              setStudentId(studentIdVal);
-              setFirstName(firstNameVal);
-              setLastName(lastNameVal);
-              setIsJenzabarVerified(true);
-              // Pre-save so confirm screen can read data if needed
-              saveStored({
-                ...getStored(),
-                role,
-                school: schoolObj,
-                grade: gradeVal,
-                studentId: studentIdVal,
-                firstName: firstNameVal,
-                lastName: lastNameVal,
-                isJenzabarVerified: true,
-                ...(emailVal       && { email:       emailVal }),
-                ...(parentEmailVal && { parentEmail: parentEmailVal }),
-                ...(tcEmailVal     && { tcEmail:     tcEmailVal }),
-              });
-              go('onboard_confirm');
-            }}
-            onAcdcVerified={({ tcIdVal, firstNameVal, lastNameVal }) => {
-              setRole('acdc');
-              setStudentId(tcIdVal);
-              setFirstName(firstNameVal);
-              setLastName(lastNameVal);
-              setIsJenzabarVerified(true);
-              saveStored({
-                ...getStored(),
-                role: 'acdc',
-                studentId: tcIdVal,
-                firstName: firstNameVal,
-                lastName: lastNameVal,
-                isJenzabarVerified: true,
-              });
-              go('onboard_confirm');
-            }}
-            onSkip={() => go('onboard_school')}
-            onBack={() => go('onboard_role')}
-          />
-        );
-
       case 'onboard_school':
         return (
           <OnboardSchool
@@ -188,7 +142,7 @@ export default function App() {
               setGrade(null);
               go('onboard_grade');
             }}
-            onBack={() => go('onboard_student_id')}
+            onBack={() => go('onboard_role')}
           />
         );
 
@@ -234,10 +188,7 @@ export default function App() {
               saveStored({ ...getStored(), role, school, grade, studentId, firstName, lastName, isJenzabarVerified });
               go('home');
             }}
-            onBack={() => {
-              if (isJenzabarVerified) go('onboard_student_id');
-              else go('onboard_grade');
-            }}
+            onBack={() => go('onboard_grade')}
           />
         ) : null;
 
@@ -361,12 +312,24 @@ export default function App() {
         return <TransferPathwayScreen {...(isGuest ? guestNavProps : navProps)} />;
       }
 
+      case 'pathways_chooser': {
+        const isGuest = (role || 'guest') === 'guest';
+        return (
+          <PathwaysChooserScreen
+            school={school}
+            role={role || 'guest'}
+            onNavigate={go}
+            tabs={isGuest ? GUEST_NAV_TABS : NAV_TABS}
+          />
+        );
+      }
+
       // ── ACDC Staff Portal (last-name self-lookup, no auth) ────────────────────
       case 'acdc_portal':
         return (
           <AcdcPortalLookupScreen
             onFound={(coach) => { setPortalCoach(coach); go('acdc_portal_home'); }}
-            onBack={() => go('more')}
+            onBack={() => go('onboard_role')}
           />
         );
 
@@ -375,7 +338,7 @@ export default function App() {
           <AcdcPortalHomeScreen
             coach={portalCoach}
             onNavigate={go}
-            onExit={() => go('more')}
+            onExit={() => go('onboard_role')}
           />
         ) : null;
 
