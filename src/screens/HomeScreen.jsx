@@ -624,12 +624,6 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
   const isStudent = role === 'student';
   const isParent  = role === 'parent';
 
-  // Identity data for student header — comes from localStorage (set during ID flow)
-  const storedFirstName = localProfile.firstName || null;
-  const storedLastName  = localProfile.lastName  || null;
-  const storedStudentId = localProfile.studentId || null;
-  const fullName = [storedFirstName, storedLastName].filter(Boolean).join(' ') || null;
-
   const schoolInfo    = school ? (schoolList.find(s => s.id === school.id) || {}) : {};
   const barColor      = schoolInfo.color     || BLUE;
   const barTextColor  = schoolInfo.textColor || '#fff';
@@ -741,7 +735,7 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
     })();
   }, []);
 
-  const greeting = getGreeting(storedFirstName, role);
+  const greeting = getGreeting(null, role);
   const { weather: weatherData, loading: weatherLoading } = useWeather(weatherCoords);
 
   /* ── Shared header ── */
@@ -750,35 +744,16 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
       <div style={{ background: BLUE, flexShrink: 0, paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div style={{ padding: '12px 16px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-              {isStudent ? (
-                /* Student identity block — name / ID / school+grade */
-                <>
-                  <div style={{ fontFamily: FF, fontSize: 21, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.2 }}>
-                    {fullName || 'Student'}
-                  </div>
-                  {storedStudentId && (
-                    <div style={{ fontFamily: FF, fontSize: 11.5, color: 'rgba(255,255,255,.60)', marginTop: 2, letterSpacing: '0.1px' }}>
-                      ID: {storedStudentId}
-                    </div>
-                  )}
-                </>
-              ) : isParent ? (
-                /* Parent identity block — mirrors student block, framed as "Parent of" */
+              {isParent ? (
                 <>
                   <div style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 700, color: 'rgba(234,255,0,.75)', textTransform: 'uppercase', letterSpacing: '1.1px', marginBottom: 3 }}>
-                    Parent of
+                    Parent / Guardian
                   </div>
-                  <div style={{ fontFamily: FF, fontSize: 21, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.2 }}>
-                    {fullName || 'Student'}
+                  <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.2 }}>
+                    {greeting}
                   </div>
-                  {storedStudentId && (
-                    <div style={{ fontFamily: FF, fontSize: 11.5, color: 'rgba(255,255,255,.60)', marginTop: 2, letterSpacing: '0.1px' }}>
-                      ID: {storedStudentId}
-                    </div>
-                  )}
                 </>
-              ) : (
-                /* Guest single-line greeting */
+              ) : isGuest ? (
                 <>
                   <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.6px', lineHeight: 1.1 }}>
                     {greeting}
@@ -787,6 +762,10 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
                     Explore dual credit resources
                   </div>
                 </>
+              ) : (
+                <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1.2 }}>
+                  {greeting}
+                </div>
               )}
             </div>
 

@@ -54,25 +54,19 @@ function saveStored(data) {
 export default function App() {
   const stored = getStored();
 
-  const [screen,             setScreen]             = useState('splash');
-  const [role,               setRole]               = useState(stored.role               || null);
-  const [school,             setSchool]             = useState(stored.school             || null);
-  const [grade,              setGrade]              = useState(stored.grade              || null);
-  const [studentId,          setStudentId]          = useState(stored.studentId          || null);
-  const [firstName,          setFirstName]          = useState(stored.firstName          || null);
-  const [lastName,           setLastName]           = useState(stored.lastName           || null);
-  const [isJenzabarVerified, setIsJenzabarVerified] = useState(stored.isJenzabarVerified || false);
-  const [acdcProfile,        setAcdcProfile]        = useState(stored.acdcProfile        || null);
-  const [portalCoach,        setPortalCoach]        = useState(null);
-  const [animKey,            setAnimKey]            = useState(0);
+  const [screen,      setScreen]      = useState('splash');
+  const [role,        setRole]        = useState(stored.role        || null);
+  const [school,      setSchool]      = useState(stored.school      || null);
+  const [grade,       setGrade]       = useState(stored.grade       || null);
+  const [acdcProfile, setAcdcProfile] = useState(stored.acdcProfile || null);
+  const [portalCoach, setPortalCoach] = useState(null);
+  const [animKey,     setAnimKey]     = useState(0);
 
   const go = (s) => { setAnimKey(k => k + 1); setScreen(s); };
 
   const reset = () => {
     localStorage.removeItem(STORAGE_KEY);
-    setRole(null); setSchool(null); setGrade(null);
-    setStudentId(null); setFirstName(null); setLastName(null);
-    setIsJenzabarVerified(false); setAcdcProfile(null);
+    setRole(null); setSchool(null); setGrade(null); setAcdcProfile(null);
     go('onboard_role');
   };
 
@@ -117,11 +111,7 @@ export default function App() {
               } else if (s.role && s.school) {
                 setRole(s.role);
                 setSchool(s.school);
-                setGrade(s.grade              || null);
-                setStudentId(s.studentId      || null);
-                setFirstName(s.firstName      || null);
-                setLastName(s.lastName        || null);
-                setIsJenzabarVerified(s.isJenzabarVerified || false);
+                setGrade(s.grade || null);
                 go('home');
               } else {
                 go('onboard_role');
@@ -175,17 +165,13 @@ export default function App() {
         ) : null;
 
       case 'onboard_confirm':
-        return (role && (school || isJenzabarVerified)) ? (
+        return (role && school) ? (
           <OnboardConfirm
             role={role}
             school={school}
             grade={grade}
-            studentId={studentId}
-            firstName={firstName}
-            lastName={lastName}
-            isJenzabarVerified={isJenzabarVerified}
             onConfirm={() => {
-              saveStored({ ...getStored(), role, school, grade, studentId, firstName, lastName, isJenzabarVerified });
+              saveStored({ ...getStored(), role, school, grade });
               go('home');
             }}
             onBack={() => go('onboard_grade')}
