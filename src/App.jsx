@@ -17,7 +17,9 @@ import PathwaysScreen       from './screens/PathwaysScreen';
 import ApplyScreen          from './screens/ApplyScreen';
 import NotificationsScreen  from './screens/NotificationsScreen';
 import ImportantDatesScreen from './screens/ImportantDatesScreen';
-import TransferPathwayScreen from './screens/TransferPathwayScreen';
+import TransferPathwayScreen   from './screens/TransferPathwayScreen';
+import AcdcPortalLookupScreen from './screens/AcdcPortalLookupScreen';
+import AcdcPortalHomeScreen   from './screens/AcdcPortalHomeScreen';
 import AcdcLoginScreen    from './screens/AcdcLoginScreen';
 import AcdcConfirmScreen  from './screens/AcdcConfirmScreen';
 import AcdcHomeScreen     from './screens/AcdcHomeScreen';
@@ -57,6 +59,7 @@ export default function App() {
   const [lastName,           setLastName]           = useState(stored.lastName           || null);
   const [isJenzabarVerified, setIsJenzabarVerified] = useState(stored.isJenzabarVerified || false);
   const [acdcProfile,        setAcdcProfile]        = useState(stored.acdcProfile        || null);
+  const [portalCoach,        setPortalCoach]        = useState(null);
   const [animKey,            setAnimKey]            = useState(0);
 
   const go = (s) => { setAnimKey(k => k + 1); setScreen(s); };
@@ -345,6 +348,24 @@ export default function App() {
         const isGuest = (role || 'guest') === 'guest';
         return <TransferPathwayScreen {...(isGuest ? guestNavProps : navProps)} />;
       }
+
+      // ── ACDC Staff Portal (last-name self-lookup, no auth) ────────────────────
+      case 'acdc_portal':
+        return (
+          <AcdcPortalLookupScreen
+            onFound={(coach) => { setPortalCoach(coach); go('acdc_portal_home'); }}
+            onBack={() => go('more')}
+          />
+        );
+
+      case 'acdc_portal_home':
+        return portalCoach ? (
+          <AcdcPortalHomeScreen
+            coach={portalCoach}
+            onNavigate={go}
+            onExit={() => go('more')}
+          />
+        ) : null;
 
       default:
         return <SplashScreen onComplete={() => go('onboard_role')} />;
