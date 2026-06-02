@@ -277,6 +277,29 @@ function GuestMoreScreen({ onChangeRole, onNavigate, tabs }) {
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={C.text3} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
         </button>
 
+        {/* Have Questions? Reach Out */}
+        <button
+          onClick={() => onNavigate('outreach')}
+          style={{
+            width: '100%', background: '#fff', border: `1.5px solid ${BLUE}22`,
+            borderRadius: 14, padding: '13px 15px', marginBottom: 14,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
+            textAlign: 'left', boxSizing: 'border-box',
+            boxShadow: '0 2px 8px rgba(6,89,144,.07)',
+          }}
+        >
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: `${BLUE}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: C.text }}>Have Questions? Reach Out</div>
+            <div style={{ fontFamily: FF, fontSize: 12, color: C.text3, marginTop: 1 }}>Send a message to the TC Dual Credit team</div>
+          </div>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={C.text3} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+
       </div>
       <BottomNav active="more" onNavigate={onNavigate} tabs={tabs} />
     </div>
@@ -317,7 +340,7 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
           onClick={() => onNavigate('acdc_portal')}
           style={{
             width: '100%', background: '#fff', border: `1px solid ${C.border}`,
-            borderRadius: 14, padding: '13px 15px', marginBottom: 16,
+            borderRadius: 14, padding: '13px 15px', marginBottom: 10,
             cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
             textAlign: 'left', boxSizing: 'border-box',
             boxShadow: '0 2px 8px rgba(0,0,0,.04)',
@@ -332,6 +355,29 @@ export default function MoreScreen({ role, school, grade, onChangeRole, onChange
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: C.text }}>ACDC Staff Portal</div>
             <div style={{ fontFamily: FF, fontSize: 12, color: C.text3, marginTop: 1 }}>For Academic Coaches — look up your profile & toolkit</div>
+          </div>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={C.text3} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+
+        {/* Have Questions? Reach Out */}
+        <button
+          onClick={() => onNavigate('outreach')}
+          style={{
+            width: '100%', background: '#fff', border: `1.5px solid ${BLUE}22`,
+            borderRadius: 14, padding: '13px 15px', marginBottom: 16,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
+            textAlign: 'left', boxSizing: 'border-box',
+            boxShadow: '0 2px 8px rgba(6,89,144,.07)',
+          }}
+        >
+          <div style={{ width: 34, height: 34, borderRadius: 10, background: `${BLUE}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: C.text }}>Have Questions? Reach Out</div>
+            <div style={{ fontFamily: FF, fontSize: 12, color: C.text3, marginTop: 1 }}>Send a message to the TC Dual Credit team</div>
           </div>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={C.text3} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
         </button>
