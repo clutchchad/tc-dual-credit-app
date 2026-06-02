@@ -16,33 +16,13 @@ const BLUE = '#065990';
 const CARDS_KEY = 'tcdc_v1_cards';
 
 /* ── Weather ── */
-const SCHOOL_COORDS = {
-  txh:          { lat: 33.4418, lon: -94.0377 },
-  le:           { lat: 33.4418, lon: -94.0377 },
-  hooks:        { lat: 33.4674, lon: -94.2858 },
-  pg:           { lat: 33.4418, lon: -94.0377 },
-  bloomburg:    { lat: 33.1318, lon: -94.0543 },
-  avery:        { lat: 33.5457, lon: -94.7749 },
-  dekalb:       { lat: 33.5068, lon: -94.6196 },
-  maud:         { lat: 33.3318, lon: -94.3416 },
-  prem:         { lat: 33.4418, lon: -94.0377 },
-  nb:           { lat: 33.4557, lon: -94.4160 },
-  simms:        { lat: 33.3657, lon: -94.3524 },
-  atlanta:      { lat: 33.1135, lon: -94.1641 },
-  qc:           { lat: 33.1493, lon: -94.1502 },
-  mcleod:       { lat: 33.2068, lon: -94.0877 },
-  lk:           { lat: 33.0018, lon: -94.3585 },
-  rw:           { lat: 33.3568, lon: -94.1338 },
-  datx:         { lat: 33.4418, lon: -94.0377 },
-  'ar-premier': { lat: 33.4418, lon: -94.0377 },
-};
-const DEFAULT_COORDS = { lat: 33.4418, lon: -94.0377 };
+const DEFAULT_COORDS = { lat: 33.4418, lon: -94.0377 }; // Texarkana, TX
 
 function wmoIcon(code) {
-  if (code === 0)                            return '☀️';
-  if (code <= 3)                             return '⛅';
-  if (code === 45 || code === 48)            return '🌫️';
-  if ([51,53,55,61,63,65].includes(code))    return '🌧️';
+  if (code === 0)                               return '☀️';
+  if (code <= 3)                                return '⛅';
+  if (code === 45 || code === 48)               return '🌫️';
+  if ([51,53,55,61,63,65].includes(code))       return '🌧️';
   if (code === 71 || code === 73 || code === 75) return '❄️';
   if (code === 80 || code === 81 || code === 82) return '🌦️';
   if (code === 95 || code === 96 || code === 99) return '⛈️';
@@ -57,16 +37,17 @@ function formatHour(isoStr) {
   return h < 12 ? `${h} AM` : `${h - 12} PM`;
 }
 
-function useWeather(schoolId) {
-  const [weather, setWeather]   = useState(null);
-  const [loading, setLoading]   = useState(true);
+// Accepts a { lat, lon } coords object — no schoolId lookup needed.
+function useWeather(coords) {
+  const [weather, setWeather] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const { lat, lon } = coords || DEFAULT_COORDS;
 
   useEffect(() => {
-    const coords = SCHOOL_COORDS[schoolId] || DEFAULT_COORDS;
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}`
-      + `&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m`
-      + `&hourly=temperature_2m,weathercode,precipitation_probability`
-      + `&temperature_unit=fahrenheit&wind_speed_unit=mph`
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
+      + `&current=temperature_2m,weathercode`
+      + `&hourly=temperature_2m,weathercode`
+      + `&temperature_unit=fahrenheit`
       + `&timezone=America%2FChicago&forecast_days=2`;
 
     let cancelled = false;
@@ -75,82 +56,101 @@ function useWeather(schoolId) {
       .then(r => r.json())
       .then(data => {
         if (cancelled) return;
-        const cur = data.current;
+        const cur   = data.current;
         const times = data.hourly?.time || [];
         const nowIdx = times.findIndex(t => t >= cur.time.slice(0, 13));
-        const start = nowIdx >= 0 ? nowIdx : 0;
+        const start  = nowIdx >= 0 ? nowIdx : 0;
         const hourly = times.slice(start, start + 12).map((t, i) => ({
           time: t,
           temp: Math.round(data.hourly.temperature_2m[start + i]),
           code: data.hourly.weathercode[start + i],
-          precip: data.hourly.precipitation_probability[start + i],
         }));
-        setWeather({
-          temp: Math.round(cur.temperature_2m),
-          code: cur.weathercode,
-          hourly,
-        });
+        setWeather({ temp: Math.round(cur.temperature_2m), code: cur.weathercode, hourly });
         setLoading(false);
       })
       .catch(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [schoolId]);
+  }, [lat, lon]);
 
   return { weather, loading };
 }
 
-/* ── Forecast Modal ── */
-function ForecastModal({ weather, onClose }) {
+/* ── Forecast Slider — bottom sheet with horizontal hour cards ── */
+function ForecastSlider({ weather, onClose }) {
   if (!weather) return null;
   return (
     <div
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(2,43,82,0.55)',
-        display: 'flex', alignItems: 'flex-start',
+        background: 'rgba(2,43,82,0.45)',
+        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
       }}
     >
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          width: '100%', maxHeight: '70vh',
           background: '#fff',
-          borderRadius: '0 0 20px 20px',
-          overflow: 'hidden',
-          display: 'flex', flexDirection: 'column',
+          borderRadius: '20px 20px 0 0',
+          paddingBottom: 'env(safe-area-inset-bottom, 12px)',
+          boxShadow: '0 -4px 32px rgba(2,43,82,.18)',
         }}
       >
-        {/* Handle + header */}
-        <div style={{ padding: '12px 16px 10px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, color: C.text }}>
-            12-Hour Forecast
-          </div>
-          <button
-            onClick={onClose}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.text3} strokeWidth="2.5" strokeLinecap="round">
-              <path d="M18 6 6 18M6 6l12 12"/>
-            </svg>
-          </button>
+        {/* Drag handle */}
+        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 10, paddingBottom: 2 }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: C.border }} />
         </div>
-        {/* Rows */}
-        <div style={{ overflowY: 'auto', padding: '6px 0 env(safe-area-inset-bottom, 12px)' }}>
+
+        {/* Label */}
+        <div style={{
+          fontFamily: FF, fontSize: 12, fontWeight: 700,
+          color: C.text3, textTransform: 'uppercase', letterSpacing: '1.1px',
+          textAlign: 'center', paddingBottom: 12,
+        }}>
+          Next 12 Hours
+        </div>
+
+        {/* Horizontal swipe strip */}
+        <div style={{
+          display: 'flex',
+          overflowX: 'auto',
+          scrollSnapType: 'x mandatory',
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none',
+          gap: 8,
+          padding: '0 16px 16px',
+        }}>
           {weather.hourly.map((h, i) => (
             <div
               key={i}
               style={{
-                display: 'flex', alignItems: 'center',
-                padding: '9px 18px',
-                borderBottom: i < weather.hourly.length - 1 ? `1px solid ${C.border}` : 'none',
+                scrollSnapAlign: 'start',
+                flexShrink: 0,
+                width: 72,
+                background: i === 0 ? BLUE : C.bg,
+                borderRadius: 14,
+                padding: '12px 0',
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', gap: 6,
               }}
             >
-              <span style={{ fontFamily: FF, fontSize: 13, color: C.text3, width: 58, flexShrink: 0 }}>{formatHour(h.time)}</span>
-              <span style={{ fontSize: 18, width: 30, textAlign: 'center', flexShrink: 0 }}>{wmoIcon(h.code)}</span>
-              <span style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: C.text, flex: 1, paddingLeft: 8 }}>{h.temp}°F</span>
-              <span style={{ fontFamily: FF, fontSize: 12, color: h.precip > 30 ? '#065990' : C.text3, fontWeight: h.precip > 30 ? 700 : 500 }}>
-                💧 {h.precip}%
+              {/* Time */}
+              <span style={{
+                fontFamily: FF, fontSize: 11, fontWeight: 700,
+                color: i === 0 ? 'rgba(255,255,255,.75)' : C.text3,
+                letterSpacing: '0.2px',
+              }}>
+                {formatHour(h.time)}
+              </span>
+              {/* Icon */}
+              <span style={{ fontSize: 22, lineHeight: 1 }}>{wmoIcon(h.code)}</span>
+              {/* Temperature */}
+              <span style={{
+                fontFamily: FF, fontSize: 15, fontWeight: 900,
+                color: i === 0 ? '#fff' : C.text,
+                letterSpacing: '-0.4px',
+              }}>
+                {h.temp}°
               </span>
             </div>
           ))}
@@ -160,10 +160,8 @@ function ForecastModal({ weather, onClose }) {
   );
 }
 
-/* ── Weather Pill ── */
-function WeatherPill({ schoolId, onClick }) {
-  const { weather, loading } = useWeather(schoolId);
-
+/* ── Weather Pill — receives weather + loading as props ── */
+function WeatherPill({ weather, loading, onClick }) {
   if (loading) {
     return (
       <div style={{
@@ -812,7 +810,16 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
   const [cardOrder,     setCardOrder]     = useState(loadCardOrder);
   const [forecastOpen,  setForecastOpen]  = useState(false);
 
-  const weatherSchoolId = school?.id || null;
+  // Resolve weather coordinates:
+  //   Students / Parents → their locked-in school's lat/lon from the schools data
+  //   Guests             → Texarkana default
+  const weatherCoords = (() => {
+    if (!isGuest && school?.id) {
+      const rec = schoolList.find(s => s.id === school.id);
+      if (rec?.lat && rec?.lon) return { lat: rec.lat, lon: rec.lon };
+    }
+    return DEFAULT_COORDS;
+  })();
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -907,7 +914,7 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
   }, []);
 
   const greeting = getGreeting(profile, role);
-  const { weather: weatherData } = useWeather(weatherSchoolId);
+  const { weather: weatherData, loading: weatherLoading } = useWeather(weatherCoords);
 
   /* ── Shared header ── */
   const renderHeader = () => (
@@ -957,7 +964,7 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
 
           {/* Right cluster: weather pill + bell */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            <WeatherPill schoolId={weatherSchoolId} onClick={() => setForecastOpen(true)} />
+            <WeatherPill weather={weatherData} loading={weatherLoading} onClick={() => setForecastOpen(true)} />
             {/* Bell only for students and parents */}
             {!isGuest && (
               <button
@@ -982,7 +989,7 @@ export default function HomeScreen({ role: roleProp, school, grade, onNavigate, 
         )}
       </div>
       {forecastOpen && (
-        <ForecastModal weather={weatherData} onClose={() => setForecastOpen(false)} />
+        <ForecastSlider weather={weatherData} onClose={() => setForecastOpen(false)} />
       )}
     </>
   );
