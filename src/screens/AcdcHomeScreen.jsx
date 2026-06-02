@@ -6,7 +6,7 @@
  *
  * Reuses BottomNav, BlueHeader, and PageTitle from the existing component library.
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { C, FF } from '../tokens';
 import BottomNav from '../components/BottomNav';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
@@ -15,6 +15,12 @@ import AcdcProfileTab, { QrPlaceholder } from './AcdcProfileTab';
 import AcdcResourcesTab from './AcdcResourcesTab';
 import AcdcMoreTab      from './AcdcMoreTab';
 import AcdcLookupTab    from './AcdcLookupTab';
+import {
+  DEFAULT_COORDS,
+  useWeather,
+  WeatherPill,
+  ForecastSlider,
+} from '../components/WeatherWidget';
 
 const BLUE = '#065990';
 const LIME = '#EAFF00';
@@ -474,7 +480,22 @@ function AccordionSection({ title, icon, items, accentColor = BLUE }) {
 }
 
 // ── Tab: Home ─────────────────────────────────────────────────────────────────
-function TabHome({ acdc, onSignOut }) {
+function TabHome({ acdc }) {
+  // GPS coords for ACDC weather — falls back to Texarkana default
+  const [gpsCoords, setGpsCoords] = useState(DEFAULT_COORDS);
+  const [forecastOpen, setForecastOpen] = useState(false);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      pos => setGpsCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+      ()  => setGpsCoords(DEFAULT_COORDS),
+      { timeout: 8000, maximumAge: 300_000 },
+    );
+  }, []);
+
+  const { weather: weatherData, loading: weatherLoading } = useWeather(gpsCoords);
+
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Blue gradient header */}
@@ -484,13 +505,26 @@ function TabHome({ acdc, onSignOut }) {
         paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)',
         flexShrink: 0,
       }}>
-        <div style={{ fontFamily: FF, fontSize: 28, fontWeight: 900, color: '#fff', letterSpacing: '-0.8px', lineHeight: 1.15 }}>
-          {acdc?.name ?? 'Abigail Beecher'}
-        </div>
-        <div style={{ fontFamily: FF, fontSize: 14, color: 'rgba(255,255,255,.65)', marginTop: 4 }}>
-          Academic Coach for Dual Credit
+        {/* Name row + weather pill */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: FF, fontSize: 28, fontWeight: 900, color: '#fff', letterSpacing: '-0.8px', lineHeight: 1.15 }}>
+              {acdc?.name ?? 'Abigail Beecher'}
+            </div>
+            <div style={{ fontFamily: FF, fontSize: 14, color: 'rgba(255,255,255,.65)', marginTop: 4 }}>
+              Academic Coach for Dual Credit
+            </div>
+          </div>
+          <div style={{ paddingTop: 4, flexShrink: 0 }}>
+            <WeatherPill weather={weatherData} loading={weatherLoading} onClick={() => setForecastOpen(true)} />
+          </div>
         </div>
       </div>
+
+      {/* Forecast slider (bottom sheet) */}
+      {forecastOpen && (
+        <ForecastSlider weather={weatherData} onClose={() => setForecastOpen(false)} />
+      )}
 
       {/* Scrollable content — overlaps header with negative margin */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 14px 100px', marginTop: -16 }}>
