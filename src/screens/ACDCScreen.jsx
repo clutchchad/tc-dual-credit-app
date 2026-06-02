@@ -144,7 +144,7 @@ function OfficeCard() {
 
 // ── CoachCard ─────────────────────────────────────────────────────────────────
 
-function CoachCard({ acdc, school, grade, isTablet }) {
+function CoachCard({ acdc, school, grade, isTablet, onNavigate }) {
   const contextLine = getFullSchoolName(school.id);
 
   const gradeLabel = (() => {
@@ -185,7 +185,7 @@ function CoachCard({ acdc, school, grade, isTablet }) {
               </a>
               {acdc.schedulingUrl && (
                 <button
-                  onClick={() => window.open(buildSchedulingUrl(), '_blank', 'noopener,noreferrer')}
+                  onClick={() => onNavigate('schedule_advising')}
                   style={{
                     height: 44, padding: '0 20px',
                     background: LIME, border: 'none', borderRadius: 12,
@@ -233,7 +233,7 @@ function CoachCard({ acdc, school, grade, isTablet }) {
         {/* Calendar — Electric Lime fill, BLUE icon */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
           <button
-            onClick={() => window.open(buildSchedulingUrl(), '_blank', 'noopener,noreferrer')}
+            onClick={() => onNavigate('schedule_advising')}
             style={{
               width: 48, height: 48, borderRadius: 14,
               background: LIME, border: 'none', cursor: 'pointer',
@@ -245,7 +245,7 @@ function CoachCard({ acdc, school, grade, isTablet }) {
             </svg>
           </button>
           <span style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 800, color: '#9ca3af', textAlign: 'center', lineHeight: 1.2, maxWidth: 60 }}>
-            Schedule Appointment
+            Schedule Advising
           </span>
         </div>
 
@@ -351,7 +351,7 @@ export default function ACDCScreen({ school, grade, onNavigate, tabs }) {
       </BlueHeader>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: sidePad, marginTop: -28 }}>
-        {isUnassigned ? <OfficeCard /> : <CoachCard acdc={acdc} school={school} grade={grade} isTablet={isTablet} />}
+        {isUnassigned ? <OfficeCard /> : <CoachCard acdc={acdc} school={school} grade={grade} isTablet={isTablet} onNavigate={onNavigate} />}
         <AboutCard />
       </div>
 

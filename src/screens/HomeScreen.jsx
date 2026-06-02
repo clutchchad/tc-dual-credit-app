@@ -266,7 +266,14 @@ function AcdcStrip({ acdc, onNavigate }) {
 
       {/* 3 action icons */}
       <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
-        {iconBtn(calIcon, buildSchedulingUrl(), '_blank')}
+        <button
+          onClick={() => onNavigate('schedule_advising')}
+          style={{ textDecoration: 'none', flexShrink: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+        >
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: BLUE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {calIcon}
+          </div>
+        </button>
         {iconBtn(phoneIcon, `tel:${acdc.phone}`, undefined)}
         {acdc.email
           ? iconBtn(mailIcon(LIME), `mailto:${acdc.email}`, undefined)

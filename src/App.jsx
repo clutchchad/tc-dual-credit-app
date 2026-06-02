@@ -18,7 +18,8 @@ import ApplyScreen          from './screens/ApplyScreen';
 import NotificationsScreen  from './screens/NotificationsScreen';
 import ImportantDatesScreen from './screens/ImportantDatesScreen';
 import TransferPathwayScreen   from './screens/TransferPathwayScreen';
-import AcdcPortalLookupScreen from './screens/AcdcPortalLookupScreen';
+import ScheduleAdvisingScreen  from './screens/ScheduleAdvisingScreen';
+import AcdcPortalLookupScreen  from './screens/AcdcPortalLookupScreen';
 import AcdcPortalHomeScreen   from './screens/AcdcPortalHomeScreen';
 import AcdcLoginScreen    from './screens/AcdcLoginScreen';
 import AcdcConfirmScreen  from './screens/AcdcConfirmScreen';
@@ -290,6 +291,11 @@ export default function App() {
         ) : (
           renderOnboardRole()
         );
+      }
+
+      case 'schedule_advising': {
+        const isGuest = (role || 'guest') === 'guest';
+        return <ScheduleAdvisingScreen school={school} grade={grade} {...(isGuest ? guestNavProps : navProps)} />;
       }
 
       case 'acdc':
