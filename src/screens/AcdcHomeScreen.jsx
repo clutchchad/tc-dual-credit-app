@@ -3,7 +3,7 @@
  *
  * Tabs: Home | Contact Card | Pathways | Resources | More
  *
- * Home      — coach identity header + toolkit action cards
+ * Home      — coach identity header + feed (notifications, announcements, events, deadlines)
  * Contact Card — AcdcProfileTab (coach views their own public card)
  * Pathways  — pathway plans filtered to only the coach's assigned schools
  * Resources — AcdcResourcesTab (same resource library as student experience)
@@ -22,6 +22,7 @@ import AcdcResourcesTab from './AcdcResourcesTab';
 import AcdcMoreTab      from './AcdcMoreTab';
 import { PATHWAYS } from '../data/pathways';
 import { SCHOOLS }  from '../data/schools';
+import { events as ALL_EVENTS } from '../data/events';
 
 const BLUE = '#065990';
 const LIME = '#EAFF00';
@@ -85,63 +86,165 @@ function CoachAvatar({ photo, name, size = 62 }) {
   );
 }
 
-// ── Toolkit action card ───────────────────────────────────────────────────────
-function ToolkitCard({ icon, label, sublabel, lime = false, onClick }) {
+// ── Seed: notifications sent to students (replace with Firestore query later) ─
+const SENT_NOTIFICATIONS = [
+  {
+    id: 'sn-1',
+    title: 'Fall 2026 Registration is Open',
+    body: 'Fall 2026 dual credit registration is now open. Students should log in to Jenzabar and select their courses before the deadline. Contact your ACDC with any questions.',
+    date: '2026-05-28',
+    schools: 'all',
+  },
+  {
+    id: 'sn-2',
+    title: 'TSIA2 Testing Reminder',
+    body: 'Students who have not yet met TSIA2 requirements must test before August 1st. Testing is available at the TC Testing Center. Call 903-823-3278 to schedule.',
+    date: '2026-05-20',
+    schools: ['txh', 'le', 'pg'],
+  },
+  {
+    id: 'sn-3',
+    title: 'Application Deadline Approaching',
+    body: 'The Fall 2026 dual credit application deadline is August 1st. Students who have not yet applied should visit my.texarkanacollege.edu to complete their application.',
+    date: '2026-05-15',
+    schools: 'all',
+  },
+];
+
+// ── Seed: announcements (replace with Firestore query later) ─────────────────
+const ANNOUNCEMENTS = [
+  {
+    id: 'an-1',
+    title: 'Updated Dual Credit Handbook Available',
+    body: 'The 2026–2027 Dual Credit Student Handbook has been updated. Key changes include revised drop/withdrawal policies and updated TSI exemption criteria. Share with incoming students.',
+    date: '2026-05-22',
+  },
+  {
+    id: 'an-2',
+    title: 'Fall Orientation Confirmed for August 18',
+    body: 'New Student Orientation is confirmed for August 18th on the TC campus. All new dual credit students are strongly encouraged to attend. Registration opens July 1st.',
+    date: '2026-05-10',
+  },
+  {
+    id: 'an-3',
+    title: 'TC Promise Scholarship — New Cohort',
+    body: 'TC Promise applications for the 2026–2027 cohort open June 1st. Encourage eligible graduating seniors to apply. Full tuition coverage for qualified students.',
+    date: '2026-05-01',
+  },
+];
+
+function fmtDate(str) {
+  if (!str) return '';
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+// ── Expandable feed card ──────────────────────────────────────────────────────
+function FeedCard({ title, date, meta, body, accentColor }) {
+  const [open, setOpen] = useState(false);
   return (
-    <button onClick={onClick}
-      style={{
-        width: '100%', background: lime ? LIME : '#fff',
-        border: lime ? 'none' : `1px solid ${C.border}`,
-        borderRadius: 18, padding: '15px 16px', marginBottom: 10,
-        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14,
-        textAlign: 'left', boxSizing: 'border-box',
-        boxShadow: lime ? '0 4px 20px rgba(234,255,0,.3)' : '0 2px 8px rgba(0,0,0,.04)',
-        transition: 'transform .1s',
-      }}
-      onMouseDown={e  => e.currentTarget.style.transform = 'scale(0.98)'}
-      onMouseUp={e    => e.currentTarget.style.transform = 'scale(1)'}
-      onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-      onTouchStart={e => e.currentTarget.style.transform = 'scale(0.98)'}
-      onTouchEnd={e   => e.currentTarget.style.transform = 'scale(1)'}
-    >
-      <div style={{ width: 46, height: 46, borderRadius: 13, flexShrink: 0,
-        background: lime ? `${BLUE}18` : `${BLUE}14`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {icon}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 800,
-          color: lime ? DARK : C.text, lineHeight: 1.2 }}>{label}</div>
-        {sublabel && (
-          <div style={{ fontFamily: FF, fontSize: 12,
-            color: lime ? `${DARK}99` : C.text3, marginTop: 3, lineHeight: 1.4 }}>
-            {sublabel}
-          </div>
+    <div style={{
+      background: '#fff', border: `1px solid ${C.border}`, borderRadius: 14,
+      marginBottom: 10, overflow: 'hidden',
+      boxShadow: '0 1px 4px rgba(0,0,0,.05)',
+    }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%', background: 'none', border: 'none', cursor: 'pointer',
+          padding: '13px 14px', display: 'flex', alignItems: 'flex-start', gap: 10,
+          textAlign: 'left', boxSizing: 'border-box',
+        }}
+      >
+        {accentColor && (
+          <div style={{ width: 3, borderRadius: 4, alignSelf: 'stretch', flexShrink: 0,
+            background: accentColor, minHeight: 28, marginTop: 1 }} />
         )}
-      </div>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-        stroke={lime ? DARK : C.text3} strokeWidth="2.5" strokeLinecap="round"
-        style={{ flexShrink: 0, opacity: 0.6 }}>
-        <path d="M9 18l6-6-6-6"/>
-      </svg>
-    </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: C.text,
+            lineHeight: 1.3, marginBottom: 4 }}>
+            {title}
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+            {date && (
+              <span style={{ fontFamily: FF, fontSize: 11, color: C.text3 }}>{fmtDate(date)}</span>
+            )}
+            {meta && meta.map((m, i) => (
+              <span key={i} style={{
+                fontFamily: FF, fontSize: 10, fontWeight: 700, color: BLUE,
+                background: `${BLUE}12`, borderRadius: 20, padding: '2px 8px',
+              }}>{m}</span>
+            ))}
+          </div>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+          stroke={C.text3} strokeWidth="2.5" strokeLinecap="round"
+          style={{ flexShrink: 0, marginTop: 4, transform: open ? 'rotate(90deg)' : 'none',
+            transition: 'transform .2s' }}>
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </button>
+
+      {open && body && (
+        <div style={{
+          padding: '0 14px 14px', paddingLeft: accentColor ? '27px' : '14px',
+          borderTop: `1px solid ${C.border}`,
+        }}>
+          <p style={{ fontFamily: FF, fontSize: 13, color: C.text2, lineHeight: 1.65,
+            margin: '12px 0 0' }}>
+            {body}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Section header ────────────────────────────────────────────────────────────
+function SectionHead({ label, count }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      marginBottom: 10, marginTop: 20, paddingLeft: 2 }}>
+      <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: C.text3,
+        textTransform: 'uppercase', letterSpacing: '1.4px' }}>
+        {label}
+      </span>
+      {count != null && (
+        <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
+          background: `${BLUE}12`, borderRadius: 20, padding: '2px 9px' }}>
+          {count}
+        </span>
+      )}
+    </div>
   );
 }
 
 // ── Tab: Home ─────────────────────────────────────────────────────────────────
-function TabHome({ acdc, onGoResources, onGoPathways, onSignOut }) {
-  const schoolList = [
+function TabHome({ acdc }) {
+  const schoolList = useMemo(() => [
     ...(acdc?.txhGrades?.length ? ['txh'] : []),
     ...(acdc?.schools || []),
-  ];
+  ], [acdc]);
 
-  const emailSubject = encodeURIComponent('Dual Credit — Information for You');
-  const emailBody = encodeURIComponent(
-    `Hi,\n\nI'm ${acdc?.name ?? 'your ACDC'}, your Academic Coach for Dual Credit at Texarkana College.\n\nI'm reaching out to share some information about your dual credit courses. Please let me know if you have any questions.\n\n${acdc?.name ?? ''}\nTC Dual Credit`
-  );
-  const smsBody = encodeURIComponent(
-    `Hi, this is ${acdc?.name ?? 'your ACDC'} from TC Dual Credit. I wanted to reach out about your dual credit enrollment. Reply here or call ${acdc?.phone ?? ''}.`
-  );
+  // Filter sent notifications to coach's schools
+  const sentNotifs = useMemo(() => SENT_NOTIFICATIONS.filter(n =>
+    n.schools === 'all' || schoolList.some(s => n.schools.includes(s))
+  ), [schoolList]);
+
+  // Filter events and deadlines to coach's schools
+  const upcomingEvents = useMemo(() => ALL_EVENTS.filter(e =>
+    e.type === 'event' && (e.school === 'all' || schoolList.includes(e.school))
+  ), [schoolList]);
+
+  const upcomingDeadlines = useMemo(() => ALL_EVENTS.filter(e =>
+    e.type === 'deadline' && (e.school === 'all' || schoolList.includes(e.school))
+  ), [schoolList]);
+
+  // Build "audience" label for sent notifications
+  function audienceLabels(n) {
+    if (n.schools === 'all') return ['All Schools'];
+    return n.schools.map(id => getSchoolName(id).replace(' High School', ''));
+  }
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -150,22 +253,9 @@ function TabHome({ acdc, onGoResources, onGoPathways, onSignOut }) {
       <div style={{
         background: `linear-gradient(160deg, ${DARK} 0%, ${BLUE} 100%)`,
         flexShrink: 0,
-        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 14px)',
-        paddingBottom: 28, paddingLeft: 20, paddingRight: 20,
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 18px)',
+        paddingBottom: 24, paddingLeft: 20, paddingRight: 20,
       }}>
-        {/* Exit row */}
-        <button onClick={onSignOut}
-          style={{ background: 'none', border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '0 0 16px', color: 'rgba(255,255,255,.7)' }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            strokeWidth="2.5" strokeLinecap="round">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-          <span style={{ fontFamily: FF, fontSize: 12, fontWeight: 600 }}>Exit Portal</span>
-        </button>
-
-        {/* Coach row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <CoachAvatar photo={acdc?.photo} name={acdc?.name} size={62} />
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -183,7 +273,6 @@ function TabHome({ acdc, onGoResources, onGoPathways, onSignOut }) {
           </div>
         </div>
 
-        {/* Assigned schools */}
         {schoolList.length > 0 && (
           <div style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {schoolList.map(id => (
@@ -199,42 +288,68 @@ function TabHome({ acdc, onGoResources, onGoPathways, onSignOut }) {
         )}
       </div>
 
-      {/* Toolkit cards */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '18px 14px 120px' }}>
-        <div style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: C.text3,
-          textTransform: 'uppercase', letterSpacing: '1.4px', marginBottom: 12, paddingLeft: 2 }}>
-          Your Toolkit
-        </div>
+      {/* Feed */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '4px 14px 120px' }}>
 
-        <ToolkitCard lime
-          label="Send Resources & Docs"
-          sublabel="Browse student resources and documents to share"
-          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>}
-          onClick={onGoResources}
-        />
+        {/* Notifications Sent */}
+        <SectionHead label="Notifications Sent" count={sentNotifs.length} />
+        {sentNotifs.length > 0 ? sentNotifs.map(n => (
+          <FeedCard key={n.id}
+            title={n.title}
+            date={n.date}
+            meta={audienceLabels(n)}
+            body={n.body}
+            accentColor={LIME}
+          />
+        )) : (
+          <p style={{ fontFamily: FF, fontSize: 13, color: C.text3, paddingLeft: 2, marginBottom: 8 }}>
+            No notifications sent yet.
+          </p>
+        )}
 
-        <ToolkitCard
-          label="Look Up Pathway Plans"
-          sublabel="Browse pathway plans for your assigned schools"
-          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M12 19h4.5a3.5 3.5 0 000-7h-8a3.5 3.5 0 010-7H12"/></svg>}
-          onClick={onGoPathways}
-        />
+        {/* Announcements */}
+        <SectionHead label="Announcements" count={ANNOUNCEMENTS.length} />
+        {ANNOUNCEMENTS.map(a => (
+          <FeedCard key={a.id}
+            title={a.title}
+            date={a.date}
+            body={a.body}
+            accentColor={BLUE}
+          />
+        ))}
 
-        {/* FERPA: native mailto handoff — no recipient, body, or send record stored */}
-        <ToolkitCard
-          label="Email a Student"
-          sublabel="Opens your email app — no contact stored by this app"
-          icon={<svg width="22" height="20" viewBox="0 0 24 20" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>}
-          onClick={() => { window.location.href = `mailto:?subject=${emailSubject}&body=${emailBody}`; }}
-        />
+        {/* Upcoming Events */}
+        <SectionHead label="Upcoming Events" count={upcomingEvents.length} />
+        {upcomingEvents.length > 0 ? upcomingEvents.map(e => (
+          <FeedCard key={e.id}
+            title={e.title}
+            date={e.date}
+            meta={e.school !== 'all' ? [getSchoolName(e.school).replace(' High School', '')] : null}
+            body={e.location ? `📍 ${e.location}` : null}
+            accentColor={`${BLUE}60`}
+          />
+        )) : (
+          <p style={{ fontFamily: FF, fontSize: 13, color: C.text3, paddingLeft: 2, marginBottom: 8 }}>
+            No upcoming events.
+          </p>
+        )}
 
-        {/* FERPA: native sms handoff — no recipient number, message, or send record stored */}
-        <ToolkitCard
-          label="Text a Student"
-          sublabel="Opens your SMS app — no contact stored by this app"
-          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>}
-          onClick={() => { window.location.href = `sms:?&body=${smsBody}`; }}
-        />
+        {/* Deadlines */}
+        <SectionHead label="Deadlines" count={upcomingDeadlines.length} />
+        {upcomingDeadlines.length > 0 ? upcomingDeadlines.map(d => (
+          <FeedCard key={d.id}
+            title={d.title}
+            date={d.date}
+            meta={d.school !== 'all' ? [getSchoolName(d.school).replace(' High School', '')] : null}
+            body={d.location || null}
+            accentColor="#dc2626"
+          />
+        )) : (
+          <p style={{ fontFamily: FF, fontSize: 13, color: C.text3, paddingLeft: 2, marginBottom: 8 }}>
+            No upcoming deadlines.
+          </p>
+        )}
+
       </div>
     </div>
   );
@@ -366,14 +481,7 @@ export default function AcdcHomeScreen({ acdc, onSignOut }) {
   const renderTab = () => {
     switch (activeTab) {
       case 'home':
-        return (
-          <TabHome
-            acdc={acdc}
-            onGoResources={() => setActiveTab('resources')}
-            onGoPathways={() => setActiveTab('pathways')}
-            onSignOut={onSignOut}
-          />
-        );
+        return <TabHome acdc={acdc} />;
       case 'profile':
         return <AcdcProfileTab acdc={acdc} />;
       case 'pathways':
@@ -383,7 +491,7 @@ export default function AcdcHomeScreen({ acdc, onSignOut }) {
       case 'more':
         return <AcdcMoreTab onSignOut={onSignOut} />;
       default:
-        return <TabHome acdc={acdc} onGoResources={() => setActiveTab('resources')} onGoPathways={() => setActiveTab('pathways')} onSignOut={onSignOut} />;
+        return <TabHome acdc={acdc} />;
     }
   };
 
