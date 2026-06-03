@@ -33,7 +33,7 @@ function getFullSchoolName(id) {
 
 // ── School color bar ──────────────────────────────────────────────────────────
 
-function SchoolColorBar({ school, grade, onBack }) {
+function SchoolColorBar({ school, onBack }) {
   const textColor = school.textColor || '#ffffff';
   return (
     <div style={{
@@ -188,7 +188,6 @@ export default function PathwaysScreen({ onNavigate, tabs }) {
     return SCHOOLS.find(s => s.id === schoolId);
   }, [schoolId]);
 
-  const grade = stored.grade || null;
   const isGuest = !school;
   const activeSchool = isGuest ? browsingSchool : school;
 
@@ -201,7 +200,6 @@ export default function PathwaysScreen({ onNavigate, tabs }) {
       {activeSchool && (
         <SchoolColorBar
           school={activeSchool}
-          grade={!isGuest ? grade : null}
           onBack={isGuest && browsingSchool ? () => setBrowsingSchool(null) : null}
         />
       )}

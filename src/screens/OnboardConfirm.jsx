@@ -5,7 +5,7 @@ const LIME = '#EAFF00';
 const BLUE = '#065990';
 const DARK = '#022b52';
 
-export default function OnboardConfirm({ role, school, grade, onConfirm, onBack }) {
+export default function OnboardConfirm({ role, school, onConfirm, onBack }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => { setTimeout(() => setVisible(true), 100); }, []);
 
@@ -34,20 +34,6 @@ export default function OnboardConfirm({ role, school, grade, onConfirm, onBack 
       ),
       label: 'School',
       value: school.name,
-      iconBg: 'rgba(6,89,144,.10)',
-    });
-  }
-
-  if (school?.id === 'txh' && grade) {
-    rows.push({
-      icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round">
-          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-        </svg>
-      ),
-      label: 'Grade',
-      value: grade,
       iconBg: 'rgba(6,89,144,.10)',
     });
   }

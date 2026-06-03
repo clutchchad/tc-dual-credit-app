@@ -6,7 +6,6 @@ import SplashScreen       from './screens/SplashScreen';
 import OnboardRole        from './screens/OnboardRole';
 import PathwaysChooserScreen from './screens/PathwaysChooserScreen';
 import OnboardSchool      from './screens/OnboardSchool';
-import OnboardGrade       from './screens/OnboardGrade';
 import OnboardConfirm     from './screens/OnboardConfirm';
 import HomeScreen         from './screens/HomeScreen';
 import ACDCScreen         from './screens/ACDCScreen';
@@ -57,7 +56,6 @@ export default function App() {
   const [screen,      setScreen]      = useState('splash');
   const [role,        setRole]        = useState(stored.role        || null);
   const [school,      setSchool]      = useState(stored.school      || null);
-  const [grade,       setGrade]       = useState(stored.grade       || null);
   const [acdcProfile, setAcdcProfile] = useState(stored.acdcProfile || null);
   const [portalCoach, setPortalCoach] = useState(null);
   const [animKey,     setAnimKey]     = useState(0);
@@ -66,7 +64,7 @@ export default function App() {
 
   const reset = () => {
     localStorage.removeItem(STORAGE_KEY);
-    setRole(null); setSchool(null); setGrade(null); setAcdcProfile(null);
+    setRole(null); setSchool(null); setAcdcProfile(null);
     go('onboard_role');
   };
 
@@ -75,7 +73,7 @@ export default function App() {
   const navProps      = { tabs: NAV_TABS,       onNavigate: go };
   const guestNavProps = { tabs: GUEST_NAV_TABS, onNavigate: go };
 
-  const ONBOARDING_SCREENS = ['splash', 'onboard_role', 'onboard_school', 'onboard_grade', 'onboard_confirm', 'change_school', 'apply'];
+  const ONBOARDING_SCREENS = ['splash', 'onboard_role', 'onboard_school', 'onboard_confirm', 'change_school', 'apply'];
   const showSideNav = isTablet && !ONBOARDING_SCREENS.includes(screen);
   const activeTabs  = (!role || role === 'guest') ? GUEST_NAV_TABS : NAV_TABS;
 
@@ -101,7 +99,6 @@ export default function App() {
             onComplete={() => {
               const s = getStored();
               if (s.role === 'acdc' && s.acdcProfile) {
-                // Returning ACDC — restore profile and land directly in the portal
                 setRole('acdc');
                 setAcdcProfile(s.acdcProfile);
                 go('acdc_home');
@@ -111,7 +108,6 @@ export default function App() {
               } else if (s.role && s.school) {
                 setRole(s.role);
                 setSchool(s.school);
-                setGrade(s.grade || null);
                 go('home');
               } else {
                 go('onboard_role');
@@ -129,52 +125,34 @@ export default function App() {
             role={role}
             onSelect={sc => {
               setSchool(sc);
-              setGrade(null);
-              go('onboard_grade');
+              go('onboard_confirm');
             }}
             onBack={() => go('onboard_role')}
           />
         );
 
-      // Change My School path (from More screen) — skips grade picker if grade already stored
       case 'change_school':
         return (
           <OnboardSchool
             role={role}
             onSelect={sc => {
               setSchool(sc);
-              const storedGrade = getStored().grade;
-              if (sc.id === 'txh' && !storedGrade) {
-                // Only show grade picker for Texas High when no grade is on record
-                go('onboard_grade');
-              } else {
-                // Keep existing grade; go straight to confirm
-                go('onboard_confirm');
-              }
+              go('onboard_confirm');
             }}
             onBack={() => go('more')}
           />
         );
-
-      case 'onboard_grade':
-        return school ? (
-          <OnboardGrade
-            onSelect={g => { setGrade(g); go('onboard_confirm'); }}
-            onBack={() => go('onboard_school')}
-          />
-        ) : null;
 
       case 'onboard_confirm':
         return (role && school) ? (
           <OnboardConfirm
             role={role}
             school={school}
-            grade={grade}
             onConfirm={() => {
-              saveStored({ ...getStored(), role, school, grade });
+              saveStored({ ...getStored(), role, school });
               go('home');
             }}
-            onBack={() => go('onboard_grade')}
+            onBack={() => go('onboard_school')}
           />
         ) : null;
 
@@ -216,16 +194,14 @@ export default function App() {
         );
 
       case 'home': {
-        // Use localStorage as ground truth — avoids any React state batching lag
         const liveStored = getStored();
         const resolvedRole = role || liveStored.role;
-        // ACDCs have their own portal — redirect if they somehow land here
         if (resolvedRole === 'acdc') go('acdc_home');
         if (resolvedRole === 'guest') {
-          return <HomeScreen role="guest" school={null} grade={null} {...guestNavProps} />;
+          return <HomeScreen role="guest" school={null} {...guestNavProps} />;
         }
         return resolvedRole && school ? (
-          <HomeScreen role={resolvedRole} school={school} grade={grade} {...navProps} />
+          <HomeScreen role={resolvedRole} school={school} {...navProps} />
         ) : (
           renderOnboardRole()
         );
@@ -238,22 +214,20 @@ export default function App() {
 
       case 'schedule_advising': {
         const isGuest = (role || 'guest') === 'guest';
-        return <ScheduleAdvisingScreen school={school} grade={grade} {...(isGuest ? guestNavProps : navProps)} />;
+        return <ScheduleAdvisingScreen school={school} {...(isGuest ? guestNavProps : navProps)} />;
       }
 
       case 'acdc':
-        // Guests have no school — redirect to More (profile CTA)
         if (!school) return (
           <MoreScreen
             role={role || 'guest'}
             school={null}
-            grade={null}
             onChangeRole={reset}
             onChangeSchool={() => go('change_school')}
             {...guestNavProps}
           />
         );
-        return <ACDCScreen school={school} grade={grade} {...navProps} />;
+        return <ACDCScreen school={school} {...navProps} />;
 
       case 'resources': {
         const isGuest = (role || 'guest') === 'guest';
@@ -269,7 +243,6 @@ export default function App() {
           <MoreScreen
             role={role || 'guest'}
             school={school || { name: 'Your School' }}
-            grade={grade}
             onChangeRole={reset}
             onChangeSchool={() => go('change_school')}
             {...(isGuest ? guestNavProps : navProps)}

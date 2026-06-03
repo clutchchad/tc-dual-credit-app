@@ -285,7 +285,7 @@ function GuestMoreScreen({ onChangeRole, onNavigate, tabs }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Main screen
 // ─────────────────────────────────────────────────────────────────────────────
-export default function MoreScreen({ role, school, grade, onChangeRole, onChangeSchool, onNavigate, tabs }) {
+export default function MoreScreen({ role, school, onChangeRole, onChangeSchool, onNavigate, tabs }) {
   const isTablet = useIsTablet();
 
   if (role === 'guest') {

@@ -113,16 +113,7 @@ export function getAcdcByLastName(lastName) {
   return acdcContacts.find(c => c.lastName.toLowerCase() === q) || null;
 }
 
-/**
- * Look up the ACDC coach for a given school id and optional grade.
- * Grade is only meaningful for Texas High (txh).
- */
-export function getAcdcForSchool(schoolId, grade = null) {
-  if (schoolId === 'txh') {
-    if (grade === 'Junior')  return acdcContacts.find(c => c.id === 'mharmon');
-    if (grade === 'Senior')  return acdcContacts.find(c => c.id === 'kpage');
-    // Freshman, Sophomore, or no grade selected yet
-    return acdcContacts.find(c => c.id === 'bbarrett');
-  }
+export function getAcdcForSchool(schoolId) {
+  if (schoolId === 'txh') return acdcContacts.find(c => c.id === 'bbarrett');
   return acdcContacts.find(c => c.schools.includes(schoolId));
 }

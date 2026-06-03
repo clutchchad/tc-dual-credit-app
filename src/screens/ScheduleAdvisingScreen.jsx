@@ -162,10 +162,10 @@ function NoSchoolPrompt({ onNavigate }) {
 
 // ── Main Screen ───────────────────────────────────────────────────────────────
 
-export default function ScheduleAdvisingScreen({ school, grade, onNavigate, tabs }) {
+export default function ScheduleAdvisingScreen({ school, onNavigate, tabs }) {
   const isTablet = useIsTablet();
 
-  const acdc = school ? getAcdcForSchool(school.id, grade) : null;
+  const acdc = school ? getAcdcForSchool(school.id) : null;
 
   // Email address: use coach's own email if present, otherwise fall back to DC office.
   // FERPA: mailto handoff opens the device mail app only — no email address,

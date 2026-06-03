@@ -144,15 +144,8 @@ function OfficeCard() {
 
 // ── CoachCard ─────────────────────────────────────────────────────────────────
 
-function CoachCard({ acdc, school, grade, isTablet, onNavigate }) {
+function CoachCard({ acdc, school, isTablet, onNavigate }) {
   const contextLine = getFullSchoolName(school.id);
-
-  const gradeLabel = (() => {
-    if (!acdc.txhGrades?.length) return null;
-    const map = { Freshman: '9th', Sophomore: '10th', Junior: '11th', Senior: '12th' };
-    const nums = acdc.txhGrades.map(g => map[g] || g);
-    return `Texas High  ${nums.join(' & ')} Grade`;
-  })();
 
   if (isTablet) {
     /* Horizontal layout: photo left, details right */
@@ -338,9 +331,9 @@ function AboutCard() {
 
 // ── Main Screen ───────────────────────────────────────────────────────────────
 
-export default function ACDCScreen({ school, grade, onNavigate, tabs }) {
+export default function ACDCScreen({ school, onNavigate, tabs }) {
   const isTablet     = useIsTablet();
-  const acdc         = getAcdcForSchool(school.id, grade);
+  const acdc         = getAcdcForSchool(school.id);
   const isUnassigned = school.unassigned === true;
   const sidePad      = isTablet ? '0 24px 40px' : '0 14px 100px';
 
@@ -351,7 +344,7 @@ export default function ACDCScreen({ school, grade, onNavigate, tabs }) {
       </BlueHeader>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: sidePad, marginTop: -28 }}>
-        {isUnassigned ? <OfficeCard /> : <CoachCard acdc={acdc} school={school} grade={grade} isTablet={isTablet} onNavigate={onNavigate} />}
+        {isUnassigned ? <OfficeCard /> : <CoachCard acdc={acdc} school={school} isTablet={isTablet} onNavigate={onNavigate} />}
         <AboutCard />
       </div>
 

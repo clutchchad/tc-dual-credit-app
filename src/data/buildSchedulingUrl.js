@@ -8,8 +8,6 @@
 
 const HSFORMS_BASE = 'https://share.hsforms.com/2IWy_TsLAQeu7ZOr9qVzCOgxach';
 
-const GRADE_MAP = { Freshman: '9th', Sophomore: '10th', Junior: '11th', Senior: '12th' };
-
 // Keyed by schools.js id → exact HubSpot internal dropdown value
 const SCHOOL_MAP = {
   le:    'Liberty-Eylau High School',
@@ -46,10 +44,8 @@ export function buildSchedulingUrl() {
   const resolvedEmail = email || stored.tcEmail || null;
   if (resolvedEmail) params.push(`email=${encodeURIComponent(resolvedEmail)}`);
 
-  const gradeHs  = stored.grade      ? GRADE_MAP[stored.grade]          : null;
-  const schoolHs = stored.school?.id ? SCHOOL_MAP[stored.school.id]     : null;
+  const schoolHs = stored.school?.id ? SCHOOL_MAP[stored.school.id] : null;
 
-  if (gradeHs)  params.push(`grade=${encodeURIComponent(gradeHs)}`);
   if (schoolHs) params.push(`high_school_attended_dropdown=${encodeURIComponent(schoolHs)}`);
 
   return params.length ? `${HSFORMS_BASE}?${params.join('&')}` : HSFORMS_BASE;
