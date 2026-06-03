@@ -288,10 +288,9 @@ export default function App() {
 
       case 'acdc_portal_home':
         return portalCoach ? (
-          <AcdcPortalHomeScreen
-            coach={portalCoach}
-            onNavigate={go}
-            onExit={() => go('onboard_role')}
+          <AcdcHomeScreen
+            acdc={portalCoach}
+            onSignOut={() => { setPortalCoach(null); go('onboard_role'); }}
           />
         ) : null;
 

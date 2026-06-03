@@ -212,33 +212,58 @@ function SendSheet({ item, onClose }) {
   );
 }
 
-// ── Share buttons ─────────────────────────────────────────────────────────────
-const SHARE_ITEMS = [
-  { id: 'application', label: 'Send Application',     url: LINKS.application },
-  { id: 'app',         label: 'Send App',              url: LINKS.app         },
-  { id: 'appointment', label: 'Send Appointment Form', url: LINKS.appointment },
-];
+const FULL_SCHOOL_NAMES = {
+  txh: 'Texas High School', le: 'Liberty-Eylau High School', hooks: 'Hooks High School',
+  pg: 'Pleasant Grove High School', bloomburg: 'Bloomburg High School', avery: 'Avery High School',
+  dekalb: 'DeKalb High School', maud: 'Maud High School', prem: 'Premier High School',
+  nb: 'New Boston High School', simms: 'James Bowie High School', atlanta: 'Atlanta High School',
+  qc: 'Queen City High School', mcleod: 'McLeod High School', lk: 'Linden-Kildare High School',
+  rw: 'Redwater High School', datx: 'Digital Academy of Texas', 'ar-premier': 'Premier High School - Arkansas',
+};
 
 // ── Main export ───────────────────────────────────────────────────────────────
 export default function AcdcProfileTab({ acdc }) {
-  const [activeItem, setActiveItem] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  const schoolList = [
+    ...(acdc?.txhGrades?.length ? ['txh'] : []),
+    ...(acdc?.schools || []),
+  ];
+
+  const handleShare = async () => {
+    const schoolNames = schoolList.map(id => FULL_SCHOOL_NAMES[id] || id).join(', ');
+    const text = [
+      acdc?.name ?? '',
+      'Academic Coach for Dual Credit',
+      'Texarkana College',
+      '',
+      acdc?.phone ? `📞 ${acdc.phone}` : '',
+      acdc?.email ? `✉️ ${acdc.email}` : '',
+      schoolNames ? `🏫 ${schoolNames}` : '',
+    ].filter(Boolean).join('\n');
+
+    if (navigator.share) {
+      try { await navigator.share({ title: acdc?.name, text }); } catch {}
+    } else {
+      navigator.clipboard?.writeText(text).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    }
+  };
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-      {/* Blue header */}
       <BlueHeader style={{ paddingBottom: 36 }}>
         <PageTitle title="Contact Card" />
       </BlueHeader>
 
-      {/* Body — no scroll */}
       <div style={{
-        flex: 1, overflow: 'hidden',
+        flex: 1, overflowY: 'auto',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        padding: '13px 20px 0',
-        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
-        marginTop: 0,
-        textAlign: 'center',
+        padding: '13px 20px calc(env(safe-area-inset-bottom, 0px) + 120px)',
+        marginTop: -24, textAlign: 'center',
       }}>
 
         {/* Photo */}
@@ -247,69 +272,97 @@ export default function AcdcProfileTab({ acdc }) {
         {/* Name */}
         <div style={{ fontFamily: FF, fontSize: 20, fontWeight: 900, color: DARK,
           letterSpacing: '-0.3px', lineHeight: 1.2, marginTop: 10, marginBottom: 3 }}>
-          {acdc?.name ?? 'Abigail Beecher'}
+          {acdc?.name ?? ''}
         </div>
 
         {/* Title */}
-        <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: BLUE, marginBottom: 4 }}>
+        <div style={{ fontFamily: FF, fontSize: 12, fontWeight: 700, color: BLUE, marginBottom: 12 }}>
           Academic Coach for Dual Credit
         </div>
 
-        {/* Phone */}
-        <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 600, color: C.text2, marginBottom: 14 }}>
-          {acdc?.phone ?? '903-823-3106'}
-        </div>
-
-        {/* QR code */}
-        <div style={{ borderRadius: 12, overflow: 'hidden',
-          boxShadow: '0 2px 12px rgba(0,0,0,.10)', border: `1.5px solid ${C.border}` }}>
-          <QrPlaceholder size={120} />
-        </div>
-
-        {/* QR label */}
-        <div style={{ fontFamily: FF, fontSize: 9, fontWeight: 700, color: C.text3,
-          textTransform: 'uppercase', letterSpacing: '1.1px', marginTop: 7, marginBottom: 16 }}>
-          Contact QR
-        </div>
+        {/* Assigned schools */}
+        {schoolList.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginBottom: 16 }}>
+            {schoolList.map(id => (
+              <span key={id} style={{
+                fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
+                background: `${BLUE}10`, borderRadius: 20, padding: '3px 10px',
+                border: `1px solid ${BLUE}22`,
+              }}>
+                {FULL_SCHOOL_NAMES[id] || id}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Divider */}
         <div style={{ width: '100%', height: 1, background: C.border, marginBottom: 14 }} />
 
-        {/* Share buttons — all sized to fit "Send Appointment Form" */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-          {SHARE_ITEMS.map(item => (
-            <button key={item.id} onClick={() => setActiveItem(item)}
-              style={{
-                width: 264, height: 42, borderRadius: 12, border: `1.5px solid ${C.border}`,
-                background: '#fff', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                boxShadow: '0 1px 4px rgba(0,0,0,.06)', transition: 'box-shadow .12s',
-              }}
-              onMouseDown={e  => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,.12)')}
-              onMouseUp={e    => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,.06)')}
-              onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,.06)')}
-              onTouchStart={e => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,.12)')}
-              onTouchEnd={e   => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,.06)')}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                stroke={BLUE} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
-                <polyline points="16 6 12 2 8 6"/>
-                <line x1="12" y1="2" x2="12" y2="15"/>
-              </svg>
-              <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: DARK }}>
-                {item.label}
+        {/* Contact rows */}
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+          {acdc?.phone && (
+            <a href={`tel:${acdc.phone}`}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none',
+                background: C.bg, border: `1px solid ${C.border}`, borderRadius: 14,
+                padding: '12px 14px', textAlign: 'left' }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: `${BLUE}10`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={BLUE}
+                  strokeWidth="2.2" strokeLinecap="round">
+                  <path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 0112 18.85a19.5 19.5 0 01-6-6A19.79 19.79 0 012.92 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+                </svg>
+              </div>
+              <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 700, color: BLUE }}>
+                {acdc.phone}
               </span>
-            </button>
-          ))}
+            </a>
+          )}
+          {acdc?.email && (
+            <a href={`mailto:${acdc.email}`}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none',
+                background: C.bg, border: `1px solid ${C.border}`, borderRadius: 14,
+                padding: '12px 14px', textAlign: 'left' }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: `${BLUE}10`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="16" height="14" viewBox="0 0 24 20" fill="none" stroke={BLUE}
+                  strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="2" width="20" height="16" rx="2"/>
+                  <path d="M2 7l10 6 10-6"/>
+                </svg>
+              </div>
+              <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 700, color: BLUE }}>
+                {acdc.email}
+              </span>
+            </a>
+          )}
         </div>
 
-      </div>
+        {/* Share My Contact */}
+        <button onClick={handleShare}
+          style={{
+            width: '100%', height: 52, borderRadius: 16, border: 'none',
+            background: LIME, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+            boxShadow: '0 4px 20px rgba(234,255,0,.35)',
+          }}
+          onMouseDown={e  => e.currentTarget.style.transform = 'scale(0.98)'}
+          onMouseUp={e    => e.currentTarget.style.transform = 'scale(1)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+          onTouchStart={e => e.currentTarget.style.transform = 'scale(0.98)'}
+          onTouchEnd={e   => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={DARK}
+            strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 800, color: DARK }}>
+            {copied ? 'Copied to Clipboard!' : 'Share My Contact'}
+          </span>
+        </button>
 
-      {/* Send sheet */}
-      {activeItem && (
-        <SendSheet item={activeItem} onClose={() => setActiveItem(null)} />
-      )}
+      </div>
     </div>
   );
 }

@@ -1,70 +1,83 @@
 /**
- * AcdcHomeScreen — ACDC portal shell with five-tab bottom navigation.
+ * AcdcHomeScreen — ACDC Staff Portal shell with five-tab bottom navigation.
  *
- * Manages its own tab state internally; all five tabs are rendered as
- * placeholder screens for now — each tab's full content is built in later steps.
+ * Tabs: Home | Contact Card | Pathways | Resources | More
  *
- * Reuses BottomNav, BlueHeader, and PageTitle from the existing component library.
+ * Home      — coach identity header + toolkit action cards
+ * Contact Card — AcdcProfileTab (coach views their own public card)
+ * Pathways  — pathway plans filtered to only the coach's assigned schools
+ * Resources — AcdcResourcesTab (same resource library as student experience)
+ * More      — AcdcMoreTab (Sign Out → returns to role selection)
+ *
+ * FERPA-safe: no student data stored, displayed, or queried anywhere in this file.
+ * All email/SMS actions are native device hand-offs (mailto:, sms:) with no
+ * recipient address, message body, or send record stored by this app.
  */
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { C, FF } from '../tokens';
 import BottomNav from '../components/BottomNav';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
-import Card from '../components/Card';
-import AcdcProfileTab, { QrPlaceholder } from './AcdcProfileTab';
+import AcdcProfileTab  from './AcdcProfileTab';
 import AcdcResourcesTab from './AcdcResourcesTab';
 import AcdcMoreTab      from './AcdcMoreTab';
-import {
-  DEFAULT_COORDS,
-  useWeather,
-  WeatherPill,
-  ForecastSlider,
-} from '../components/WeatherWidget';
+import { PATHWAYS } from '../data/pathways';
+import { SCHOOLS }  from '../data/schools';
 
 const BLUE = '#065990';
 const LIME = '#EAFF00';
 const DARK = '#022b52';
 
-// ── ACDC tab definitions ──────────────────────────────────────────────────────
+// ── ACDC-specific tab bar (separate from student/parent bar) ──────────────────
 const ACDC_TABS = [
   { id: 'home',      label: 'Home',         screen: 'home'      },
   { id: 'profile',   label: 'Contact Card', screen: 'profile'   },
+  { id: 'pathways',  label: 'Pathways',     screen: 'pathways'  },
   { id: 'resources', label: 'Resources',    screen: 'resources' },
   { id: 'more',      label: 'More',         screen: 'more'      },
 ];
 
-// ── Shared avatar (photo → initials fallback) ────────────────────────────────
-function AcdcAvatar({ photo, name, size = 48 }) {
+const FULL_SCHOOL_NAMES = {
+  txh:          'Texas High School',
+  le:           'Liberty-Eylau High School',
+  hooks:        'Hooks High School',
+  pg:           'Pleasant Grove High School',
+  bloomburg:    'Bloomburg High School',
+  avery:        'Avery High School',
+  dekalb:       'DeKalb High School',
+  maud:         'Maud High School',
+  prem:         'Premier High School',
+  nb:           'New Boston High School',
+  simms:        'James Bowie High School',
+  atlanta:      'Atlanta High School',
+  qc:           'Queen City High School',
+  mcleod:       'McLeod High School',
+  lk:           'Linden-Kildare High School',
+  rw:           'Redwater High School',
+  datx:         'Digital Academy of Texas',
+  'ar-premier': 'Premier High School - Arkansas',
+};
+
+function getSchoolName(id) {
+  return FULL_SCHOOL_NAMES[id] || id;
+}
+
+// ── Coach avatar (photo → initials fallback) ──────────────────────────────────
+function CoachAvatar({ photo, name, size = 62 }) {
   const [err, setErr] = useState(false);
-  const initials = (name ?? '')
-    .split(' ')
-    .filter(w => /^[A-Z]/.test(w))
-    .map(w => w[0])
-    .join('')
-    .slice(0, 2);
+  const initials = (name ?? '').split(' ')
+    .filter(w => /^[A-Z]/.test(w)).map(w => w[0]).join('').slice(0, 2);
 
   if (photo && !err) {
     return (
-      <img
-        src={photo}
-        alt={name}
-        onError={() => setErr(true)}
-        style={{
-          width: size, height: size, borderRadius: '50%',
-          objectFit: 'cover',
-          border: '3px solid rgba(255,255,255,.35)',
-          display: 'block',
-        }}
-      />
+      <img src={photo} alt={name} onError={() => setErr(true)}
+        style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover',
+          border: '3px solid rgba(255,255,255,.4)', display: 'block', flexShrink: 0 }} />
     );
   }
   return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%',
-      background: 'rgba(255,255,255,.18)',
-      border: '3px solid rgba(255,255,255,.35)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
+    <div style={{ width: size, height: size, borderRadius: '50%',
+      background: 'rgba(255,255,255,.18)', border: '3px solid rgba(255,255,255,.35)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
       <span style={{ fontFamily: FF, fontSize: size * 0.3, fontWeight: 900, color: '#fff' }}>
         {initials}
       </span>
@@ -72,540 +85,279 @@ function AcdcAvatar({ photo, name, size = 48 }) {
   );
 }
 
-// ── Dummy data ────────────────────────────────────────────────────────────────
-
-const DUMMY_ANNOUNCEMENTS = [
-  {
-    id: 'a1',
-    category: 'Announcements',
-    title: 'Fall 2026 Dual Credit Registration Now Open',
-    body: 'Registration for Fall 2026 dual credit courses is now open. Reach out to students at your school to confirm they are enrolled on time. Check the TC portal for seat availability.',
-    timeLabel: 'Today',
-  },
-];
-
-const DUMMY_DEADLINES = [
-  { id: 'd1', date: 'Jun 20',  title: 'TSI Assessment Completion'        },
-  { id: 'd2', date: 'Jun 30',  title: 'Dual Credit Application Deadline' },
-  { id: 'd3', date: 'Jul 15',  title: 'Fall 2026 Enrollment Deadline'    },
-];
-
-const DUMMY_EVENTS = [
-  { id: 'e1', date: 'Jul 8',   title: 'ACDC Summer Training'             },
-  { id: 'e2', date: 'Aug 5',   title: 'Partner School Orientation'       },
-  { id: 'e3', date: 'Aug 18',  title: 'Fall Semester Kickoff'            },
-];
-
-// ── Sent-notifications dummy data ────────────────────────────────────────────
-
-const SENT_NOTIFS = [
-  {
-    id: 'n1',
-    message: 'Fall 2026 dual credit registration is now open. Log in to the TC portal to confirm your course selections.',
-    school: 'Texas High School',
-    audience: 'Students',
-    sentAt: 'Today, 9:02 AM',
-  },
-  {
-    id: 'n2',
-    message: 'Reminder: TSI Assessment results must be submitted by June 20. Contact your ACDC if you have questions.',
-    school: 'Pleasant Grove High School',
-    audience: 'Students',
-    sentAt: 'Yesterday, 3:45 PM',
-  },
-  {
-    id: 'n3',
-    message: 'Your student has upcoming dual credit deadlines this month. Please review the Important Dates section in the app.',
-    school: 'Texas High School',
-    audience: 'Parents',
-    sentAt: 'Jun 28, 11:00 AM',
-  },
-  {
-    id: 'n5',
-    message: 'ACDC Summer Training session scheduled for July 8. All counselors should confirm attendance by July 1.',
-    school: 'All Schools',
-    audience: 'All',
-    sentAt: 'Jun 25, 2:15 PM',
-  },
-  {
-    id: 'n6',
-    message: 'Fall 2026 dual credit application deadline is June 30. Ensure all students have completed their applications.',
-    school: 'New Boston High School',
-    audience: 'Students',
-    sentAt: 'Jun 24, 10:00 AM',
-  },
-  {
-    id: 'n7',
-    message: 'Partner School Orientation is scheduled for August 5. Details will be shared one week before the event.',
-    school: 'All Schools',
-    audience: 'All',
-    sentAt: 'Jun 22, 9:00 AM',
-  },
-];
-
-const AUDIENCE_STYLE = {
-  'Students': { bg: 'rgba(6,89,144,.10)',  color: BLUE },
-  'Parents':  { bg: 'rgba(234,255,0,.35)', color: DARK },
-  'All':      { bg: 'rgba(6,89,144,.07)',  color: DARK },
-};
-
-// ── Sent-notifications history sheet ─────────────────────────────────────────
-
-function NotifsHistorySheet({ onClose }) {
+// ── Toolkit action card ───────────────────────────────────────────────────────
+function ToolkitCard({ icon, label, sublabel, lime = false, onClick }) {
   return (
-    /* Overlay — tap outside to close */
-    <div
-      onClick={onClose}
+    <button onClick={onClick}
       style={{
-        position: 'fixed', inset: 0,
-        background: 'rgba(0,0,0,.45)',
-        zIndex: 300,
-        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+        width: '100%', background: lime ? LIME : '#fff',
+        border: lime ? 'none' : `1px solid ${C.border}`,
+        borderRadius: 18, padding: '15px 16px', marginBottom: 10,
+        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14,
+        textAlign: 'left', boxSizing: 'border-box',
+        boxShadow: lime ? '0 4px 20px rgba(234,255,0,.3)' : '0 2px 8px rgba(0,0,0,.04)',
+        transition: 'transform .1s',
       }}
+      onMouseDown={e  => e.currentTarget.style.transform = 'scale(0.98)'}
+      onMouseUp={e    => e.currentTarget.style.transform = 'scale(1)'}
+      onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+      onTouchStart={e => e.currentTarget.style.transform = 'scale(0.98)'}
+      onTouchEnd={e   => e.currentTarget.style.transform = 'scale(1)'}
     >
-      {/* Sheet — stop propagation so tapping inside doesn't close */}
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: '#fff',
-          borderRadius: '22px 22px 0 0',
-          boxShadow: '0 -8px 40px rgba(0,0,0,.18)',
-          display: 'flex', flexDirection: 'column',
-          maxHeight: '82vh',
-        }}
-      >
-        {/* Drag handle */}
-        <div style={{
-          width: 40, height: 4, borderRadius: 2,
-          background: C.border, margin: '14px auto 0',
-          flexShrink: 0,
-        }} />
-
-        {/* Header row */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '16px 20px 12px',
-          flexShrink: 0,
-          borderBottom: `1px solid ${C.border}`,
-        }}>
-          <div>
-            <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: C.text3,
-              textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 2 }}>
-              Last Notifications Sent
-            </div>
-            <div style={{ fontFamily: FF, fontSize: 16, fontWeight: 900, color: DARK,
-              letterSpacing: '-0.3px' }}>
-              Sent History
-            </div>
+      <div style={{ width: 46, height: 46, borderRadius: 13, flexShrink: 0,
+        background: lime ? `${BLUE}18` : `${BLUE}14`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {icon}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 800,
+          color: lime ? DARK : C.text, lineHeight: 1.2 }}>{label}</div>
+        {sublabel && (
+          <div style={{ fontFamily: FF, fontSize: 12,
+            color: lime ? `${DARK}99` : C.text3, marginTop: 3, lineHeight: 1.4 }}>
+            {sublabel}
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: C.bg, border: `1px solid ${C.border}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', flexShrink: 0,
-            }}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-              stroke={C.text3} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 6L6 18M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-
-        {/* Scrollable list */}
-        <div style={{
-          overflowY: 'auto',
-          padding: '8px 16px',
-          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
-        }}>
-          {SENT_NOTIFS.map((n, i) => {
-            const aud = AUDIENCE_STYLE[n.audience] || AUDIENCE_STYLE['All'];
-            return (
-              <div
-                key={n.id}
-                style={{
-                  padding: '14px 0',
-                  borderBottom: i < SENT_NOTIFS.length - 1 ? `1px solid ${C.border}` : 'none',
-                }}
-              >
-                {/* Top row: school + time */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, gap: 8 }}>
-                  <span style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: BLUE,
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
-                    {n.school}
-                  </span>
-                  <span style={{ fontFamily: FF, fontSize: 10.5, color: C.text3, flexShrink: 0 }}>
-                    {n.sentAt}
-                  </span>
-                </div>
-                {/* Message */}
-                <div style={{ fontFamily: FF, fontSize: 13, color: C.text, lineHeight: 1.5, marginBottom: 8 }}>
-                  {n.message}
-                </div>
-                {/* Audience chip */}
-                <span style={{
-                  fontFamily: FF, fontSize: 10, fontWeight: 700,
-                  background: aud.bg, color: aud.color,
-                  borderRadius: 20, padding: '3px 9px', letterSpacing: '0.3px',
-                }}>
-                  {n.audience}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+        )}
       </div>
-    </div>
-  );
-}
-
-// ── Notifications Sent Card ───────────────────────────────────────────────────
-
-function NotifsSentCard() {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <>
-      <button
-        onClick={() => setOpen(true)}
-        style={{
-          width: '100%', background: 'none', border: 'none', cursor: 'pointer',
-          padding: 0, marginBottom: 12, textAlign: 'left',
-        }}
-      >
-        <Card style={{ padding: '18px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
-          {/* Green checkmark circle */}
-          <div style={{
-            width: 48, height: 48, borderRadius: 14, flexShrink: 0,
-            background: 'rgba(22,163,74,.10)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-              stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 6L9 17l-5-5"/>
-            </svg>
-          </div>
-          {/* Label + chevron */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: FF, fontSize: 10, fontWeight: 700, color: C.text3,
-              textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 3 }}>
-              Last Notifications Sent
-            </div>
-            <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 700, color: DARK }}>
-              View sent history
-            </div>
-          </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke={C.text3} strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
-            <path d="M9 18l6-6-6-6"/>
-          </svg>
-        </Card>
-      </button>
-
-      {open && <NotifsHistorySheet onClose={() => setOpen(false)} />}
-    </>
-  );
-}
-
-// ── Announcement item row ─────────────────────────────────────────────────────
-
-const CATEGORY_STYLES = {
-  'Announcements': { bg: 'rgba(6,89,144,.10)', color: BLUE },
-  'Reminders':     { bg: 'rgba(234,255,0,.30)', color: DARK },
-};
-
-function AnnouncementItem({ item }) {
-  const [expanded, setExpanded] = useState(false);
-  const catStyle = CATEGORY_STYLES[item.category] || CATEGORY_STYLES['Announcements'];
-
-  return (
-    <div style={{
-      borderBottom: `1px solid ${C.border}`,
-      padding: '13px 0',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-        <span style={{
-          fontFamily: FF, fontSize: 10, fontWeight: 700,
-          color: catStyle.color, background: catStyle.bg,
-          borderRadius: 20, padding: '3px 9px', letterSpacing: '0.3px',
-        }}>
-          {item.category}
-        </span>
-        <span style={{ fontFamily: FF, fontSize: 10.5, color: C.text3 }}>{item.timeLabel}</span>
-      </div>
-      <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, color: C.text,
-        letterSpacing: '-0.2px', lineHeight: 1.3, marginBottom: 4 }}>
-        {item.title}
-      </div>
-      <div style={{
-        fontFamily: FF, fontSize: 12.5, color: C.text2, lineHeight: 1.55,
-        overflow: expanded ? 'visible' : 'hidden',
-        display: expanded ? 'block' : '-webkit-box',
-        WebkitLineClamp: expanded ? undefined : 2,
-        WebkitBoxOrient: 'vertical',
-      }}>
-        {item.body}
-      </div>
-      {!expanded && item.body.length > 100 && (
-        <button
-          onClick={() => setExpanded(true)}
-          style={{ background: 'none', border: 'none', padding: '4px 0 0', cursor: 'pointer',
-            fontFamily: FF, fontSize: 12, fontWeight: 700, color: BLUE }}
-        >
-          Read more
-        </button>
-      )}
-    </div>
-  );
-}
-
-function AnnouncementsCard() {
-  return (
-    <Card style={{ padding: '16px 16px 4px', marginBottom: 12 }}>
-      <div style={{ fontFamily: FF, fontSize: 13, fontWeight: 700, color: BLUE,
-        textTransform: 'uppercase', letterSpacing: '1.1px', marginBottom: 2 }}>
-        Announcements
-      </div>
-      {DUMMY_ANNOUNCEMENTS.map(item => (
-        <AnnouncementItem key={item.id} item={item} />
-      ))}
-    </Card>
-  );
-}
-
-// ── Accordion section (Deadlines / Events) ────────────────────────────────────
-
-function AccordionSection({ title, icon, items, accentColor = BLUE }) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <Card style={{ marginBottom: 12, overflow: 'hidden' }}>
-      {/* Header row — always visible, tap to toggle */}
-      <button
-        onClick={() => setOpen(o => !o)}
-        style={{
-          width: '100%', background: 'none', border: 'none', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: 12,
-          padding: '15px 16px',
-          textAlign: 'left',
-        }}
-      >
-        {/* Icon bubble */}
-        <div style={{
-          width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-          background: 'rgba(6,89,144,.08)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          {icon}
-        </div>
-
-        {/* Title + count */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, color: DARK,
-            letterSpacing: '-0.2px' }}>
-            {title}
-          </span>
-          <span style={{
-            fontFamily: FF, fontSize: 10, fontWeight: 800,
-            color: BLUE, background: 'rgba(6,89,144,.10)',
-            borderRadius: 10, padding: '2px 7px',
-          }}>
-            {items.length}
-          </span>
-        </div>
-
-        {/* Chevron — rotates when open */}
-        <svg
-          width="16" height="16" viewBox="0 0 24 24" fill="none"
-          stroke={C.text3} strokeWidth="2.5" strokeLinecap="round"
-          style={{ flexShrink: 0, transition: 'transform .22s ease', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
-        >
-          <path d="M6 9l6 6 6-6"/>
-        </svg>
-      </button>
-
-      {/* Collapsible content */}
-      {open && (
-        <div style={{ borderTop: `1px solid ${C.border}`, padding: '4px 16px 12px' }}>
-          {items.map((item, i) => (
-            <div
-              key={item.id}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '10px 0',
-                borderBottom: i < items.length - 1 ? `1px solid ${C.border}` : 'none',
-              }}
-            >
-              {/* Date pill */}
-              <div style={{
-                flexShrink: 0,
-                background: BLUE, borderRadius: 10,
-                padding: '5px 10px',
-                minWidth: 52, textAlign: 'center',
-              }}>
-                <span style={{ fontFamily: FF, fontSize: 12, fontWeight: 800, color: '#fff',
-                  letterSpacing: '-0.2px' }}>
-                  {item.date}
-                </span>
-              </div>
-              {/* Title */}
-              <span style={{ fontFamily: FF, fontSize: 13.5, fontWeight: 700, color: C.text,
-                flex: 1, lineHeight: 1.3 }}>
-                {item.title}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-    </Card>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+        stroke={lime ? DARK : C.text3} strokeWidth="2.5" strokeLinecap="round"
+        style={{ flexShrink: 0, opacity: 0.6 }}>
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </button>
   );
 }
 
 // ── Tab: Home ─────────────────────────────────────────────────────────────────
-function TabHome({ acdc }) {
-  // GPS coords for ACDC weather — falls back to Texarkana default
-  const [gpsCoords, setGpsCoords] = useState(DEFAULT_COORDS);
-  const [forecastOpen, setForecastOpen] = useState(false);
+function TabHome({ acdc, onGoResources, onGoPathways, onSignOut }) {
+  const schoolList = [
+    ...(acdc?.txhGrades?.length ? ['txh'] : []),
+    ...(acdc?.schools || []),
+  ];
 
-  useEffect(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      pos => setGpsCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-      ()  => setGpsCoords(DEFAULT_COORDS),
-      { timeout: 8000, maximumAge: 300_000 },
-    );
-  }, []);
-
-  const { weather: weatherData, loading: weatherLoading } = useWeather(gpsCoords);
+  const emailSubject = encodeURIComponent('Dual Credit — Information for You');
+  const emailBody = encodeURIComponent(
+    `Hi,\n\nI'm ${acdc?.name ?? 'your ACDC'}, your Academic Coach for Dual Credit at Texarkana College.\n\nI'm reaching out to share some information about your dual credit courses. Please let me know if you have any questions.\n\n${acdc?.name ?? ''}\nTC Dual Credit`
+  );
+  const smsBody = encodeURIComponent(
+    `Hi, this is ${acdc?.name ?? 'your ACDC'} from TC Dual Credit. I wanted to reach out about your dual credit enrollment. Reply here or call ${acdc?.phone ?? ''}.`
+  );
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Blue gradient header */}
+
+      {/* Gradient header — coach identity */}
       <div style={{
         background: `linear-gradient(160deg, ${DARK} 0%, ${BLUE} 100%)`,
-        padding: '0 20px 32px',
-        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)',
         flexShrink: 0,
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 14px)',
+        paddingBottom: 28, paddingLeft: 20, paddingRight: 20,
       }}>
-        {/* Name row + weather pill */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        {/* Exit row */}
+        <button onClick={onSignOut}
+          style={{ background: 'none', border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '0 0 16px', color: 'rgba(255,255,255,.7)' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            strokeWidth="2.5" strokeLinecap="round">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
+          <span style={{ fontFamily: FF, fontSize: 12, fontWeight: 600 }}>Exit Portal</span>
+        </button>
+
+        {/* Coach row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <CoachAvatar photo={acdc?.photo} name={acdc?.name} size={62} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: FF, fontSize: 28, fontWeight: 900, color: '#fff', letterSpacing: '-0.8px', lineHeight: 1.15 }}>
-              {acdc?.name ?? 'Abigail Beecher'}
+            <div style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: LIME,
+              textTransform: 'uppercase', letterSpacing: '1.4px', marginBottom: 4 }}>
+              ACDC Staff Portal
             </div>
-            <div style={{ fontFamily: FF, fontSize: 14, color: 'rgba(255,255,255,.65)', marginTop: 4 }}>
-              Academic Coach for Dual Credit
+            <div style={{ fontFamily: FF, fontSize: 22, fontWeight: 900, color: '#fff',
+              letterSpacing: '-0.5px', lineHeight: 1.15 }}>
+              {acdc?.name ?? ''}
             </div>
-          </div>
-          <div style={{ paddingTop: 4, flexShrink: 0 }}>
-            <WeatherPill weather={weatherData} loading={weatherLoading} onClick={() => setForecastOpen(true)} />
+            <div style={{ fontFamily: FF, fontSize: 13, color: 'rgba(255,255,255,.65)', marginTop: 3 }}>
+              {acdc?.title ?? 'Academic Coach for Dual Credit'}
+            </div>
           </div>
         </div>
+
+        {/* Assigned schools */}
+        {schoolList.length > 0 && (
+          <div style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {schoolList.map(id => (
+              <span key={id} style={{
+                fontFamily: FF, fontSize: 11, fontWeight: 700, color: LIME,
+                background: 'rgba(234,255,0,.15)', borderRadius: 20, padding: '3px 10px',
+                border: '1px solid rgba(234,255,0,.25)',
+              }}>
+                {getSchoolName(id)}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Forecast slider (bottom sheet) */}
-      {forecastOpen && (
-        <ForecastSlider weather={weatherData} onClose={() => setForecastOpen(false)} />
-      )}
+      {/* Toolkit cards */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '18px 14px 120px' }}>
+        <div style={{ fontFamily: FF, fontSize: 11, fontWeight: 700, color: C.text3,
+          textTransform: 'uppercase', letterSpacing: '1.4px', marginBottom: 12, paddingLeft: 2 }}>
+          Your Toolkit
+        </div>
 
-      {/* Scrollable content — overlaps header with negative margin */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 14px 100px', marginTop: -16 }}>
-
-        <NotifsSentCard />
-        <AnnouncementsCard />
-
-        <AccordionSection
-          title="Deadlines"
-          items={DUMMY_DEADLINES}
-          icon={
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
-              stroke={BLUE} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2"/>
-              <path d="M16 2v4M8 2v4M3 10h18"/>
-              <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
-            </svg>
-          }
+        <ToolkitCard lime
+          label="Send Resources & Docs"
+          sublabel="Browse student resources and documents to share"
+          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>}
+          onClick={onGoResources}
         />
 
-        <AccordionSection
-          title="Events"
-          items={DUMMY_EVENTS}
-          icon={
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
-              stroke={BLUE} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M12 6v6l4 2"/>
-            </svg>
-          }
+        <ToolkitCard
+          label="Look Up Pathway Plans"
+          sublabel="Browse pathway plans for your assigned schools"
+          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M12 19h4.5a3.5 3.5 0 000-7h-8a3.5 3.5 0 010-7H12"/></svg>}
+          onClick={onGoPathways}
+        />
+
+        {/* FERPA: native mailto handoff — no recipient, body, or send record stored */}
+        <ToolkitCard
+          label="Email a Student"
+          sublabel="Opens your email app — no contact stored by this app"
+          icon={<svg width="22" height="20" viewBox="0 0 24 20" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>}
+          onClick={() => { window.location.href = `mailto:?subject=${emailSubject}&body=${emailBody}`; }}
+        />
+
+        {/* FERPA: native sms handoff — no recipient number, message, or send record stored */}
+        <ToolkitCard
+          label="Text a Student"
+          sublabel="Opens your SMS app — no contact stored by this app"
+          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>}
+          onClick={() => { window.location.href = `sms:?&body=${smsBody}`; }}
         />
       </div>
     </div>
   );
 }
 
-// ── Generic placeholder tab ───────────────────────────────────────────────────
-function TabPlaceholder({ title, icon }) {
+// ── Tab: Pathways (filtered to coach's assigned schools) ──────────────────────
+function TabPathways({ acdc }) {
+  const [selectedSchool, setSelectedSchool] = useState(null);
+
+  const assignedIds = useMemo(() => [
+    ...(acdc?.txhGrades?.length ? ['txh'] : []),
+    ...(acdc?.schools || []),
+  ], [acdc]);
+
+  const assignedSchools = useMemo(
+    () => SCHOOLS.filter(s => assignedIds.includes(s.id)),
+    [assignedIds]
+  );
+
+  const pathways = useMemo(
+    () => selectedSchool ? PATHWAYS.filter(p => p.school === selectedSchool.id) : [],
+    [selectedSchool]
+  );
+
+  if (selectedSchool) {
+    return (
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <BlueHeader style={{ paddingBottom: 36 }}>
+          <PageTitle
+            title={selectedSchool.name}
+            sub="Pathway plans"
+            onBack={() => setSelectedSchool(null)}
+          />
+        </BlueHeader>
+
+        {/* School color bar */}
+        <div style={{ backgroundColor: selectedSchool.color, padding: '8px 16px', flexShrink: 0 }}>
+          <span style={{ fontFamily: FF, fontSize: 13, fontWeight: 700,
+            color: selectedSchool.textColor || '#fff' }}>
+            Pathway Plans at {selectedSchool.name}
+          </span>
+        </div>
+
+        <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 120px' }}>
+          <p style={{ fontFamily: FF, fontSize: 13, color: C.text2, lineHeight: 1.6, marginBottom: 14 }}>
+            Tap any pathway to open the full Early Enrollment Pathway Plan.
+          </p>
+          {pathways.length > 0 ? pathways.map(p => (
+            <button key={p.id}
+              onClick={() => window.open(p.pdfUrl, '_blank', 'noopener,noreferrer')}
+              style={{
+                width: '100%', background: '#fff', border: `1px solid ${C.border}`,
+                borderRadius: 12, padding: '16px 14px', marginBottom: 10,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,.06)',
+                textAlign: 'left', boxSizing: 'border-box',
+                transition: 'transform .1s',
+              }}
+              onMouseDown={e  => e.currentTarget.style.transform = 'scale(0.98)'}
+              onMouseUp={e    => e.currentTarget.style.transform = 'scale(1)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              onTouchStart={e => e.currentTarget.style.transform = 'scale(0.98)'}
+              onTouchEnd={e   => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 600, color: C.text }}>
+                {p.name.replace(/^EEPP\s*–\s*/, '')}
+              </span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={BLUE}
+                strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+          )) : (
+            <p style={{ fontFamily: FF, fontSize: 13, color: C.text2, textAlign: 'center', paddingTop: 40 }}>
+              No pathways available for this school.
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <BlueHeader style={{ paddingBottom: 36 }}>
-        <PageTitle title={title} />
+        <PageTitle title="Pathways" sub="Your assigned schools" />
       </BlueHeader>
 
-      <div style={{
-        flex: 1, display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        padding: '32px 28px 120px',
-        marginTop: -24,
-      }}>
-        <div style={{
-          width: 72, height: 72, borderRadius: 20,
-          background: 'rgba(6,89,144,.08)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          marginBottom: 20,
-        }}>
-          {icon}
-        </div>
-        <div style={{ fontFamily: FF, fontSize: 18, fontWeight: 900, color: DARK, letterSpacing: '-0.3px', marginBottom: 8, textAlign: 'center' }}>
-          {title}
-        </div>
-        <p style={{ fontFamily: FF, fontSize: 14, color: C.text2, lineHeight: 1.6, textAlign: 'center', maxWidth: 260, margin: 0 }}>
-          This section is coming in the next build step.
-        </p>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 14px 120px', marginTop: -24 }}>
+        {assignedSchools.length > 0 ? assignedSchools.map(school => (
+          <button key={school.id} onClick={() => setSelectedSchool(school)}
+            style={{
+              width: '100%', background: school.color, border: 'none',
+              borderRadius: 14, padding: '14px 16px', marginBottom: 10,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
+              textAlign: 'left', boxSizing: 'border-box',
+              boxShadow: '0 2px 10px rgba(0,0,0,.12)', transition: 'transform .1s',
+            }}
+            onMouseDown={e  => e.currentTarget.style.transform = 'scale(0.98)'}
+            onMouseUp={e    => e.currentTarget.style.transform = 'scale(1)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            onTouchStart={e => e.currentTarget.style.transform = 'scale(0.98)'}
+            onTouchEnd={e   => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            <span style={{ fontFamily: FF, fontSize: 15, fontWeight: 700,
+              color: school.textColor || '#fff', flex: 1 }}>
+              {school.name}
+            </span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke={school.textColor || '#fff'} strokeWidth="2.5" strokeLinecap="round"
+              style={{ flexShrink: 0, opacity: 0.8 }}>
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        )) : (
+          <p style={{ fontFamily: FF, fontSize: 14, color: C.text2, textAlign: 'center', paddingTop: 60 }}>
+            No schools assigned to your profile.
+          </p>
+        )}
       </div>
     </div>
   );
 }
-
-// Placeholder icon definitions — inline SVG matching BottomNav style
-const TAB_ICONS = {
-  profile: (
-    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="8" r="4"/>
-      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-    </svg>
-  ),
-  lookup: (
-    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round">
-      <circle cx="11" cy="11" r="7"/>
-      <path d="M21 21l-4.35-4.35"/>
-    </svg>
-  ),
-  resources: (
-    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke={BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
-    </svg>
-  ),
-  more: (
-    <svg width="30" height="30" viewBox="0 0 24 24" fill={BLUE}>
-      <circle cx="12" cy="5"  r="1.75"/>
-      <circle cx="12" cy="12" r="1.75"/>
-      <circle cx="12" cy="19" r="1.75"/>
-    </svg>
-  ),
-};
 
 // ── Portal shell ──────────────────────────────────────────────────────────────
 export default function AcdcHomeScreen({ acdc, onSignOut }) {
@@ -614,34 +366,33 @@ export default function AcdcHomeScreen({ acdc, onSignOut }) {
   const renderTab = () => {
     switch (activeTab) {
       case 'home':
-        return <TabHome acdc={acdc} onSignOut={onSignOut} />;
+        return (
+          <TabHome
+            acdc={acdc}
+            onGoResources={() => setActiveTab('resources')}
+            onGoPathways={() => setActiveTab('pathways')}
+            onSignOut={onSignOut}
+          />
+        );
       case 'profile':
         return <AcdcProfileTab acdc={acdc} />;
+      case 'pathways':
+        return <TabPathways acdc={acdc} />;
       case 'resources':
         return <AcdcResourcesTab />;
       case 'more':
         return <AcdcMoreTab onSignOut={onSignOut} />;
       default:
-        return <TabHome acdc={acdc} onSignOut={onSignOut} />;
+        return <TabHome acdc={acdc} onGoResources={() => setActiveTab('resources')} onGoPathways={() => setActiveTab('pathways')} onSignOut={onSignOut} />;
     }
   };
 
   return (
-    <div
-      className="tc-screen"
-      style={{
-        width: '100%', height: '100%',
-        background: C.bg,
-        display: 'flex', flexDirection: 'column',
-        position: 'relative',
-      }}
-    >
+    <div className="tc-screen"
+      style={{ width: '100%', height: '100%', background: C.bg,
+        display: 'flex', flexDirection: 'column', position: 'relative' }}>
       {renderTab()}
-      <BottomNav
-        active={activeTab}
-        onNavigate={setActiveTab}
-        tabs={ACDC_TABS}
-      />
+      <BottomNav active={activeTab} onNavigate={setActiveTab} tabs={ACDC_TABS} />
     </div>
   );
 }
