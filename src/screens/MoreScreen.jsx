@@ -250,9 +250,6 @@ function GuestMoreScreen({ onChangeRole, onNavigate, tabs }) {
           </button>
         </div>
 
-        {/* Pathways — guest gets generic blue button */}
-        <PathwaysButton onNavigate={onNavigate} schoolOverride={null} />
-
         {/* Have Questions? Reach Out */}
         <button
           onClick={() => onNavigate('outreach')}
@@ -304,12 +301,6 @@ export default function MoreScreen({ role, school, onChangeRole, onChangeSchool,
       </BlueHeader>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: isTablet ? '0 24px 40px' : '0 14px 150px', marginTop: -42, position: 'relative' }}>
-
-        {/* Resources — all roles */}
-        <ResourcesPanel />
-
-        {/* Pathways — school-colored button */}
-        <PathwaysButton onNavigate={onNavigate} schoolOverride={school} />
 
         {/* Have Questions? Reach Out */}
         <button
