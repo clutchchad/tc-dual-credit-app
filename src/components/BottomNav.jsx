@@ -99,7 +99,7 @@ export default function BottomNav({ active, onNavigate, tabs }) {
         <img
           src="/tcdclogo2.png"
           alt="TC Dual Credit"
-          style={{ height: 32, width: 'auto', display: 'block', opacity: 0.9 }}
+          style={{ height: 40, width: 'auto', display: 'block', opacity: 0.9 }}
         />
       </div>
 

@@ -262,38 +262,6 @@ function CoachCard({ acdc, school, isTablet, onNavigate }) {
           </span>
         </div>
 
-        {/* Envelope — Royal Blue fill, Lime icon */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
-          {acdc.email ? (
-            <a
-              href={`mailto:${acdc.email}`}
-              style={{
-                width: 48, height: 48, borderRadius: 14,
-                background: BLUE,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                textDecoration: 'none',
-              }}
-            >
-              <svg width="20" height="16" viewBox="0 0 24 20" fill="none" stroke={LIME} strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="2" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/>
-              </svg>
-            </a>
-          ) : (
-            <div style={{
-              width: 48, height: 48, borderRadius: 14,
-              background: BLUE, opacity: 0.35,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
-              <svg width="20" height="16" viewBox="0 0 24 20" fill="none" stroke={LIME} strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="2" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/>
-              </svg>
-            </div>
-          )}
-          <span style={{ fontFamily: FF, fontSize: 9.5, fontWeight: 800, color: '#9ca3af', textAlign: 'center', lineHeight: 1.2, opacity: acdc.email ? 1 : 0.45 }}>
-            Email
-          </span>
-        </div>
-
       </div>
     </Card>
   );
