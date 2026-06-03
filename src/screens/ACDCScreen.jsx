@@ -178,7 +178,7 @@ function CoachCard({ acdc, school, isTablet, onNavigate }) {
               </a>
               {acdc.schedulingUrl && (
                 <button
-                  onClick={() => onNavigate('schedule_advising')}
+                  onClick={() => window.open(buildSchedulingUrl(), '_blank', 'noopener,noreferrer')}
                   style={{
                     height: 44, padding: '0 20px',
                     background: LIME, border: 'none', borderRadius: 12,
@@ -226,7 +226,7 @@ function CoachCard({ acdc, school, isTablet, onNavigate }) {
         {/* Calendar — Electric Lime fill, BLUE icon */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
           <button
-            onClick={() => onNavigate('schedule_advising')}
+            onClick={() => window.open(buildSchedulingUrl(), '_blank', 'noopener,noreferrer')}
             style={{
               width: 48, height: 48, borderRadius: 14,
               background: LIME, border: 'none', cursor: 'pointer',

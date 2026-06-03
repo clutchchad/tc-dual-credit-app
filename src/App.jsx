@@ -17,7 +17,6 @@ import ApplyScreen          from './screens/ApplyScreen';
 import NotificationsScreen  from './screens/NotificationsScreen';
 import ImportantDatesScreen from './screens/ImportantDatesScreen';
 import TransferPathwayScreen   from './screens/TransferPathwayScreen';
-import ScheduleAdvisingScreen  from './screens/ScheduleAdvisingScreen';
 import OutreachFormScreen      from './screens/OutreachFormScreen';
 import AcdcPortalLookupScreen  from './screens/AcdcPortalLookupScreen';
 import AcdcPortalHomeScreen   from './screens/AcdcPortalHomeScreen';
@@ -210,11 +209,6 @@ export default function App() {
       case 'outreach': {
         const isGuest = (role || 'guest') === 'guest';
         return <OutreachFormScreen role={role || 'guest'} school={school} {...(isGuest ? guestNavProps : navProps)} />;
-      }
-
-      case 'schedule_advising': {
-        const isGuest = (role || 'guest') === 'guest';
-        return <ScheduleAdvisingScreen school={school} {...(isGuest ? guestNavProps : navProps)} />;
       }
 
       case 'acdc':

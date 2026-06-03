@@ -13,6 +13,7 @@
 import { useState } from 'react';
 import { BlueHeader, PageTitle } from '../components/BlueHeader';
 import BottomNav from '../components/BottomNav';
+import { buildSchedulingUrl } from '../data/buildSchedulingUrl';
 import { useIsTablet } from '../hooks/useIsTablet';
 import { SCHOOLS } from '../data/schools';
 import { C, FF } from '../tokens';
@@ -376,7 +377,7 @@ export default function OutreachFormScreen({ role: initialRole, school: initialS
                 <div style={{ fontFamily: FF, fontSize: 12.5, color: C.text2, lineHeight: 1.5 }}>
                   You can also connect directly with your school's Academic Coach.{' '}
                   <button
-                    onClick={() => onNavigate('schedule_advising')}
+                    onClick={() => window.open(buildSchedulingUrl(), '_blank', 'noopener,noreferrer')}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: FF, fontSize: 12.5, fontWeight: 700, color: BLUE, textDecoration: 'underline' }}
                   >
                     Schedule Advising →

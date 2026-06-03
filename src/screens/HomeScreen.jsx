@@ -266,7 +266,7 @@ function AcdcStrip({ acdc, onNavigate }) {
       {/* 3 action icons */}
       <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
         <button
-          onClick={() => onNavigate('schedule_advising')}
+          onClick={() => window.open(buildSchedulingUrl(), '_blank', 'noopener,noreferrer')}
           style={{ textDecoration: 'none', flexShrink: 0, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
         >
           <div style={{ width: 36, height: 36, borderRadius: 10, background: BLUE, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

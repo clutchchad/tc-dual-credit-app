@@ -85,8 +85,7 @@ export const acdcContacts = [
     lastName: 'Beecher',
     name: 'Abigail Beecher',
     title: 'Academic Coach for Dual Credit',
-    phone: '903-823-3106',        // sample — replace with real directory info
-    email: 'a.beecher@tc.edu',   // sample — replace with real directory info
+    phone: '903-823-3106',
     photo: '/fakeacdc.png',
     schedulingUrl: SCHEDULING_URL,
     schools: ['qc', 'pg', 'le', 'simms'],
