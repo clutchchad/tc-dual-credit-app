@@ -86,11 +86,10 @@ function soonest(type) {
   );
 }
 
-function getGreeting(firstName, role) {
-  if (role === 'guest') return 'Welcome to TC Dual Credit';
-  if (role === 'parent') return firstName ? `Hey, ${firstName}!` : 'Hey, Parent!';
-  if (firstName) return `Hey, ${firstName}!`;
-  return 'Hey, Student!';
+function getGreeting(role) {
+  if (role === 'guest')  return 'Welcome to TC Dual Credit';
+  if (role === 'parent') return 'Parent';
+  return 'Student';
 }
 
 /* ── Seed timeline — student / default ── */
@@ -734,7 +733,7 @@ export default function HomeScreen({ role: roleProp, school, onNavigate, tabs })
     })();
   }, []);
 
-  const greeting = getGreeting(null, role);
+  const greeting = getGreeting(role);
   const { weather: weatherData, loading: weatherLoading } = useWeather(weatherCoords);
 
   /* ── Shared header ── */
