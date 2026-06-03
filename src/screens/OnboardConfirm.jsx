@@ -102,38 +102,6 @@ export default function OnboardConfirm({ role, school, onConfirm, onBack }) {
           <span style={{ fontFamily: FF, fontSize: 16, fontWeight: 800, color: DARK }}>Get Started</span>
         </button>
 
-        <div style={{
-          width: '100%', boxSizing: 'border-box',
-          border: `1.5px solid ${C.border}`,
-          borderRadius: 18, padding: '18px 18px 16px',
-          marginBottom: 12, background: C.bg,
-        }}>
-          <div style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, color: DARK, marginBottom: 4 }}>
-            Not enrolled in Dual Credit yet?
-          </div>
-          <p style={{ fontFamily: FF, fontSize: 13, color: C.text2, lineHeight: 1.55, marginBottom: 14 }}>
-            Start your application — it only takes a few minutes.
-          </p>
-          <button
-            onClick={() => window.open('https://my.texarkanacollege.edu/ICS/Admissions/Dual-Credit_Application.jnz', '_blank', 'noopener,noreferrer')}
-            style={{
-              width: '100%', height: 46,
-              background: 'transparent',
-              border: `2px solid ${LIME}`,
-              borderRadius: 13,
-              cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={DARK} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
-              <polyline points="15 3 21 3 21 9"/>
-              <line x1="10" y1="14" x2="21" y2="3"/>
-            </svg>
-            <span style={{ fontFamily: FF, fontSize: 14, fontWeight: 800, color: DARK }}>Apply Now</span>
-          </button>
-        </div>
-
         <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px 0' }}>
           <span style={{ fontFamily: FF, fontSize: 14, fontWeight: 600, color: C.text3 }}>Change My Choices</span>
         </button>
